@@ -118,9 +118,12 @@ body{
 /* Mobile & tablet: 1 column. Desktop (≥900px): 2 columns */
 #settings-grid{display:grid;grid-template-columns:1fr;gap:1.25rem}
 @media(min-width:900px){#settings-grid{grid-template-columns:1fr 1fr}}
-/* Always prevent settings cards from overflowing */
+/* Settings page */
 #tab-settings .card{min-width:0;overflow:hidden}
 #tab-settings .input,#tab-settings select{max-width:100%;box-sizing:border-box}
+#settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+#tab-settings .input:disabled{background:var(--surf2);color:var(--txt3);cursor:not-allowed}
+@media(max-width:900px){#settings-grid{grid-template-columns:1fr}}
 
 /* ── CARDS ── */
 .card{
@@ -842,85 +845,135 @@ body{
 
   <!-- ══ TAB: ตั้งค่า ══ -->
   <div id="tab-settings" class="page">
-    <div class="ph">
+    <div class="ph" style="margin-bottom:1.25rem">
       <div>
-        <div class="ph-title">⚙️ ตั้งค่า</div>
-        <div class="ph-sub">จัดการข้อมูลร้านและระบบ</div>
+        <div class="ph-title">⚙️ Settings</div>
+        <div class="ph-sub" id="st-mode-badge">—</div>
       </div>
     </div>
     <div id="settings-grid">
 
-      <!-- ── ข้อมูลผู้ใช้ ── -->
-      <div class="card">
-        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px">👤 ข้อมูลผู้ใช้</div>
-        <div class="g2" style="gap:.75rem">
-          <div>
-            <label class="form-label">ชื่อของฉัน</label>
-            <input class="input" id="st-username" placeholder="เช่น สิวะกร, เลขา" oninput="saveSettings()">
+      <!-- ── 👤 User Info (from Hub session) ── -->
+      <div class="card" style="border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;color:var(--txt)">👤 User Account</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem">
+          <div id="st-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E31E24,#9B0000);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden">
+            <span id="st-avatar-emoji">👤</span>
+            <img id="st-avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
           </div>
-          <div>
-            <label class="form-label">ชื่อร้าน / สาขา</label>
-            <input class="input" id="st-shopname" placeholder="เช่น Mixue สกลนคร" oninput="saveSettings()">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:17px;font-weight:700;color:var(--txt)" id="st-name">—</div>
+            <div style="font-size:13px;color:var(--txt3);margin-top:2px" id="st-phone">—</div>
           </div>
+          <div id="st-role-badge" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEF9C3;color:#92400E;border:1px solid #FDE68A">—</div>
         </div>
-        <div style="margin-top:.75rem;padding:.75rem;background:var(--surf2);border-radius:var(--r);font-size:13px;color:var(--txt2)">
-          💡 ชื่อนี้จะแสดงในทุก record ที่คุณแก้ไข เช่น <strong>แก้ไขโดย: สิวะกร</strong>
+        <div style="background:var(--surf2);border-radius:var(--r);padding:.75rem 1rem;font-size:13px;color:var(--txt2)">
+          💡 ข้อมูลบัญชีจัดการได้ที่ <strong>BizICE Hub → Profile</strong>
         </div>
       </div>
 
-      <!-- ── เป้าหมาย Food Cost ── -->
+      <!-- ── 🎯 Food Cost Targets ── -->
       <div class="card">
-        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px">🎯 เป้าหมาย Food Cost %</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:.25rem;display:flex;align-items:center;gap:8px">🎯 Food Cost Target</div>
+        <div style="font-size:12px;color:var(--txt3);margin-bottom:1rem">เกณฑ์สีสัญญาณ traffic light</div>
         <div class="g2" style="gap:.75rem">
           <div>
-            <label class="form-label">🟢 ดีมาก (ต่ำกว่า)</label>
+            <label class="form-label">🟢 Good (ต่ำกว่า)</label>
             <div style="display:flex;align-items:center;gap:6px">
               <input class="input" id="st-green" type="number" value="25" oninput="saveSettings()" style="flex:1">
-              <span style="color:var(--txt3)">%</span>
+              <span style="color:var(--txt3);font-weight:600">%</span>
             </div>
           </div>
           <div>
-            <label class="form-label">🟡 พอใช้ (ต่ำกว่า)</label>
+            <label class="form-label">🟡 Acceptable (ต่ำกว่า)</label>
             <div style="display:flex;align-items:center;gap:6px">
               <input class="input" id="st-yellow" type="number" value="35" oninput="saveSettings()" style="flex:1">
-              <span style="color:var(--txt3)">%</span>
+              <span style="color:var(--txt3);font-weight:600">%</span>
             </div>
           </div>
         </div>
-        <div style="margin-top:.75rem;padding:.75rem;background:var(--surf2);border-radius:var(--r);font-size:13px;color:var(--txt2)">
-          🔴 เกิน <strong id="st-red-preview">35%</strong> = ต้นทุนสูง ต้องระวัง
+        <div style="margin-top:.85rem;display:flex;gap:8px">
+          <div style="flex:1;padding:.6rem .85rem;background:#D1FAE5;border-radius:10px;font-size:12px;color:#065F46;font-weight:600;text-align:center">🟢 &lt; <span id="st-green-lbl">25</span>%<br><span style="font-weight:400;opacity:.8">ดีมาก</span></div>
+          <div style="flex:1;padding:.6rem .85rem;background:#FEF9C3;border-radius:10px;font-size:12px;color:#92400E;font-weight:600;text-align:center">🟡 &lt; <span id="st-yellow-lbl">35</span>%<br><span style="font-weight:400;opacity:.8">พอใช้</span></div>
+          <div style="flex:1;padding:.6rem .85rem;background:#FEE2E2;border-radius:10px;font-size:12px;color:#991B1B;font-weight:600;text-align:center">🔴 ≥ <span id="st-red-preview">35</span>%<br><span style="font-weight:400;opacity:.8">ต้องระวัง</span></div>
         </div>
       </div>
 
-      <!-- ── สำรองข้อมูล ── -->
+      <!-- ── 📊 Export (viewer + editor) ── -->
       <div class="card">
-        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px">🗄️ สำรองข้อมูล</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:.25rem;display:flex;align-items:center;gap:8px">📊 Export Data</div>
+        <div style="font-size:12px;color:var(--txt3);margin-bottom:1rem">ส่งออกข้อมูลสำหรับวิเคราะห์ภายนอก</div>
         <div style="display:flex;flex-direction:column;gap:.6rem">
-          <button class="btn btn-ghost" onclick="exportJSON()" style="justify-content:flex-start;gap:10px">
-            <span style="font-size:18px">💾</span>
-            <div style="text-align:left"><div style="font-weight:600">Backup JSON</div><div style="font-size:12px;color:var(--txt3)">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์</div></div>
+          <button class="btn btn-ghost" onclick="exportCSV()" style="justify-content:flex-start;gap:12px;padding:.85rem 1rem">
+            <div style="width:38px;height:38px;background:#D1FAE5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📊</div>
+            <div style="text-align:left">
+              <div style="font-weight:600;font-size:14px">Export CSV</div>
+              <div style="font-size:12px;color:var(--txt3)">ส่งออกเมนูทั้งหมดสำหรับ Excel / Google Sheets</div>
+            </div>
+            <span style="margin-left:auto;font-size:11px;background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:20px;font-weight:600">ทุกคน</span>
           </button>
-          <label class="btn btn-ghost" style="justify-content:flex-start;gap:10px;cursor:pointer;margin:0">
-            <span style="font-size:18px">📂</span>
-            <div style="text-align:left"><div style="font-weight:600">Restore JSON</div><div style="font-size:12px;color:var(--txt3)">นำเข้าข้อมูลจากไฟล์ Backup</div></div>
+        </div>
+      </div>
+
+      <!-- ── 💾 Data Management (editor only) ── -->
+      <div class="card st-editor-only">
+        <div style="font-weight:700;font-size:15px;margin-bottom:.25rem;display:flex;align-items:center;gap:8px">💾 Data Management</div>
+        <div style="font-size:12px;color:var(--txt3);margin-bottom:1rem">สำรองและกู้คืนข้อมูล</div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <button class="btn btn-ghost" onclick="exportJSON()" style="justify-content:flex-start;gap:12px;padding:.85rem 1rem">
+            <div style="width:38px;height:38px;background:#EFF6FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💾</div>
+            <div style="text-align:left">
+              <div style="font-weight:600;font-size:14px">Backup JSON</div>
+              <div style="font-size:12px;color:var(--txt3)">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ .json</div>
+            </div>
+            <span style="margin-left:auto;font-size:11px;background:#DBEAFE;color:#1E40AF;padding:2px 8px;border-radius:20px;font-weight:600">Editor</span>
+          </button>
+          <label class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:.85rem 1rem;cursor:pointer;margin:0">
+            <div style="width:38px;height:38px;background:#F5F3FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📂</div>
+            <div style="text-align:left">
+              <div style="font-weight:600;font-size:14px">Restore JSON</div>
+              <div style="font-size:12px;color:var(--txt3)">นำเข้าข้อมูลจากไฟล์ Backup ที่บันทึกไว้</div>
+            </div>
+            <span style="margin-left:auto;font-size:11px;background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:20px;font-weight:600">Editor</span>
             <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
           </label>
-          <button class="btn btn-ghost" onclick="exportCSV()" style="justify-content:flex-start;gap:10px">
-            <span style="font-size:18px">📊</span>
-            <div style="text-align:left"><div style="font-weight:600">Export CSV</div><div style="font-size:12px;color:var(--txt3)">ส่งออกข้อมูลสำหรับ Excel</div></div>
-          </button>
         </div>
       </div>
 
-      <!-- ── อันตราย ── -->
-      <div class="card" style="border:1px solid var(--orange-b)">
-        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;color:var(--orange)">⚠️ โซนอันตราย</div>
-        <div style="display:flex;flex-direction:column;gap:.6rem">
-          <button class="btn" onclick="clearAllData()" style="justify-content:flex-start;gap:10px;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-b)">
-            <span style="font-size:18px">🗑️</span>
-            <div style="text-align:left"><div style="font-weight:600">ล้างข้อมูลทั้งหมด</div><div style="font-size:12px;opacity:.7">ลบเมนู คลัง และสูตรผสมทั้งหมด</div></div>
-          </button>
+      <!-- ── ℹ️ App Info ── -->
+      <div class="card">
+        <div style="font-weight:700;font-size:15px;margin-bottom:1rem;display:flex;align-items:center;gap:8px">ℹ️ App Info</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;text-align:center;margin-bottom:1rem">
+          <div style="padding:.85rem .5rem;background:var(--surf2);border-radius:12px">
+            <div style="font-size:22px;font-weight:700;color:var(--primary)" id="st-count-menus">0</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:2px">Menus</div>
+          </div>
+          <div style="padding:.85rem .5rem;background:var(--surf2);border-radius:12px">
+            <div style="font-size:22px;font-weight:700;color:#7C3AED" id="st-count-lib">0</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:2px">Ingredients</div>
+          </div>
+          <div style="padding:.85rem .5rem;background:var(--surf2);border-radius:12px">
+            <div style="font-size:22px;font-weight:700;color:#0891B2" id="st-count-cmp">0</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:2px">Compounds</div>
+          </div>
         </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt3);padding:.6rem .75rem;background:var(--surf2);border-radius:var(--r)">
+          <span>Version 1.2.0</span>
+          <span>BizICE Cost Manager</span>
+        </div>
+      </div>
+
+      <!-- ── ⚠️ Danger Zone (editor only) ── -->
+      <div class="card st-editor-only" style="border:1.5px solid #FECACA">
+        <div style="font-weight:700;font-size:15px;margin-bottom:.25rem;display:flex;align-items:center;gap:8px;color:#DC2626">⚠️ Danger Zone</div>
+        <div style="font-size:12px;color:var(--txt3);margin-bottom:1rem">การกระทำนี้ไม่สามารถย้อนกลับได้</div>
+        <button class="btn" onclick="clearAllData()" style="justify-content:flex-start;gap:12px;padding:.85rem 1rem;background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA;width:100%">
+          <div style="width:38px;height:38px;background:#FEE2E2;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🗑️</div>
+          <div style="text-align:left">
+            <div style="font-weight:700;font-size:14px">Clear All Data</div>
+            <div style="font-size:12px;opacity:.7">ลบเมนู คลัง และสูตรผสมทั้งหมดออกจากระบบ</div>
+          </div>
+        </button>
       </div>
 
     </div>
@@ -1170,19 +1223,60 @@ const SK_S='mx_settings_v1';
 let settings={username:'',shopname:'',green:25,yellow:35};
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem(SK_S)||'{}');settings={...settings,...s};}catch{}}
 function saveSettings(){
-  settings.username=document.getElementById('st-username')?.value||settings.username;
-  settings.shopname=document.getElementById('st-shopname')?.value||settings.shopname;
   settings.green=parseFloat(document.getElementById('st-green')?.value)||25;
   settings.yellow=parseFloat(document.getElementById('st-yellow')?.value)||35;
-  document.getElementById('st-red-preview')&&(document.getElementById('st-red-preview').textContent=settings.yellow+'%');
+  const y=settings.yellow||35;
+  ['st-red-preview','st-yellow-lbl'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=y;});
+  const g=settings.green||25;
+  const gl=document.getElementById('st-green-lbl');if(gl)gl.textContent=g;
   try{localStorage.setItem(SK_S,JSON.stringify(settings))}catch{}
 }
 function renderSettings(){
-  document.getElementById('st-username')&&(document.getElementById('st-username').value=settings.username||'');
-  document.getElementById('st-shopname')&&(document.getElementById('st-shopname').value=settings.shopname||'');
   document.getElementById('st-green')&&(document.getElementById('st-green').value=settings.green||25);
   document.getElementById('st-yellow')&&(document.getElementById('st-yellow').value=settings.yellow||35);
-  document.getElementById('st-red-preview')&&(document.getElementById('st-red-preview').textContent=(settings.yellow||35)+'%');
+  const y=settings.yellow||35, g=settings.green||25;
+  ['st-red-preview','st-yellow-lbl'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=y;});
+  const gl=document.getElementById('st-green-lbl');if(gl)gl.textContent=g;
+}
+function loadSettingsPage(){
+  renderSettings();
+  // Populate user info from Hub session
+  const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
+  if(s){
+    const nm=document.getElementById('st-name');if(nm)nm.textContent=s.name||'—';
+    const ph=document.getElementById('st-phone');if(ph)ph.textContent=s.phone||'—';
+    const rb=document.getElementById('st-role-badge');
+    if(rb){
+      const isOwner=s.role==='owner';
+      rb.textContent=isOwner?'👑 Owner':'👤 Staff';
+      rb.style.background=isOwner?'#FEF9C3':'#EFF6FF';
+      rb.style.color=isOwner?'#92400E':'#1E40AF';
+      rb.style.borderColor=isOwner?'#FDE68A':'#BFDBFE';
+    }
+    // Avatar
+    const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
+    const img=document.getElementById('st-avatar-img');
+    const emoji=document.getElementById('st-avatar-emoji');
+    if(savedAvatar&&img){img.src=savedAvatar;img.style.display='block';if(emoji)emoji.style.display='none';}
+    else{if(img)img.style.display='none';if(emoji)emoji.style.display='block';}
+  }
+  // Data counts
+  const mc=document.getElementById('st-count-menus');if(mc)mc.textContent=(typeof menus!=='undefined'?menus.length:0);
+  const lc=document.getElementById('st-count-lib');if(lc)lc.textContent=(typeof library!=='undefined'?library.length:0);
+  const cc=document.getElementById('st-count-cmp');if(cc)cc.textContent=(typeof compounds!=='undefined'?compounds.length:0);
+  // Mode badge + viewer lock
+  const mode=new URLSearchParams(location.search).get('mode')||'viewer';
+  const badge=document.getElementById('st-mode-badge');
+  if(badge)badge.textContent=mode==='editor'?'✏️ Editor — แก้ไขได้':'👁️ Viewer — ดูข้อมูลเท่านั้น';
+  // Hide editor-only sections for viewer
+  document.querySelectorAll('.st-editor-only').forEach(el=>{
+    el.style.display=mode==='editor'?'':'none';
+  });
+  // Lock Food Cost inputs for viewer
+  ['st-green','st-yellow'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.disabled=(mode!=='editor');
+  });
 }
 function clearAllData(){
   const pin = prompt('🔒 ใส่รหัส 4 หลักเพื่อยืนยันการลบข้อมูลทั้งหมด:');
@@ -1195,7 +1289,7 @@ function clearAllData(){
 }
 function getUpdatedBy(){return settings.username||'—'}
 function goTab(name){
-  if(name==='settings'){renderSettings()}
+  if(name==='settings'){loadSettingsPage()}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
