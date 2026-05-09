@@ -2,7 +2,26 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="screen-orientation" content="portrait">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+// ─── SESSION GUARD ───
+(function(){
+  const HUB = 'https://truescale-group.github.io/mixue-ice-sakon/';
+  try{
+    const s = JSON.parse(sessionStorage.getItem('bizice_session')||'null');
+    if(!s || !s.name){ window.location.replace(HUB); }
+    // viewer mode — disable edit buttons after DOM loads
+    const mode = new URLSearchParams(location.search).get('mode')||'viewer';
+    if(mode === 'viewer'){
+      document.addEventListener('DOMContentLoaded', function(){
+        document.querySelectorAll('.edit-btn,.delete-btn,.add-btn,[onclick*="openAdd"],[onclick*="delete"],[onclick*="Delete"]').forEach(function(el){
+          el.style.display='none';
+        });
+      });
+    }
+  }catch(e){ window.location.replace(HUB); }
+})();
+</script><meta name="screen-orientation" content="portrait">
 <title>Mixue Cost Manager 🧋</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
