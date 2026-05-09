@@ -8,7 +8,7 @@
 (function(){
   const HUB = 'https://truescale-group.github.io/mixue-ice-sakon/';
   try{
-    const s = JSON.parse(sessionStorage.getItem('bizice_session')||'null');
+    const s = JSON.parse(localStorage.getItem('bizice_session')||'null');
     if(!s || !s.name){ window.location.replace(HUB); }
     // viewer mode — disable edit buttons after DOM loads
     const mode = new URLSearchParams(location.search).get('mode')||'viewer';
