@@ -2177,18 +2177,26 @@ function renderMenuMetrics(){
   document.getElementById('m-count').textContent=menus.length;
   if(!menus.length){
     ['m-avg','m-min','m-max'].forEach(x=>document.getElementById(x).textContent='—');
-    document.getElementById('m-min-n').textContent='—';
-    document.getElementById('m-max-n').textContent='—';
+    ['m-min-n','m-max-n'].forEach(x=>document.getElementById(x).textContent='—');
+    renderTrafficLight([]);
     return;
   }
-  const data=menus.filter(m=>m.priceM>0).map(m=>{
-    const cost=calcCost(m.ingredients,'M');
-    return{name:m.name,pct:m.priceM>0?cost/m.priceM*100:0};
-  });
+  // ใช้ size ที่ดีที่สุดที่มี: L → M → S (ไม่กรองเฉพาะ M อีกต่อไป)
+  const data=menus.map(m=>{
+    const best=m.priceL>0?['L',m.priceL]:m.priceM>0?['M',m.priceM]:m.priceS>0?['S',m.priceS]:null;
+    if(!best)return null;
+    const [sz,price]=best;
+    const cost=calcCost(m.ingredients,sz);
+    const pct=price>0?cost/price*100:0;
+    return{name:m.name,sz,pct};
+  }).filter(Boolean);
   if(!data.length)return;
   const avg=data.reduce((s,d)=>s+d.pct,0)/data.length;
   const sorted=[...data].sort((a,b)=>a.pct-b.pct);
+  // label บอก size ที่ใช้คำนวณ
+  const szLabel=[...new Set(data.map(d=>d.sz))].join('/');
   document.getElementById('m-avg').textContent=avg.toFixed(1)+'%';
+  document.querySelector('#menu-metrics .metric:nth-child(2) .metric-lbl').textContent='% ต้นทุนเฉลี่ย ('+szLabel+')';
   document.getElementById('m-min').textContent=sorted[0].pct.toFixed(1)+'%';
   document.getElementById('m-min-n').textContent=sorted[0].name;
   document.getElementById('m-max').textContent=sorted[sorted.length-1].pct.toFixed(1)+'%';
