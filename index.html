@@ -358,18 +358,40 @@ body{
 .lib-unit-label{font-size:11px;color:var(--txt3)}
 
 /* ── COMPARE ── */
-.cmp-row{
-  display:grid;grid-template-columns:36px 180px 60px 1fr 90px 90px;
-  gap:12px;align-items:center;
-  padding:11px 14px;border-radius:var(--r);margin-bottom:5px;
-  background:var(--surf2);transition:all .15s ease;
+.cmp-card{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 12px;border-radius:var(--rl);margin-bottom:8px;
+  background:var(--surf);border:1px solid var(--border);
+  box-shadow:var(--sh);transition:all .18s ease;cursor:default;
+  overflow:hidden;
 }
-.cmp-row:hover{background:#fff;box-shadow:var(--sh);transform:translateX(2px)}
-.rank-medal{font-size:18px;text-align:center;line-height:1}
-.cmp-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cmp-bar-bg{height:8px;background:var(--surf3);border-radius:4px;overflow:hidden}
-.cmp-bar-fill{height:8px;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1)}
-.cmp-pct{font-size:15px;font-weight:700;font-family:'Prompt',sans-serif;text-align:right}
+.cmp-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:rgba(0,0,0,0.1)}
+.cmp-rank{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;flex-shrink:0;
+  background:var(--surf2);
+}
+.cmp-rank.gold{background:#FFF8E1;color:#D4A017;font-size:20px}
+.cmp-rank.silver{background:#F5F5F5;color:#8A8A8A;font-size:20px}
+.cmp-rank.bronze{background:#FFF3E0;color:#8B5E3C;font-size:20px}
+.cmp-body{flex:1;min-width:0}
+.cmp-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.cmp-name{font-size:13px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.cmp-size-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--surf2);color:var(--txt2);border:1px solid var(--border2);flex-shrink:0}
+.cmp-bar-bg{height:7px;background:var(--surf3);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.cmp-bar-fill{height:7px;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.cmp-sub{font-size:11px;color:var(--txt3)}
+.cmp-right{text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:58px}
+.cmp-pct{font-size:17px;font-weight:800;font-family:'Prompt',sans-serif;line-height:1}
+.cmp-price{font-size:10px;color:var(--txt3);white-space:nowrap}
+.cmp-list{display:flex;flex-direction:column;gap:0}
+/* Summary stats strip — compact on xs screens */
+.cmp-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.1rem}
+.cmp-stat{border-radius:var(--rl);padding:10px 10px;text-align:center}
+.cmp-stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.cmp-stat-val{font-size:17px;font-weight:800;font-family:'Prompt',sans-serif;line-height:1}
+.cmp-stat-sub{font-size:10px;margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── METRICS ── */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
@@ -629,8 +651,6 @@ body{
   .metrics{grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
   .menu-grid{grid-template-columns:1fr}
   .compound-grid{grid-template-columns:1fr}
-  .cmp-row{grid-template-columns:32px 1fr 50px 1fr;gap:8px}
-  .cmp-row>div:nth-child(5),.cmp-row>div:nth-child(6){display:none}
   .tabs .tab{padding:7px 12px;font-size:12.5px}
   .brand-sub{display:none}
   .topbar-right{gap:5px}
@@ -709,12 +729,6 @@ body{
   }
   .ci-row select:first-child{grid-column:1/-1}
 
-  /* Compare table */
-  .cmp-row{
-    grid-template-columns:28px 1fr 45px;
-    gap:6px;
-  }
-  .cmp-row>*:nth-child(n+4){display:none}
 
   /* Modal → full screen */
   .modal-overlay{padding:.5rem 0;align-items:flex-end}
@@ -2457,10 +2471,10 @@ function renderCompare(){
   const el=document.getElementById('compare-content');
   const allData=[];
   menus.forEach(m=>{
-    [['U',m.priceS],['M',m.priceM],['L',m.priceL]].filter(([,p])=>p>0).forEach(([sz,price])=>{
+    [['S','S',m.priceS],['M','M',m.priceM],['L','L',m.priceL]].filter(([,,p])=>p>0).forEach(([sz,label,price])=>{
       const cost=calcCost(m.ingredients,sz);
       const pct=price>0?cost/price*100:0;
-      allData.push({name:m.name,sz,price,cost,pct,gp:price-cost});
+      allData.push({name:m.name,sz,label,price,cost,pct,gp:price-cost});
     });
   });
   if(!allData.length){
@@ -2470,34 +2484,54 @@ function renderCompare(){
   allData.sort((a,b)=>a.pct-b.pct);
   const maxPct=Math.max(...allData.map(d=>d.pct),60);
 
-  let html=`<div style="margin-bottom:1rem">
-    <div style="display:grid;grid-template-columns:36px 180px 60px 1fr 90px 90px;gap:12px;padding:0 14px;margin-bottom:10px">
-      <span></span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">เมนู</span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">Size</span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">% ต้นทุน</span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;text-align:right">ราคาขาย</span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;text-align:right">สถานะ</span>
-    </div>`;
+  // Summary stats
+  const avg=(allData.reduce((s,d)=>s+d.pct,0)/allData.length);
+  const best=allData[0];
+  const worst=allData[allData.length-1];
+
+  const rankCls=['gold','silver','bronze'];
+  const rankEmoji=['🥇','🥈','🥉'];
+
+  let html=`
+  <div class="cmp-summary">
+    <div class="cmp-stat" style="background:var(--green-bg);border:1px solid var(--green-b)">
+      <div class="cmp-stat-lbl" style="color:var(--green)">ดีที่สุด</div>
+      <div class="cmp-stat-val" style="color:var(--green)">${best.pct.toFixed(1)}%</div>
+      <div class="cmp-stat-sub">${best.name}</div>
+    </div>
+    <div class="cmp-stat" style="background:var(--blue-bg);border:1px solid #BFDBFE">
+      <div class="cmp-stat-lbl" style="color:var(--blue)">เฉลี่ย</div>
+      <div class="cmp-stat-val" style="color:var(--blue)">${avg.toFixed(1)}%</div>
+      <div class="cmp-stat-sub">${allData.length} เมนู</div>
+    </div>
+    <div class="cmp-stat" style="background:var(--red-p);border:1px solid var(--red-p2)">
+      <div class="cmp-stat-lbl" style="color:var(--red)">แพงสุด</div>
+      <div class="cmp-stat-val" style="color:var(--red)">${worst.pct.toFixed(1)}%</div>
+      <div class="cmp-stat-sub">${worst.name}</div>
+    </div>
+  </div>
+  <div class="cmp-list">`;
 
   allData.forEach((d,i)=>{
     const barW=(d.pct/maxPct*100).toFixed(1);
     const col=gpColor(d.pct);
-    const medal=i<3?MEDALS[i]:`<span style="font-size:12px;color:var(--txt3);font-weight:600">${i+1}</span>`;
-    const pkgNote='';
-    html+=`<div class="cmp-row">
-      <div class="rank-medal">${medal}</div>
-      <div class="cmp-name" title="${d.name}">${d.name}</div>
-      <span class="cat-badge" style="background:var(--surf3);color:var(--txt2);border-color:var(--border2);font-size:11px">${d.sz}</span>
-      <div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="cmp-bar-bg" style="flex:1"><div class="cmp-bar-fill" style="width:${barW}%;background:${col}"></div></div>
-          <span class="cmp-pct" style="color:${col}">${d.pct.toFixed(1)}%</span>
+    const rankClass=i<3?rankCls[i]:'';
+    const rankContent=i<3?rankEmoji[i]:`<span style="font-size:12px;font-weight:700;color:var(--txt3)">${i+1}</span>`;
+    html+=`<div class="cmp-card">
+      <div class="cmp-rank ${rankClass}">${rankContent}</div>
+      <div class="cmp-body">
+        <div class="cmp-top">
+          <span class="cmp-name">${d.name}</span>
+          <span class="cmp-size-badge">แก้ว ${d.label}</span>
+          <span class="badge ${gpCls(d.pct)}" style="flex-shrink:0">${gpLbl(d.pct)}</span>
         </div>
-        <div style="font-size:11px;color:var(--txt3);margin-top:2px">ต้นทุน ${d.cost.toFixed(2)} ฿${pkgNote} · กำไร <span style="color:var(--green);font-weight:600">${d.gp.toFixed(2)} ฿</span></div>
+        <div class="cmp-bar-bg"><div class="cmp-bar-fill" style="width:${barW}%;background:${col}"></div></div>
+        <div class="cmp-sub">ต้นทุน <strong>${d.cost.toFixed(2)} ฿</strong> · กำไร <span style="color:var(--green);font-weight:700">${d.gp.toFixed(2)} ฿</span></div>
       </div>
-      <div style="text-align:right;font-size:13px;font-weight:600">${d.price} ฿</div>
-      <div style="text-align:right"><span class="badge ${gpCls(d.pct)}">${gpLbl(d.pct)}</span></div>
+      <div class="cmp-right">
+        <span class="cmp-pct" style="color:${col}">${d.pct.toFixed(1)}%</span>
+        <span class="cmp-price">ขาย ${d.price} ฿</span>
+      </div>
     </div>`;
   });
   html+='</div>';
