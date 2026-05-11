@@ -302,6 +302,45 @@ body{
   border-top:1px solid var(--border);
 }
 .mc-actions{display:flex;gap:4px}
+.btn-view{padding:5px 11px;border:1.5px solid var(--border2);background:var(--surf);border-radius:8px;font-size:12px;font-weight:700;color:var(--txt2);cursor:pointer;font-family:'Sarabun',sans-serif;transition:all .15s}
+.btn-view:hover{background:var(--surf2);border-color:var(--txt3)}
+
+/* ── MENU VIEW MODAL ── */
+.view-overlay{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.view-overlay.hidden{display:none}
+.view-box{background:var(--surf);border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surf);z-index:2}
+.view-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
+.view-body{padding:1.25rem 1.5rem 2rem}
+.view-size-block{background:var(--surf2);border-radius:12px;padding:1rem;margin-bottom:.85rem}
+.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.view-size-tag{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--txt)}
+.view-size-price{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--red)}
+.view-ingr-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--border)}
+.view-ingr-row:last-child{border-bottom:none}
+.view-ingr-name{color:var(--txt2);font-weight:500}
+.view-ingr-cost{color:var(--txt);font-weight:700;font-family:'Prompt',sans-serif;white-space:nowrap;margin-left:8px}
+.view-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:.65rem;padding-top:.65rem;border-top:2px solid var(--border)}
+.view-gp-bar{height:8px;border-radius:4px;background:var(--border);margin:.5rem 0;overflow:hidden}
+.view-gp-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.view-edit-btn{width:100%;margin-top:1rem;padding:.7rem;border:none;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+/* Tablet: centered floating card */
+@media(min-width:640px){
+  .view-overlay{align-items:center;padding:1.5rem}
+  .view-box{border-radius:20px;max-width:600px;max-height:88dvh;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+}
+/* Desktop: wider dialog + 2-column size grid */
+@media(min-width:1024px){
+  .view-overlay{padding:2rem}
+  .view-box{max-width:840px;max-height:85dvh}
+  .view-header{padding:1.5rem 2rem 1.1rem}
+  .view-title{font-size:22px}
+  .view-body{padding:1.5rem 2rem 2.5rem}
+  .view-sizes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1rem}
+  .view-size-block{margin-bottom:0}
+  .view-ingr-row{font-size:14px;padding:5px 0}
+  .view-edit-btn{max-width:320px;margin:1.25rem auto 0;display:block;padding:.85rem}
+}
 
 /* ── INGREDIENT LIBRARY ── */
 .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem}
@@ -1037,6 +1076,20 @@ body{
 </div>
 
 <!-- ═══════════════ MODAL — MENU ═══════════════ -->
+<!-- MENU VIEW MODAL -->
+<div id="view-modal" class="view-overlay hidden" onclick="if(event.target===this)closeViewMenu()">
+  <div class="view-box">
+    <div class="view-header">
+      <div>
+        <div class="view-title" id="view-title">—</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px" id="view-meta">—</div>
+      </div>
+      <button onclick="closeViewMenu()" style="background:var(--surf2);border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div class="view-body" id="view-body"></div>
+  </div>
+</div>
+
 <div id="modal-bg" class="modal-overlay" onclick="if(event.target===this)closeModal()">
 <div class="modal-box">
   <div class="modal-header">
@@ -1697,6 +1750,70 @@ function useBdResult(){
 // ─────────────────────────────────────────
 // MENU FORM
 // ─────────────────────────────────────────
+function openViewMenu(id){
+  const m = menus.find(x => x.id === id); if(!m) return;
+  const emo = menuEmoji(m.cat);
+  document.getElementById('view-title').textContent = emo + ' ' + m.name;
+  document.getElementById('view-meta').textContent = m.cat + ' · ' + m.ingredients.length + ' วัตถุดิบ · อัพเดต ' + m.updatedAt;
+
+  const sizes = [['U','S',m.priceS],['M','M',m.priceM],['L','L',m.priceL]].filter(([,,p])=>p>0);
+  const maxPct = Math.max(...sizes.map(([sz,,p])=>{ const c=calcCost(m.ingredients,sz); return p>0?c/p*100:0; }), 0.1);
+
+  document.getElementById('view-body').innerHTML = '<div class="view-sizes-grid">' + sizes.map(([sz,label,price]) => {
+    const cost = calcCost(m.ingredients, sz);
+    const pct  = price > 0 ? cost/price*100 : 0;
+    const col  = gpColor(pct);
+    const barW = Math.min((pct / Math.max(maxPct,1)) * 100, 100).toFixed(1);
+    const gp   = 100 - pct;
+
+    // Ingredient breakdown for this size
+    const ingrRows = m.ingredients.filter(i => {
+      const st = i.sizeTarget || 'all';
+      if(st === 'all') return true;
+      if(st === 'U') return sz === 'U' || sz === 'S';
+      if(st === 'M') return sz === 'M' || sz === 'L';
+      if(st === 'L') return sz === 'L';
+      return true;
+    }).map(i => {
+      const st = i.sizeTarget || 'all';
+      let q = 0;
+      if(st === 'all'){
+        q = (sz==='U'||sz==='S') ? (i.qtyS||0) : sz==='M' ? (i.qtyM||0) : (i.qtyM||0)*1.25;
+      } else if(st==='U'){ q = (sz==='U'||sz==='S') ? (i.qty||0) : 0; }
+      else if(st==='M'){ q = sz==='M' ? (i.qty||0) : sz==='L' ? (i.qty||0)*1.25 : 0; }
+      else if(st==='L'){ q = sz==='L' ? (i.qty||0) : 0; }
+      const lineCost = q * (i.pricePerUnit||0);
+      if(lineCost === 0) return '';
+      return `<div class="view-ingr-row">
+        <span class="view-ingr-name">${i.name} <span style="color:var(--txt3);font-size:11px">${q.toFixed(2)} ${i.unit||''}</span></span>
+        <span class="view-ingr-cost">${lineCost.toFixed(2)} ฿</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="view-size-block">
+      <div class="view-size-header">
+        <span class="view-size-tag">แก้ว ${label}</span>
+        <span class="view-size-price">ขาย ${price} ฿</span>
+      </div>
+      ${ingrRows}
+      <div class="view-total-row">
+        <span style="font-size:13px;font-weight:700;color:var(--txt2)">ต้นทุนรวม</span>
+        <span style="font-family:'Prompt',sans-serif;font-weight:800;font-size:15px;color:${col}">${cost.toFixed(2)} ฿</span>
+      </div>
+      <div class="view-gp-bar"><div class="view-gp-fill" style="width:${barW}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700">
+        <span style="color:${col}">Cost ratio ${pct.toFixed(1)}%</span>
+        <span style="color:#15803D">GP ${gp.toFixed(1)}%</span>
+      </div>
+    </div>`;
+  }).join('') + '</div>' + `<button class="view-edit-btn" onclick="closeViewMenu();openAddMenu('${m.id}')">✏️ แก้ไขเมนูนี้</button>`;
+
+  document.getElementById('view-modal').classList.remove('hidden');
+}
+function closeViewMenu(){
+  document.getElementById('view-modal').classList.add('hidden');
+}
+
 function openAddMenu(id=null){
   editMenuId=id;mIngrCount=0;
   document.getElementById('m-ingr-container').innerHTML='';
@@ -2023,6 +2140,7 @@ function renderMenus(){
           ${m.ingredients.length>3?`<span style="font-size:10px;color:var(--txt3)">+${m.ingredients.length-3}</span>`:''}
         </div>
         <div class="mc-actions">
+          <button class="btn-view" onclick="openViewMenu('${m.id}')">👁 ดู</button>
           <button class="btn btn-ghost btn-sm" onclick="openAddMenu('${m.id}')">✏ แก้ไข</button>
           <button class="btn-del" onclick="deleteMenu('${m.id}')">🗑</button>
         </div>
