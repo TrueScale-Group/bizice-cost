@@ -38,7 +38,7 @@
 :root{
   --red:#E31E24;--red-d:#B01519;--red-p:#FFF0F0;--red-p2:#FFE4E5;
   --gold:#F5C518;
-  --bg:#F2F0ED;--surf:#FFFFFF;--surf2:#F0EEE9;--surf3:#E6E3DC;
+  --bg:#F2F2F7;--surf:#FFFFFF;--surf2:#F0EEE9;--surf3:#E6E3DC;
   --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
   --txt:#1A1A1A;--txt2:#555;--txt3:#9A9A9A;
   --green:#15803D;--green-bg:#F0FDF4;--green-b:#BBF7D0;
@@ -631,18 +631,6 @@ body{
 }
 .ci-head span{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em}
 
-/* Portrait lock overlay */
-@media(orientation:landscape) and (max-width:900px){
-  body::before{
-    content:'🔄 กรุณาหมุนหน้าจอเป็นแนวตั้ง';
-    position:fixed;inset:0;z-index:9999;
-    background:rgba(0,0,0,0.92);color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;font-family:"Sarabun",sans-serif;
-    text-align:center;padding:2rem;
-  }
-}
-
 /* ══════════════════════════════════════
    RESPONSIVE — Tablet (≤900px)
 ══════════════════════════════════════ */
@@ -759,12 +747,133 @@ body{
     padding:.5rem 1rem;gap:8px;z-index:150;
   }
   .backup-bar .btn{flex:1;justify-content:center;font-size:12px;padding:8px}
+
+  /* iOS-style bottom tab bar on mobile */
+  .topbar{
+    position:fixed;bottom:0;top:auto;left:0;right:0;
+    flex-direction:column;border-bottom:none;
+    border-top:1px solid var(--border);
+    padding:0;min-height:auto;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .topbar>.back-btn,.topbar>.brand{display:none}
+  .topbar-right{
+    width:100%;margin-left:0;padding:.4rem .5rem .2rem;
+  }
+  .tabs{width:100%;border-radius:0;background:transparent;padding:0;gap:0}
+  .tab{flex:1;flex-direction:column;gap:2px;padding:6px 4px;border-radius:8px;font-size:10px}
+  .tab-icon{font-size:20px}
+  .tab .tab-text{display:block!important;font-size:10px;font-weight:500}
+  .scroll-area{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+}
+
+/* ── SIDEBAR — Desktop ≥1024px ── */
+.sidebar{display:none}
+
+@media(min-width:1024px){
+  body{flex-direction:row;overflow:hidden}
+  .sidebar{
+    display:flex;flex-direction:column;
+    width:252px;flex-shrink:0;
+    background:#fff;
+    border-right:1px solid var(--border);
+    height:100vh;position:sticky;top:0;
+    box-shadow:1px 0 0 var(--border);
+    z-index:100;
+  }
+  .topbar{display:none}
+  .scroll-area{flex:1;height:100vh;overflow-y:auto}
+}
+.sb-brand{
+  display:flex;align-items:center;gap:11px;
+  padding:1.25rem 1.1rem 1rem;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-nav{
+  flex:1;padding:.75rem .65rem;
+  display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+}
+.snav-btn{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 13px;border-radius:10px;
+  border:none;background:none;cursor:pointer;
+  font-family:'Sarabun',sans-serif;font-size:14px;font-weight:500;
+  color:var(--txt2);transition:all .17s ease;
+  text-align:left;width:100%;
+}
+.snav-btn:hover{background:var(--surf2);color:var(--txt)}
+.snav-btn.active{background:var(--red-p);color:var(--red);font-weight:700}
+.snav-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.sb-footer{
+  padding:.75rem .9rem;border-top:1px solid var(--border);flex-shrink:0;
+}
+.sb-user{
+  display:flex;align-items:center;gap:10px;
+  padding:.25rem .25rem .65rem;
+}
+.sb-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#E31E24,#9B0000);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;overflow:hidden;
+}
+.sb-uname{font-size:13px;font-weight:700;color:var(--txt);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-urole{font-size:11px;color:var(--txt3);margin-top:1px}
+.sb-logout{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:8px;background:var(--surf2);
+  border:1px solid var(--border2);border-radius:var(--r);
+  font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;
+  color:var(--txt2);cursor:pointer;transition:all .17s;
+}
+.sb-logout:hover{background:var(--red-p);color:var(--red);border-color:#FECACA}
+
+/* Desktop metrics → compact horizontal bar */
+@media(min-width:1024px){
+  .metrics{
+    grid-template-columns:repeat(4,1fr);
+    gap:.65rem;margin-bottom:1.1rem;
+  }
+  .metric{padding:.9rem 1rem}
+  .metric-val{font-size:22px}
+  .metric-lbl{font-size:10px}
 }
 </style>
 </head>
 <body>
 
 <!-- ═══ LOGIN OVERLAY ═══ -->
+
+<!-- SIDEBAR (Desktop ≥1024px) -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="brand-icon" style="width:38px;height:38px;background:linear-gradient(135deg,#E31E24,#B01519);border-radius:11px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:var(--sh-red);flex-shrink:0">
+      <span style="font-size:22px">🧋</span>
+    </div>
+    <div style="min-width:0">
+      <div class="brand-name" style="font-size:14px;letter-spacing:-.2px">Cost Manager</div>
+      <div style="font-size:10.5px;color:var(--txt3);margin-top:1px">BizICE · Mixue</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <button class="snav-btn active" onclick="goTab('menu')" data-tab="menu"><span class="snav-icon">🍦</span>เมนู</button>
+    <button class="snav-btn" onclick="goTab('library')" data-tab="library"><span class="snav-icon">📦</span>คลังวัตถุดิบ</button>
+    <button class="snav-btn" onclick="goTab('compound')" data-tab="compound"><span class="snav-icon">🧪</span>สูตรผสม</button>
+    <button class="snav-btn" onclick="goTab('compare')" data-tab="compare"><span class="snav-icon">📊</span>เปรียบเทียบ</button>
+    <button class="snav-btn" onclick="goTab('settings')" data-tab="settings"><span class="snav-icon">⚙️</span>ตั้งค่า</button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">👤</div>
+      <div style="min-width:0;flex:1">
+        <div class="sb-uname" id="sb-name">—</div>
+        <div class="sb-urole" id="sb-role">—</div>
+      </div>
+    </div>
+    <button class="sb-logout" onclick="goHome()">🏠 ออกจากระบบ</button>
+  </div>
+</div>
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -1442,13 +1551,35 @@ function goTab(name){
   if(name==='settings'){loadSettingsPage()}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   const idx=TAB_NAMES.indexOf(name);
   if(idx>=0)document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.querySelectorAll(`.snav-btn[data-tab="${name}"]`).forEach(b=>b.classList.add('active'));
   if(name==='menu'){renderMenus();renderMenuMetrics()}
   if(name==='library'){renderLibrary()}
   if(name==='compound')renderCompounds();
   if(name==='compare')renderCompare();
+}
+
+function initSidebar(){
+  const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
+  if(!s)return;
+  const nm=document.getElementById('sb-name');if(nm)nm.textContent=s.name||'—';
+  const role=document.getElementById('sb-role');
+  if(role){
+    const isOwner=s.role==='owner';
+    role.textContent=isOwner?'👑 Owner':'👤 Staff';
+  }
+  const av=document.getElementById('sb-avatar');
+  if(av){
+    const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
+    if(savedAvatar){
+      av.innerHTML=`<img src="${savedAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      av.textContent=s.name?s.name[0].toUpperCase():'👤';
+    }
+  }
 }
 
 
@@ -2622,7 +2753,7 @@ function importJSON(event){
 (async()=>{
   // show loading
   document.getElementById('menu-list').innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">⏳</span><div class="empty-title">กำลังโหลดข้อมูล...</div></div>';
-  loadSettings();await load();
+  loadSettings();initSidebar();await load();
   renderMenus();renderMenuMetrics();
 })();
 </script>
