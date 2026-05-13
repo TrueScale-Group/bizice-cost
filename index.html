@@ -89,23 +89,8 @@ body{
   .scroll-area{padding-top:58px}
 }
 
-/* Mobile user bar */
-.mobile-user-bar{
-  display:none;
-  align-items:center;gap:10px;
-  padding:.55rem 1rem;
-  background:rgba(255,255,255,0.97);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border-top:1px solid var(--border);
-}
 @media(max-width:640px){
-  .mobile-user-bar{
-    display:flex;
-    position:fixed;
-    bottom:calc(58px + env(safe-area-inset-bottom));
-    left:0;right:0;z-index:185;
-  }
-  .scroll-area{padding-bottom:calc(118px + env(safe-area-inset-bottom))}
+  .scroll-area{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
 }
 .mub-avatar{
   width:36px;height:36px;border-radius:50%;flex-shrink:0;
@@ -1172,26 +1157,16 @@ body{
 
 <!-- ═══ LOGIN OVERLAY ═══ -->
 
-<!-- MOBILE TOP BAR (back btn, mobile only) -->
+<!-- MOBILE TOP BAR (back btn + user info, mobile only) -->
 <div class="mobile-top-bar" id="mobile-top-bar">
   <a class="back-btn" href="#" onclick="goHome();return false;">กลับหน้าหลัก</a>
-  <div style="display:flex;align-items:center;gap:8px">
-    <div class="mub-avatar" id="mtb-avatar" style="width:30px;height:30px;font-size:13px">👤</div>
-    <div style="line-height:1.2">
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <div style="text-align:right;line-height:1.3">
       <div style="font-size:12.5px;font-weight:700;color:var(--txt)" id="mtb-name">—</div>
       <div style="font-size:10.5px;color:var(--txt3)" id="mtb-role">—</div>
     </div>
+    <div class="mub-avatar" id="mtb-avatar" style="width:32px;height:32px;font-size:13px;flex-shrink:0">👤</div>
   </div>
-</div>
-
-<!-- MOBILE USER BAR (above tab bar, mobile only) -->
-<div class="mobile-user-bar" id="mobile-user-bar">
-  <div class="mub-avatar" id="mub-avatar">👤</div>
-  <div style="min-width:0">
-    <div class="mub-name" id="mub-name">—</div>
-    <div class="mub-role" id="mub-role">—</div>
-  </div>
-  <div class="mub-date" id="mub-date">—</div>
 </div>
 
 <!-- SIDEBAR (Desktop ≥1024px) -->
@@ -2062,27 +2037,22 @@ function applyAvatarEl(el, s){
 function initSidebar(){
   const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
   if(!s)return;
-  // Mobile top bar
-  const mtbN=document.getElementById('mtb-name');if(mtbN)mtbN.textContent=s.name||'—';
-  const mtbR=document.getElementById('mtb-role');if(mtbR)mtbR.textContent=s.role==='owner'?'👑 Owner':'👤 Staff';
+  // Mobile top bar — ชื่อ + role + วันที่
+  const now=new Date();
+  const dayTh=['อา','จ','อ','พ','พฤ','ศ','ส'][now.getDay()];
+  const monthTh=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()];
+  const dateStr=`${dayTh}. ${now.getDate()} ${monthTh}`;
+  const isOwner=s.role==='owner';
+  const roleLabel=isOwner?'👑 Owner':'👤 Staff';
+  const mtbN=document.getElementById('mtb-name');
+  if(mtbN)mtbN.textContent=s.name||'—';
+  const mtbR=document.getElementById('mtb-role');
+  if(mtbR)mtbR.textContent=`${roleLabel} · ${dateStr}`;
   const mtbAv=document.getElementById('mtb-avatar');
-  if(mtbAv)applyAvatarEl(mtbAv,s);
-  // Mobile user bar
-  const mubN=document.getElementById('mub-name');if(mubN)mubN.textContent=s.name||'—';
-  const mubR=document.getElementById('mub-role');if(mubR)mubR.textContent=s.role==='owner'?'👑 Owner':'👤 Staff';
-  const mubAv=document.getElementById('mub-avatar');
-  if(mubAv){
-    const roleColor=s.role==='owner'?'linear-gradient(135deg,#D97706,#92400E)':'linear-gradient(135deg,#1D4ED8,#1e40af)';
-    mubAv.style.background=roleColor;
-    applyAvatarEl(mubAv,s);
-  }
-  // Date: "จ. 13 พ.ค."
-  const mubD=document.getElementById('mub-date');
-  if(mubD){
-    const now=new Date();
-    const dayTh=['อา','จ','อ','พ','พฤ','ศ','ส'][now.getDay()];
-    const monthTh=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()];
-    mubD.textContent=`${dayTh}. ${now.getDate()} ${monthTh}`;
+  if(mtbAv){
+    const roleColor=isOwner?'linear-gradient(135deg,#D97706,#92400E)':'linear-gradient(135deg,#1D4ED8,#1e40af)';
+    mtbAv.style.background=roleColor;
+    applyAvatarEl(mtbAv,s);
   }
   const nm=document.getElementById('sb-name');if(nm)nm.textContent=s.name||'—';
   const role=document.getElementById('sb-role');
