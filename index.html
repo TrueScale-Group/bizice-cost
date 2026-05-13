@@ -882,6 +882,59 @@ body{
   .add-tab-mobile{display:inline-flex!important}
 }
 
+/* ── V3.4 — Compound Enhancements ── */
+/* Yield pill */
+.yield-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#ECFDF5;color:#15803D;border:1px solid #BBF7D0;
+  border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;
+}
+.yield-pill.warn{background:#FFF7ED;color:#C2410C;border-color:#FED7AA}
+/* Compound card dual cost */
+.cp-cost-dual{
+  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
+  margin-bottom:.75rem;
+}
+.cp-cost-box{
+  border-radius:12px;padding:.7rem .9rem;
+}
+.cp-cost-box-label{font-size:10.5px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.cp-cost-box-val{font-size:17px;font-weight:800;font-family:'Prompt',sans-serif;line-height:1.1}
+.cp-cost-box-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+/* EOD Waste inline calculator */
+.eod-calc{
+  background:#FFF0F0;border:1px dashed rgba(227,30,36,.25);
+  border-radius:12px;padding:.75rem 1rem;margin-top:.6rem;
+}
+.eod-calc-title{font-size:12px;font-weight:700;color:var(--red);margin-bottom:.5rem}
+.eod-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eod-input{
+  flex:1;min-width:80px;max-width:130px;
+  padding:6px 10px;border-radius:8px;border:1.5px solid rgba(227,30,36,.2);
+  font-size:13px;font-family:'Sarabun',sans-serif;background:#fff;outline:none;
+}
+.eod-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(227,30,36,.08)}
+.eod-result{
+  font-size:13.5px;font-weight:700;color:var(--red);
+  background:#fff;border-radius:8px;padding:5px 10px;border:1px solid rgba(227,30,36,.15);
+  white-space:nowrap;
+}
+/* SOP notes area */
+.sop-area{
+  width:100%;padding:9px 12px;font-size:13.5px;
+  font-family:'Sarabun',sans-serif;background:var(--surf2);
+  border:1.5px solid transparent;border-radius:var(--r);
+  color:var(--txt);resize:vertical;min-height:72px;outline:none;
+  transition:all .18s;
+}
+.sop-area:focus{background:#fff;border-color:var(--purple);box-shadow:0 0 0 3px rgba(109,40,217,.09)}
+/* SOP display on card */
+.sop-badge{
+  font-size:11.5px;color:var(--txt2);background:var(--surf2);
+  border-radius:8px;padding:6px 10px;margin-top:6px;
+  border-left:3px solid var(--purple);line-height:1.5;white-space:pre-wrap;
+}
+
 /* ── V3.3 — Library Advanced ── */
 /* Pin star button */
 .lib-pin-btn{
@@ -1616,6 +1669,31 @@ body{
       </div>
     </div>
 
+    <!-- V3.4 — Yield + Serving Unit row -->
+    <div class="g2" style="margin-bottom:1rem">
+      <div>
+        <label class="flabel">🌿 % Yield <span style="font-weight:400;color:var(--txt3)">(สูญเสียระหว่างผสม)</span></label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input class="finput" type="number" id="cp-yield" placeholder="100" min="1" max="100" step="0.1" value="100" oninput="calcCompoundLive()" style="flex:1">
+          <span style="font-size:13px;color:var(--txt2);font-weight:600">%</span>
+        </div>
+        <div id="cp-yield-hint" style="font-size:11px;color:var(--txt3);margin-top:4px">100% = ไม่มีการสูญเสีย</div>
+      </div>
+      <div>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:6px">
+          <input type="checkbox" id="cp-serve-enabled" onchange="toggleCpServeUnit()" style="width:15px;height:15px">
+          🥄 หน่วยตัก/ปั๊ม (หน้าร้าน)
+        </label>
+        <div id="cp-serve-inputs" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <input class="finput" id="cp-serve-name" placeholder="เช่น ตัก" oninput="calcCompoundLive()">
+            <input class="finput" type="number" id="cp-serve-qty" placeholder="ปริมาณ/ตัก" min="0" step="any" oninput="calcCompoundLive()">
+          </div>
+          <div id="cp-serve-result" style="display:none;margin-top:5px;background:var(--purple-bg);color:var(--purple);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-label" style="margin-bottom:.6rem">วัตถุดิบในสูตร</div>
     <div class="ci-head">
       <span>หมวด</span><span>วัตถุดิบ</span><span>ปริมาณ</span><span>หน่วย</span><span>฿/หน่วย</span><span></span>
@@ -1627,6 +1705,12 @@ body{
       <div class="cost-panel-title">ต้นทุนสูตรผสม (Live)</div>
       <div class="cost-panel-main" id="cp-cost-main">0.0000 ฿/<span id="cp-cost-unit">หน่วย</span></div>
       <div class="cost-panel-sub" id="cp-cost-sub">ต้นทุนรวม 0.00 ฿ ÷ ? หน่วย</div>
+    </div>
+
+    <!-- V3.4 — SOP Notes -->
+    <div style="margin-top:1rem">
+      <label class="flabel">📋 SOP / วิธีผสม <span style="font-weight:400;color:var(--txt3)">(ไม่บังคับ)</span></label>
+      <textarea class="sop-area" id="cp-sop" placeholder="เช่น ต้มน้ำให้เดือด ใส่แยม 200g คนจนละลาย ทิ้งไว้ให้เย็น..."></textarea>
     </div>
   </div>
   <div class="modal-footer" style="background:var(--purple-bg)">
@@ -3013,11 +3097,27 @@ function openAddCompound(id=null){
   document.getElementById('cp-ingr-container').innerHTML='';
   document.getElementById('compound-modal-title').textContent=id?'แก้ไขสูตรผสม':'เพิ่มสูตรผสม';
 
+  // reset V3.4 fields
+  document.getElementById('cp-yield').value='100';
+  document.getElementById('cp-sop').value='';
+  document.getElementById('cp-serve-enabled').checked=false;
+  document.getElementById('cp-serve-inputs').style.display='none';
+  document.getElementById('cp-serve-name').value='';
+  document.getElementById('cp-serve-qty').value='';
+  if(document.getElementById('cp-serve-result'))document.getElementById('cp-serve-result').style.display='none';
   if(id){
     const c=compounds.find(x=>x.id===id);if(!c)return;
     document.getElementById('cp-name').value=c.name;
     document.getElementById('cp-output-qty').value=c.outputQty;
     document.getElementById('cp-output-unit').value=c.outputUnit||'';
+    if(c.yield)document.getElementById('cp-yield').value=c.yield;
+    if(c.sop)document.getElementById('cp-sop').value=c.sop;
+    if(c.servingUnit){
+      document.getElementById('cp-serve-enabled').checked=true;
+      document.getElementById('cp-serve-inputs').style.display='block';
+      document.getElementById('cp-serve-name').value=c.servingUnit.name||'';
+      document.getElementById('cp-serve-qty').value=c.servingUnit.qty||'';
+    }
     c.ingredients.forEach(ing=>addCpIngrRow(ing));
   } else {
     ['cp-name','cp-output-qty','cp-output-unit'].forEach(x=>document.getElementById(x).value='');
@@ -3119,6 +3219,7 @@ function getCpIngredients(){
 function calcCompoundLive(){
   const outputQty=parseFloat(document.getElementById('cp-output-qty')?.value)||0;
   const outputUnit=(document.getElementById('cp-output-unit')?.value||'').trim()||'หน่วย';
+  const yieldPct=Math.min(100,Math.max(1,parseFloat(document.getElementById('cp-yield')?.value)||100));
   // sum from all cpr rows using live badge data
   let totalCost=0;
   document.querySelectorAll('[id^="cpr-"]').forEach(row=>{
@@ -3127,9 +3228,34 @@ function calcCompoundLive(){
     const price=parseFloat(document.getElementById('cpu-'+id)?.dataset?.price||0);
     totalCost+=qty*price;
   });
-  const cpo=outputQty>0?totalCost/outputQty:0;
+  // effective output after yield loss
+  const effectiveQty=outputQty*(yieldPct/100);
+  const cpo=effectiveQty>0?totalCost/effectiveQty:0;
   document.getElementById('cp-cost-main').innerHTML=cpo.toFixed(4)+' ฿/<span id="cp-cost-unit">'+outputUnit+'</span>';
-  document.getElementById('cp-cost-sub').textContent=`ต้นทุนรวม ${totalCost.toFixed(2)} ฿ ÷ ${outputQty||'?'} ${outputUnit}`;
+  const yieldNote=yieldPct<100?` (Yield ${yieldPct}% → ได้จริง ${effectiveQty.toFixed(0)} ${outputUnit})`:'';
+  document.getElementById('cp-cost-sub').textContent=`ต้นทุนรวม ${totalCost.toFixed(2)} ฿ ÷ ${effectiveQty>0?effectiveQty.toFixed(0):'?'} ${outputUnit}${yieldNote}`;
+  // yield hint
+  const hint=document.getElementById('cp-yield-hint');
+  if(hint){
+    if(yieldPct<100){hint.innerHTML=`<span style="color:#C2410C;font-weight:700">⚠ สูญเสีย ${(100-yieldPct).toFixed(1)}% → ราคา/หน่วยสูงขึ้น</span>`}
+    else{hint.textContent='100% = ไม่มีการสูญเสีย';}
+  }
+  // serving unit calc
+  const serveEnabled=document.getElementById('cp-serve-enabled')?.checked;
+  if(serveEnabled&&cpo>0){
+    const serveQty=parseFloat(document.getElementById('cp-serve-qty')?.value)||0;
+    const serveName=document.getElementById('cp-serve-name')?.value.trim()||'ตัก';
+    const serveRes=document.getElementById('cp-serve-result');
+    if(serveQty>0&&serveRes){
+      serveRes.style.display='block';
+      serveRes.textContent=`🥄 1 ${serveName} (${serveQty} ${outputUnit}) = ${fmtPrice(cpo*serveQty)} ฿`;
+    } else if(serveRes){serveRes.style.display='none';}
+  }
+}
+function toggleCpServeUnit(){
+  const en=document.getElementById('cp-serve-enabled').checked;
+  document.getElementById('cp-serve-inputs').style.display=en?'block':'none';
+  if(en)calcCompoundLive();
 }
 
 function saveCompound(){
@@ -3140,16 +3266,28 @@ function saveCompound(){
   const ingr=getCpIngredients();
   if(!ingr.length){toast('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 อย่าง','⚠');return}
 
+  const yieldPct=Math.min(100,Math.max(1,parseFloat(document.getElementById('cp-yield').value)||100));
+  const sop=document.getElementById('cp-sop').value.trim();
+  const serveEnabled=document.getElementById('cp-serve-enabled').checked;
+  const cpServeName=document.getElementById('cp-serve-name').value.trim()||'ตัก';
+  const cpServeQty=parseFloat(document.getElementById('cp-serve-qty').value)||0;
+  const outputUnit=document.getElementById('cp-output-unit').value.trim()||'หน่วย';
+  const effectiveQty=outputQty*(yieldPct/100);
+  const totalRawCost=ingr.reduce((s,ing)=>s+ing.qty*ing.unitPrice,0);
+  const costPerOutputUnit=effectiveQty>0?totalRawCost/effectiveQty:0;
+  const servingUnit=serveEnabled&&cpServeQty>0?{name:cpServeName,qty:cpServeQty,costPerServe:costPerOutputUnit*cpServeQty}:null;
   const c={
     id:editCompoundId||Date.now().toString(),
     name,
     outputQty,
-    outputUnit:document.getElementById('cp-output-unit').value.trim()||'หน่วย',
+    outputUnit,
+    yield:yieldPct,
+    sop:sop||undefined,
+    servingUnit:servingUnit||undefined,
     ingredients:ingr,
+    costPerOutputUnit,
     updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
   };
-  const calc=calcCompound(c);
-  c.costPerOutputUnit=calc.costPerOutputUnit;
 
   if(editCompoundId){
     const i=compounds.findIndex(x=>x.id===editCompoundId);
@@ -3159,6 +3297,20 @@ function saveCompound(){
   }
   saveCompounds();closeCompoundModal();renderCompounds();
   toast('บันทึกสูตรผสมแล้วค่ะ! 🧪');
+}
+
+function calcEod(compoundId, cpu){
+  const eodId='eod-'+compoundId;
+  const vol=parseFloat(document.getElementById(eodId)?.value)||0;
+  const resEl=document.getElementById(eodId+'-res');
+  if(!resEl)return;
+  if(vol>0){
+    resEl.textContent=fmtPrice(vol*cpu)+' ฿';
+    resEl.style.color='var(--red)';
+  } else {
+    resEl.textContent='— ฿';
+    resEl.style.color='var(--txt3)';
+  }
 }
 
 function deleteCompound(id){
@@ -3177,28 +3329,56 @@ function renderCompounds(){
     </div>`;return;
   }
   list.innerHTML=compounds.map(c=>{
+    const cpu=c.costPerOutputUnit||0;
+    const totalCost=c.ingredients.reduce((s,ing)=>s+ing.qty*ing.unitPrice,0);
+    const yieldPct=c.yield||100;
+    const effectiveQty=c.outputQty*(yieldPct/100);
+    const yieldPill=yieldPct<100
+      ?`<span class="yield-pill warn">⚠ Yield ${yieldPct}%</span>`
+      :`<span class="yield-pill">✅ Yield 100%</span>`;
     const ingrHtml=c.ingredients.map(ing=>`
       <div class="compound-ingr-item">
         <span>${ing.name}</span>
         <span style="color:var(--txt3);font-size:12px">${ing.qty} ${ing.unit} × ${ing.unitPrice.toFixed(4)} ฿ = <strong style="color:var(--txt2)">${(ing.qty*ing.unitPrice).toFixed(4)} ฿</strong></span>
-      </div>
-    `).join('');
+      </div>`).join('');
+    const sopHtml=c.sop?`<div class="sop-badge">📋 ${c.sop}</div>`:'';
+    const serveHtml=c.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${c.servingUnit.name} = ${fmtPrice(c.servingUnit.costPerServe)} ฿</span></div>`:'';
+    const eodId='eod-'+c.id;
     return `<div class="compound-card">
       <div class="compound-card-top">
-        <div class="compound-name">${c.name}</div>
-        <div class="compound-meta">ได้ ${c.outputQty} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${c.updatedAt}${c.updatedBy&&c.updatedBy!="—"?" · ⌨️"+c.updatedBy:""}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="compound-name">${c.name}</div>
+          ${yieldPill}
+        </div>
+        <div class="compound-meta">ได้จริง ${effectiveQty.toFixed(0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${c.updatedAt}</div>
       </div>
       <div class="compound-ingr-list">${ingrHtml}</div>
-      <div class="compound-cost-row">
-        <div>
-          <div class="compound-cost-label">ต้นทุนต่อ ${c.outputUnit}</div>
-          <div class="compound-cost-val">${(c.costPerOutputUnit||0).toFixed(4)} ฿/${c.outputUnit}</div>
+      <!-- Dual Cost Display -->
+      <div class="cp-cost-dual">
+        <div class="cp-cost-box" style="background:var(--red-p)">
+          <div class="cp-cost-box-label">ต้นทุนต่อหน่วย</div>
+          <div class="cp-cost-box-val" style="color:var(--red)">${cpu.toFixed(4)}</div>
+          <div class="cp-cost-box-sub">฿ / ${c.outputUnit}</div>
         </div>
-        <div style="text-align:right;color:var(--txt3);font-size:12px;align-self:flex-end">
-          รวม ${c.outputQty} ${c.outputUnit}
+        <div class="cp-cost-box" style="background:var(--surf2)">
+          <div class="cp-cost-box-label">ต้นทุนรวม Batch</div>
+          <div class="cp-cost-box-val" style="color:var(--txt)">${totalCost.toFixed(2)}</div>
+          <div class="cp-cost-box-sub">฿ / ${effectiveQty.toFixed(0)} ${c.outputUnit}</div>
         </div>
       </div>
-      <div class="compound-foot">
+      ${serveHtml}
+      <!-- EOD Waste Calculator -->
+      <div class="eod-calc">
+        <div class="eod-calc-title">🗑️ คำนวณยอดทิ้ง (EOD)</div>
+        <div class="eod-row">
+          <input class="eod-input" type="number" id="${eodId}" placeholder="ปริมาณเหลือ" min="0" step="1" oninput="calcEod('${c.id}',${cpu})">
+          <span style="font-size:12px;color:var(--txt3)">${c.outputUnit}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--txt3)">=</span>
+          <span class="eod-result" id="${eodId}-res">— ฿</span>
+        </div>
+      </div>
+      ${sopHtml}
+      <div class="compound-foot" style="margin-top:.65rem">
         <button class="btn btn-ghost btn-sm" onclick="openAddCompound('${c.id}')">✏ แก้ไข</button>
         <button class="btn-del" onclick="deleteCompound('${c.id}')">🗑</button>
       </div>
