@@ -885,6 +885,46 @@ body{
 }
 .sb-logout:hover{background:var(--red-p);color:var(--red);border-color:#FECACA}
 
+/* ── PRICE ADJUSTMENT MODAL ── */
+.trend-toggle{display:flex;gap:8px;margin-top:4px}
+.trend-btn{
+  flex:1;padding:10px 8px;border-radius:12px;border:2px solid var(--border2);
+  background:var(--surf2);font-size:20px;cursor:pointer;
+  font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;
+  color:var(--txt2);transition:all .17s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.trend-btn.active-up{border-color:#16A34A;background:#F0FDF4;color:#16A34A}
+.trend-btn.active-down{border-color:#E31E24;background:#FFF0F0;color:#E31E24}
+.supplier-opts{display:flex;gap:8px;margin-top:4px}
+.sup-btn{
+  flex:1;padding:9px 8px;border-radius:12px;border:2px solid var(--border2);
+  background:var(--surf2);font-size:13px;font-weight:600;
+  font-family:'Sarabun',sans-serif;color:var(--txt2);
+  cursor:pointer;transition:all .17s;text-align:center;
+}
+.sup-btn.active{border-color:var(--red);background:var(--red-p);color:var(--red)}
+
+/* Price History Timeline */
+.ph-timeline{display:flex;flex-direction:column;gap:0;margin-top:.5rem}
+.ph-tl-item{display:flex;gap:12px;position:relative;padding-bottom:14px}
+.ph-tl-item:last-child{padding-bottom:0}
+.ph-tl-left{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0}
+.ph-tl-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;z-index:1;
+}
+.ph-tl-line{flex:1;width:2px;background:var(--border);margin-top:2px}
+.ph-tl-item:last-child .ph-tl-line{display:none}
+.ph-tl-card{
+  flex:1;background:var(--surf2);border-radius:12px;
+  padding:.65rem .9rem;border:1px solid var(--border);
+  min-width:0;
+}
+.ph-tl-price{font-size:15px;font-weight:700;font-family:'Prompt',sans-serif;color:var(--txt)}
+.ph-tl-meta{font-size:11px;color:var(--txt3);margin-top:2px}
+.ph-tl-reason{font-size:12px;color:var(--txt2);margin-top:4px;font-style:italic}
+
 /* Desktop metrics → compact horizontal bar */
 @media(min-width:1024px){
   .metrics{
@@ -1439,6 +1479,56 @@ body{
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════════ MODAL — PRICE ADJUSTMENT (V3.1) ═══════════════ -->
+<div id="modal-price-adj" class="modal-overlay" onclick="if(event.target===this)closePriceAdj()">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🔄 ปรับปรุงราคาวัตถุดิบ</div>
+        <div class="modal-sub" id="padj-subtitle">—</div>
+      </div>
+      <button onclick="closePriceAdj()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--txt3);padding:4px">✕</button>
+    </div>
+    <div style="padding:1.25rem 1.5rem">
+      <!-- New price -->
+      <div class="fg" style="margin-bottom:1rem">
+        <label class="flabel">ราคาซื้อใหม่ (฿)</label>
+        <input class="finput" type="number" id="padj-price" placeholder="เช่น 480" min="0" step="0.01">
+      </div>
+      <!-- Trend -->
+      <div class="fg" style="margin-bottom:1rem">
+        <label class="flabel">ทิศทางราคา</label>
+        <div class="trend-toggle">
+          <button type="button" class="trend-btn" id="trend-up" onclick="setTrend('⬆️')">⬆️ ขึ้น</button>
+          <button type="button" class="trend-btn" id="trend-down" onclick="setTrend('⬇️')">⬇️ ลง</button>
+        </div>
+      </div>
+      <!-- Reason -->
+      <div class="fg" style="margin-bottom:1rem">
+        <label class="flabel">เหตุผล</label>
+        <input class="finput" id="padj-reason" placeholder="เช่น ราคาตลาดขึ้น, ซัพพลายเออร์ปรับราคา">
+      </div>
+      <!-- Supplier -->
+      <div class="fg" style="margin-bottom:1.25rem">
+        <label class="flabel">แหล่งที่มา</label>
+        <div class="supplier-opts">
+          <button type="button" class="sup-btn" id="sup-hq" onclick="setSupplier('Mixue HQ')">🏢 Mixue HQ</button>
+          <button type="button" class="sup-btn" id="sup-ext" onclick="setSupplier('External Market')">🏪 ตลาดทั่วไป</button>
+        </div>
+      </div>
+      <!-- History Timeline -->
+      <div id="padj-history-wrap" style="display:none">
+        <div class="section-label" style="margin-bottom:.65rem">ประวัติการปรับราคา</div>
+        <div class="ph-timeline" id="padj-timeline"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePriceAdj()">ยกเลิก</button>
+      <button class="btn btn-red" onclick="savePriceAdj()">✓ บันทึกการปรับราคา</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── STORAGE KEYS ───
 const SK_M='mx_menus_v4', SK_L='mx_library_v1', SK_C='mx_compound_v1';
@@ -1862,8 +1952,11 @@ function renderLibrary(){
           <div class="lib-unit-label">฿/${i.unit}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:3px">
-          <button class="btn-del" onclick="openAddIngr('${i.id}')" title="แก้ไข">✏️</button>
-          <button class="btn-del" onclick="deleteIngr('${i.id}')" title="ลบ">🗑</button>
+          <button class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;padding:5px 8px;font-size:11px" onclick="openPriceAdj('${i.id}')" title="ปรับปรุงราคา">🔄 ปรับราคา</button>
+          <div style="display:flex;gap:3px">
+            <button class="btn-del" onclick="openAddIngr('${i.id}')" title="แก้ไข">✏️</button>
+            <button class="btn-del" onclick="deleteIngr('${i.id}')" title="ลบ">🗑</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2710,6 +2803,102 @@ function renderCompounds(){
 // COMPARE
 // ─────────────────────────────────────────
 const MEDALS=['🥇','🥈','🥉'];
+
+// ─────────────────────────────────────────
+// PRICE ADJUSTMENT (V3.1)
+// ─────────────────────────────────────────
+let padjId=null, padjTrend=null, padjSupplier=null;
+
+function openPriceAdj(id){
+  const item=library.find(x=>x.id===id);
+  if(!item)return;
+  padjId=id; padjTrend=null; padjSupplier=null;
+  // reset form
+  document.getElementById('padj-price').value='';
+  document.getElementById('padj-reason').value='';
+  document.getElementById('padj-subtitle').textContent=`${item.name} — ราคาปัจจุบัน ฿${(item.total||0).toLocaleString()}`;
+  ['trend-up','trend-down'].forEach(id=>document.getElementById(id).className='trend-btn');
+  ['sup-hq','sup-ext'].forEach(id=>document.getElementById(id).className='sup-btn');
+  // history
+  renderPriceTimeline(item);
+  document.getElementById('modal-price-adj').style.display='block';
+}
+
+function closePriceAdj(){
+  document.getElementById('modal-price-adj').style.display='none';
+  padjId=null;
+}
+
+function setTrend(t){
+  padjTrend=t;
+  document.getElementById('trend-up').className='trend-btn'+(t==='⬆️'?' active-up':'');
+  document.getElementById('trend-down').className='trend-btn'+(t==='⬇️'?' active-down':'');
+}
+
+function setSupplier(s){
+  padjSupplier=s;
+  document.getElementById('sup-hq').className='sup-btn'+(s==='Mixue HQ'?' active':'');
+  document.getElementById('sup-ext').className='sup-btn'+(s==='External Market'?' active':'');
+}
+
+function renderPriceTimeline(item){
+  const wrap=document.getElementById('padj-history-wrap');
+  const tl=document.getElementById('padj-timeline');
+  const hist=item.priceHistory||[];
+  if(!hist.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  tl.innerHTML=[...hist].reverse().map((h,i)=>{
+    const isUp=h.trend==='⬆️';
+    const dotBg=isUp?'#FEE2E2':'#F0FDF4';
+    const dotColor=isUp?'#E31E24':'#16A34A';
+    const d=new Date(h.updatedAt);
+    const dateStr=isNaN(d)?h.updatedAt:d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="ph-tl-item">
+      <div class="ph-tl-left">
+        <div class="ph-tl-dot" style="background:${dotBg};color:${dotColor}">${h.trend||'•'}</div>
+        <div class="ph-tl-line"></div>
+      </div>
+      <div class="ph-tl-card">
+        <div class="ph-tl-price">฿${(h.price||0).toLocaleString()}</div>
+        <div class="ph-tl-meta">${h.updatedBy||'—'} · ${h.supplier||'—'} · ${dateStr}</div>
+        ${h.reason?`<div class="ph-tl-reason">"${h.reason}"</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function savePriceAdj(){
+  const item=library.find(x=>x.id===padjId);
+  if(!item){toast('ไม่พบวัตถุดิบ','❌');return;}
+  const newPrice=parseFloat(document.getElementById('padj-price').value);
+  if(!newPrice||newPrice<=0){toast('กรุณาใส่ราคาใหม่ที่ถูกต้อง','⚠️');return;}
+  if(!padjTrend){toast('กรุณาเลือกทิศทางราคา','⚠️');return;}
+  if(!padjSupplier){toast('กรุณาเลือกแหล่งที่มา','⚠️');return;}
+  const reason=document.getElementById('padj-reason').value.trim();
+  const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
+  const record={
+    price:newPrice,
+    trend:padjTrend,
+    reason:reason||'—',
+    supplier:padjSupplier,
+    updatedAt:new Date().toISOString(),
+    updatedBy:s?.name||settings.username||'—'
+  };
+  if(!item.priceHistory)item.priceHistory=[];
+  item.priceHistory.push(record);
+  // update price fields
+  item.total=newPrice;
+  item.basePrice=newPrice;
+  if(item.qty&&item.qty>0)item.unitPrice=newPrice/item.qty;
+  item.updatedAt=new Date().toLocaleDateString('th-TH');
+  item.updatedBy=record.updatedBy;
+  // cascade recalc
+  save();
+  recalcAllCosts();
+  renderMenus();renderMenuMetrics();renderCompounds();
+  toast(`อัปเดตราคา ${item.name} สำเร็จ ✓`,'🔄');
+  closePriceAdj();
+}
 
 function renderCompare(){
   const el=document.getElementById('compare-content');
