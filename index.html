@@ -532,6 +532,57 @@ body{
 }
 .fchip:hover:not(.active){background:var(--surf2);transform:translateY(-1px)}
 
+/* iOS Filter Chips — horizontal scroll, no wrap */
+.ios-chip-bar{
+  display:flex;gap:7px;overflow-x:auto;margin-bottom:1rem;
+  padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none;
+}
+.ios-chip-bar::-webkit-scrollbar{display:none}
+.ios-chip{
+  flex-shrink:0;padding:7px 16px;border-radius:20px;
+  font-size:13px;font-weight:600;font-family:'Sarabun',sans-serif;
+  border:none;cursor:pointer;transition:all .18s ease;
+  background:#E9E9EB;color:#3C3C43;
+}
+.ios-chip.active{background:#1C1C1E;color:#fff}
+
+/* Sort dropdown */
+.sort-select{
+  padding:7px 12px;border-radius:10px;font-size:12.5px;font-weight:600;
+  font-family:'Sarabun',sans-serif;color:var(--txt2);
+  background:var(--surf);border:1.5px solid var(--border2);
+  cursor:pointer;outline:none;
+}
+
+/* Traffic Light Badge (top-right of card) */
+.tl-badge{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(0,0,0,0.12);
+}
+
+/* Accordion */
+.accordion-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px;background:none;border:none;border-top:1px solid var(--border);
+  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;
+  color:var(--txt3);cursor:pointer;transition:all .17s;
+}
+.accordion-btn:hover{background:var(--surf2);color:var(--txt2)}
+.accordion-body{
+  display:none;padding:.75rem 1.25rem;
+  border-top:1px solid var(--border);
+  background:var(--surf2);border-radius:0 0 18px 18px;
+}
+.accordion-body.open{display:block}
+.acc-ingr-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0;border-bottom:1px dashed var(--border);
+  font-size:12.5px;
+}
+.acc-ingr-row:last-child{border-bottom:none}
+
 /* SEARCH */
 .search-wrap{position:relative;flex:1;max-width:280px}
 .search-wrap input{padding-left:34px}
@@ -1564,7 +1615,7 @@ const DOC='mixue-cost-manager'; // single document id
 // ─── STATE ───
 let menus=[], library=[], compounds=[];
 let editMenuId=null, editIngrId=null, editCompoundId=null, mIngrCount=0, cpIngrCount=0;
-let activeMenuCat='all', activeLibCat='all';
+let activeMenuCat='all', activeLibCat='all', activeMenuSort='default';
 
 // ─── LOAD / SAVE ───
 async function load(){
@@ -2419,16 +2470,62 @@ function saveMenu(){
 // ─────────────────────────────────────────
 // MENU LIST
 // ─────────────────────────────────────────
+const MENU_FIXED_CATS=[
+  {key:'all',label:'ทั้งหมด'},
+  {key:'ไอศกรีม',label:'🍦 ไอศกรีม'},
+  {key:'ชานม',label:'🧋 ชานม'},
+  {key:'ชาผลไม้',label:'🍓 ชาผลไม้'},
+  {key:'กาแฟ',label:'☕ กาแฟ'},
+  {key:'ชาออริจินัล',label:'🍵 ชาออริจินัล'},
+];
+
+function getBestPct(m){
+  const sizes=[['L',m.priceL],['M',m.priceM],['U',m.priceS]].filter(([,p])=>p>0);
+  if(!sizes.length)return 0;
+  const pcts=sizes.map(([sz,p])=>p>0?calcCost(m.ingredients,sz)/p*100:0);
+  return Math.max(...pcts);
+}
+
+function tlBadge(pct){
+  if(pct<30)return{dot:'🟢',bg:'#D1FAE5',color:'#065F46'};
+  if(pct<=35)return{dot:'🟡',bg:'#FEF9C3',color:'#92400E'};
+  return{dot:'🔴',bg:'#FEE2E2',color:'#991B1B'};
+}
+
 function renderMenus(){
+  // ── iOS Chip Bar ──
   const bar=document.getElementById('menu-filter-bar');
-  const menuCats=['all',...new Set(menus.map(m=>m.cat))];
-  bar.innerHTML=menuCats.map(c=>
-    `<span class="fchip${activeMenuCat===c?' active':''}" onclick="setMenuCat('${c}')">${c==='all'?'ทั้งหมด':c}</span>`
+  bar.className='ios-chip-bar';
+  bar.innerHTML=MENU_FIXED_CATS.map(c=>
+    `<button class="ios-chip${activeMenuCat===c.key?' active':''}" onclick="setMenuCat('${c.key}')">${c.label}</button>`
   ).join('');
 
+  // ── Sort Dropdown ──
+  const ph=document.querySelector('#tab-menu .ph');
+  let sortWrap=document.getElementById('menu-sort-wrap');
+  if(!sortWrap){
+    sortWrap=document.createElement('div');
+    sortWrap.id='menu-sort-wrap';
+    sortWrap.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:.9rem';
+    sortWrap.innerHTML=`<span style="font-size:12px;color:var(--txt3);font-weight:600">เรียงตาม</span>
+      <select class="sort-select" onchange="setMenuSort(this.value)">
+        <option value="default">ค่าเริ่มต้น</option>
+        <option value="pct_asc">Cost % ต่ำ→สูง</option>
+        <option value="pct_desc">Cost % สูง→ต่ำ</option>
+        <option value="name_az">ชื่อ A→Z</option>
+      </select>`;
+    bar.after(sortWrap);
+  }
+  sortWrap.querySelector('select').value=activeMenuSort;
+
   const list=document.getElementById('menu-list');
-  let data=menus;
-  if(activeMenuCat!=='all')data=data.filter(x=>x.cat===activeMenuCat);
+  let data=[...menus];
+  if(activeMenuCat!=='all')data=data.filter(x=>x.cat&&x.cat.includes(activeMenuCat));
+  // sort
+  if(activeMenuSort==='pct_asc')data.sort((a,b)=>getBestPct(a)-getBestPct(b));
+  else if(activeMenuSort==='pct_desc')data.sort((a,b)=>getBestPct(b)-getBestPct(a));
+  else if(activeMenuSort==='name_az')data.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+
   if(!data.length){
     list.innerHTML=`<div class="empty" style="grid-column:1/-1">
       <span class="empty-icon">🍦</span>
@@ -2440,25 +2537,40 @@ function renderMenus(){
 
   list.innerHTML=data.map(m=>{
     const sizes=[['U',m.priceS],['M',m.priceM],['L',m.priceL]].filter(([,p])=>p>0);
-    const maxPct=Math.max(...sizes.map(([sz,p])=>{
-      const c=calcCost(m.ingredients,sz);
-      return p>0?c/p*100:0;
-    }),0.1);
+    const maxPct=Math.max(...sizes.map(([sz,p])=>p>0?calcCost(m.ingredients,sz)/p*100:0),0.1);
+    const bestPct=getBestPct(m);
+    const {dot,bg,color}=tlBadge(bestPct);
     const emo=menuEmoji(m.cat);
+
+    // accordion ingredients
+    const accRows=m.ingredients.map(i=>{
+      const lib=library.find(l=>l.id===i.sourceId);
+      const cp=compounds.find(c=>c.id===i.sourceId);
+      // calc cost for L or M or first available size
+      const sz=m.priceL>0?'L':m.priceM>0?'M':'U';
+      const unitP=lib?lib.unitPrice:cp?cp.costPerOutputUnit:0;
+      const qty=parseFloat(i.qty)||0;
+      const cost=(unitP*qty).toFixed(2);
+      return `<div class="acc-ingr-row">
+        <span style="color:var(--txt2)">${i.name||'—'}</span>
+        <span style="font-weight:700;color:var(--txt);font-family:'Prompt',sans-serif">฿${cost}</span>
+      </div>`;
+    }).join('');
+
     return `<div class="menu-card">
       <div class="mc-top">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">
             <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:var(--sh-red)">${emo}</div>
-            <div>
+            <div style="min-width:0">
               <div class="mc-name">${m.name}</div>
               <div class="mc-meta">
                 <span style="background:var(--surf2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500">${m.cat}</span>
-                <span style="margin-left:8px">${m.ingredients.length} วัตถุดิบ</span>
-                · ${m.updatedAt}${m.updatedBy&&m.updatedBy!="—"?" · ⌨️"+m.updatedBy:""}
+                <span style="margin-left:6px">${m.ingredients.length} วัตถุดิบ · ${m.updatedAt}</span>
               </div>
             </div>
           </div>
+          <div class="tl-badge" style="background:${bg};color:${color};margin-left:8px" title="${bestPct.toFixed(1)}% Food Cost">${dot}</div>
         </div>
       </div>
       <div class="mc-sizes">
@@ -2476,7 +2588,7 @@ function renderMenus(){
         }).join('')}
       </div>
       <div class="mc-foot">
-        <div style="font-size:11px;color:var(--txt3)">
+        <div style="font-size:11px;color:var(--txt3);flex:1;min-width:0;overflow:hidden">
           ${m.ingredients.slice(0,3).map(i=>`<span style="background:var(--surf3);border-radius:5px;padding:1px 7px;font-size:10px;margin-right:3px">${i.name}</span>`).join('')}
           ${m.ingredients.length>3?`<span style="font-size:10px;color:var(--txt3)">+${m.ingredients.length-3}</span>`:''}
         </div>
@@ -2486,11 +2598,20 @@ function renderMenus(){
           <button class="btn-del" onclick="deleteMenu('${m.id}')">🗑</button>
         </div>
       </div>
+      <button class="accordion-btn" onclick="toggleAccordion('acc-${m.id}',this)">▼ ดูส่วนผสม</button>
+      <div class="accordion-body" id="acc-${m.id}">${accRows||'<div style="font-size:12px;color:var(--txt3);text-align:center;padding:.5rem">ไม่มีข้อมูลวัตถุดิบ</div>'}</div>
     </div>`;
   }).join('');
 }
 
 function setMenuCat(c){activeMenuCat=c;renderMenus()}
+function setMenuSort(v){activeMenuSort=v;renderMenus()}
+function toggleAccordion(id,btn){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const open=el.classList.toggle('open');
+  btn.innerHTML=open?'▲ ซ่อนส่วนผสม':'▼ ดูส่วนผสม';
+}
 function deleteMenu(id){
   if(!confirm('ลบเมนูนี้?'))return;
   menus=menus.filter(x=>x.id!==id);save();renderMenus();renderMenuMetrics();
