@@ -882,6 +882,65 @@ body{
   .add-tab-mobile{display:inline-flex!important}
 }
 
+/* ── Breakdown Tooltip ── */
+.lib-purchase-box{position:relative;cursor:pointer}
+.lib-breakdown-tip{
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;transform:translateX(-50%) translateY(6px);
+  background:#1A1A1A;color:#fff;
+  border-radius:12px;padding:.65rem .9rem;
+  font-size:12px;line-height:1.7;
+  white-space:nowrap;z-index:999;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .18s ease, transform .18s ease;
+  box-shadow:0 8px 24px rgba(0,0,0,0.28);
+  min-width:140px;
+}
+.lib-breakdown-tip::after{
+  content:'';position:absolute;top:100%;left:50%;
+  transform:translateX(-50%);
+  border:6px solid transparent;
+  border-top-color:#1A1A1A;
+}
+.lib-breakdown-tip .tip-title{
+  font-size:10.5px;font-weight:700;color:#aaa;
+  letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:4px;
+}
+.lib-breakdown-tip .tip-row{
+  display:flex;align-items:center;gap:8px;
+}
+.lib-breakdown-tip .tip-unit{
+  background:rgba(255,255,255,.13);
+  border-radius:6px;padding:1px 7px;
+  font-weight:700;font-size:12px;
+}
+.lib-breakdown-tip .tip-arrow{color:#F5C518;font-size:11px}
+/* Show on hover (desktop) */
+.lib-purchase-box:hover .lib-breakdown-tip{
+  opacity:1;transform:translateX(-50%) translateY(0);
+}
+/* Show on tap (mobile) — JS adds .tip-open */
+.lib-purchase-box.tip-open .lib-breakdown-tip{
+  opacity:1;transform:translateX(-50%) translateY(0);
+}
+/* If tooltip would overflow top, flip to bottom */
+.lib-breakdown-tip.tip-below{
+  bottom:auto;top:calc(100% + 8px);
+  transform:translateX(-50%) translateY(-6px);
+}
+.lib-breakdown-tip.tip-below::after{
+  top:auto;bottom:100%;
+  border-top-color:transparent;
+  border-bottom-color:#1A1A1A;
+}
+.lib-purchase-box:hover .lib-breakdown-tip.tip-below,
+.lib-purchase-box.tip-open .lib-breakdown-tip.tip-below{
+  transform:translateX(-50%) translateY(0);
+}
+
 /* ── V3.4 — Compound Enhancements ── */
 /* Yield pill */
 .yield-pill{
@@ -2304,6 +2363,24 @@ function renderLibrary(){
     const serveChip=i.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${i.servingUnit.name} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span></div>`:'';
     // Format purchase summary clearly
     const baseLabel=i.levels&&i.levels.length>0?i.levels[0].name:i.unit;
+    // Build breakdown tooltip from levels
+    let tipRows='';
+    if(i.levels&&i.levels.length>1){
+      for(let li=0;li<i.levels.length-1;li++){
+        const from=i.levels[li].name;
+        const to=i.levels[li+1];
+        tipRows+=`<div class="tip-row">
+          <span class="tip-unit">1 ${from}</span>
+          <span class="tip-arrow">→</span>
+          <span class="tip-unit">${fmtNum(to.qty,0)} ${to.name}</span>
+        </div>`;
+      }
+    }
+    const hasTip=tipRows.length>0;
+    const tipHtml=hasTip?`<div class="lib-breakdown-tip">
+      <div class="tip-title">📦 หน่วยบรรจุ</div>
+      ${tipRows}
+    </div>`:'';
     const purchaseSummary=`ซื้อ ${Number(i.basePrice||i.total).toLocaleString('th-TH')} ฿ / ${baseLabel}`;
     return `
     <div class="lib-card" style="${i.pinned?'border:2px solid #F5C518;box-shadow:0 0 0 3px rgba(245,197,24,.15);':''}" id="libcard-${i.id}">
@@ -2323,12 +2400,13 @@ function renderLibrary(){
           <div style="font-size:18px;font-weight:800;color:var(--red);line-height:1.1">${fmtPrice(i.unitPrice)}</div>
           <div style="font-size:11px;color:var(--red-d);font-weight:600">฿ / ${i.unit}</div>
         </div>
-        <!-- Purchase info box -->
-        <div style="flex:1.2;background:var(--surf2);border-radius:10px;padding:8px 10px;min-width:0">
-          <div style="font-size:10.5px;color:var(--txt3);font-weight:600;margin-bottom:3px">📦 ราคาซื้อ</div>
+        <!-- Purchase info box with breakdown tooltip -->
+        <div class="lib-purchase-box${hasTip?' has-tip':''}" style="flex:1.2;background:var(--surf2);border-radius:10px;padding:8px 10px;min-width:0;user-select:none" ${hasTip?`ontouchstart="toggleLibTip(event,this)" ontouchend="event.preventDefault()"`:''}">
+          <div style="font-size:10.5px;color:var(--txt3);font-weight:600;margin-bottom:3px">📦 ราคาซื้อ ${hasTip?'<span style="font-size:9px;opacity:.6">ⓘ</span>':''}</div>
           <div style="font-size:13px;font-weight:700;color:var(--txt)">${fmtNum(i.basePrice||i.total,2)} ฿</div>
           <div style="font-size:11px;color:var(--txt3)">ต่อ 1 ${baseLabel}</div>
           <div style="font-size:11px;color:var(--txt3);margin-top:1px">= ${fmtNum(i.qty,0)} ${i.unit}</div>
+          ${tipHtml}
         </div>
       </div>
       <!-- Serving unit chip -->
@@ -2349,6 +2427,26 @@ function renderLibrary(){
 }
 function setLibCat(c){activeLibCat=c;renderLibrary()}
 function setLibSort(v){activeLibSort=v;renderLibrary()}
+
+// Mobile tap to show/hide breakdown tooltip
+let _tipTimeout=null;
+function toggleLibTip(e,el){
+  e.stopPropagation();
+  const wasOpen=el.classList.contains('tip-open');
+  // close all others
+  document.querySelectorAll('.lib-purchase-box.tip-open').forEach(x=>x.classList.remove('tip-open'));
+  if(!wasOpen){
+    el.classList.add('tip-open');
+    clearTimeout(_tipTimeout);
+    _tipTimeout=setTimeout(()=>el.classList.remove('tip-open'),3000);
+  }
+}
+// Close tooltip when tapping elsewhere
+document.addEventListener('touchstart',function(e){
+  if(!e.target.closest('.lib-purchase-box')){
+    document.querySelectorAll('.lib-purchase-box.tip-open').forEach(x=>x.classList.remove('tip-open'));
+  }
+},{passive:true});
 function setCpSort(v){activeCompoundSort=v;renderCompounds()}
 function setCmpSort(v){activeCompareSort=v;renderCompare()}
 
