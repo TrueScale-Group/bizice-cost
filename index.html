@@ -2171,7 +2171,13 @@ function fmtPrice(p){
   if(p===0)return'0';
   if(p<0.01)return p.toFixed(6).replace(/0+$/,'');
   if(p<1)return p.toFixed(4).replace(/0+$/,'');
-  return p.toFixed(2);
+  const n=p.toFixed(2);
+  return parseFloat(n)>=1000?parseFloat(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):n;
+}
+// Format plain numbers with comma (no decimal unless needed)
+function fmtNum(n,dec=2){
+  if(n===undefined||n===null||isNaN(n))return'0';
+  return parseFloat(n).toLocaleString('th-TH',{minimumFractionDigits:dec,maximumFractionDigits:dec});
 }
 
 function liNameChange(idx,val){
@@ -2320,9 +2326,9 @@ function renderLibrary(){
         <!-- Purchase info box -->
         <div style="flex:1.2;background:var(--surf2);border-radius:10px;padding:8px 10px;min-width:0">
           <div style="font-size:10.5px;color:var(--txt3);font-weight:600;margin-bottom:3px">📦 ราคาซื้อ</div>
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${Number(i.basePrice||i.total).toLocaleString('th-TH')} ฿</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${fmtNum(i.basePrice||i.total,2)} ฿</div>
           <div style="font-size:11px;color:var(--txt3)">ต่อ 1 ${baseLabel}</div>
-          <div style="font-size:11px;color:var(--txt3);margin-top:1px">= ${Number(i.qty).toLocaleString('th-TH')} ${i.unit}</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:1px">= ${fmtNum(i.qty,0)} ${i.unit}</div>
         </div>
       </div>
       <!-- Serving unit chip -->
@@ -2948,10 +2954,10 @@ function renderMenus(){
       const sz=m.priceL>0?'L':m.priceM>0?'M':'U';
       const unitP=lib?lib.unitPrice:cp?cp.costPerOutputUnit:0;
       const qty=parseFloat(i.qty)||0;
-      const cost=(unitP*qty).toFixed(2);
+      const cost=unitP*qty;
       return `<div class="acc-ingr-row">
         <span style="color:var(--txt2)">${i.name||'—'}</span>
-        <span style="font-weight:700;color:var(--txt);font-family:'Prompt',sans-serif">฿${cost}</span>
+        <span style="font-weight:700;color:var(--txt);font-family:'Prompt',sans-serif">฿${fmtNum(cost,4)}</span>
       </div>`;
     }).join('');
 
@@ -2980,7 +2986,7 @@ function renderMenus(){
           return `<div class="size-row">
             <div class="size-tag">${sz}</div>
             <div class="bar-bg"><div class="bar-fill" style="--w:${barW}%;width:${barW}%;background:${col}"></div></div>
-            <div class="size-price">${price} ฿</div>
+            <div class="size-price">${fmtNum(price,2)} ฿</div>
             <div><span class="badge ${gpCls(pct)}" style="font-size:11px">${pct.toFixed(1)}%</span></div>
           </div>`;
         }).join('')}
@@ -3257,9 +3263,9 @@ function calcCompoundLive(){
   // effective output after yield loss
   const effectiveQty=outputQty*(yieldPct/100);
   const cpo=effectiveQty>0?totalCost/effectiveQty:0;
-  document.getElementById('cp-cost-main').innerHTML=cpo.toFixed(4)+' ฿/<span id="cp-cost-unit">'+outputUnit+'</span>';
-  const yieldNote=yieldPct<100?` (Yield ${yieldPct}% → ได้จริง ${effectiveQty.toFixed(0)} ${outputUnit})`:'';
-  document.getElementById('cp-cost-sub').textContent=`ต้นทุนรวม ${totalCost.toFixed(2)} ฿ ÷ ${effectiveQty>0?effectiveQty.toFixed(0):'?'} ${outputUnit}${yieldNote}`;
+  document.getElementById('cp-cost-main').innerHTML=fmtPrice(cpo)+' ฿/<span id="cp-cost-unit">'+outputUnit+'</span>';
+  const yieldNote=yieldPct<100?` (Yield ${yieldPct}% → ได้จริง ${fmtNum(effectiveQty,0)} ${outputUnit})`:'';
+  document.getElementById('cp-cost-sub').textContent=`ต้นทุนรวม ${fmtNum(totalCost,2)} ฿ ÷ ${effectiveQty>0?fmtNum(effectiveQty,0):'?'} ${outputUnit}${yieldNote}`;
   // yield hint
   const hint=document.getElementById('cp-yield-hint');
   if(hint){
@@ -3384,7 +3390,7 @@ function renderCompounds(){
     const ingrHtml=c.ingredients.map(ing=>`
       <div class="compound-ingr-item">
         <span>${ing.name}</span>
-        <span style="color:var(--txt3);font-size:12px">${ing.qty} ${ing.unit} × ${ing.unitPrice.toFixed(4)} ฿ = <strong style="color:var(--txt2)">${(ing.qty*ing.unitPrice).toFixed(4)} ฿</strong></span>
+        <span style="color:var(--txt3);font-size:12px">${fmtNum(ing.qty,0)} ${ing.unit} × ${fmtPrice(ing.unitPrice)} ฿ = <strong style="color:var(--txt2)">${fmtNum(ing.qty*ing.unitPrice,4)} ฿</strong></span>
       </div>`).join('');
     const sopHtml=c.sop?`<div class="sop-badge">📋 ${c.sop}</div>`:'';
     const serveHtml=c.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${c.servingUnit.name} = ${fmtPrice(c.servingUnit.costPerServe)} ฿</span></div>`:'';
@@ -3395,20 +3401,20 @@ function renderCompounds(){
           <div class="compound-name">${c.name}</div>
           ${yieldPill}
         </div>
-        <div class="compound-meta">ได้จริง ${effectiveQty.toFixed(0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${c.updatedAt}</div>
+        <div class="compound-meta">ได้จริง ${fmtNum(effectiveQty,0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${c.updatedAt}</div>
       </div>
       <div class="compound-ingr-list">${ingrHtml}</div>
       <!-- Dual Cost Display -->
       <div class="cp-cost-dual">
         <div class="cp-cost-box" style="background:var(--red-p)">
           <div class="cp-cost-box-label">ต้นทุนต่อหน่วย</div>
-          <div class="cp-cost-box-val" style="color:var(--red)">${cpu.toFixed(4)}</div>
+          <div class="cp-cost-box-val" style="color:var(--red)">${fmtPrice(cpu)}</div>
           <div class="cp-cost-box-sub">฿ / ${c.outputUnit}</div>
         </div>
         <div class="cp-cost-box" style="background:var(--surf2)">
           <div class="cp-cost-box-label">ต้นทุนรวม Batch</div>
-          <div class="cp-cost-box-val" style="color:var(--txt)">${totalCost.toFixed(2)}</div>
-          <div class="cp-cost-box-sub">฿ / ${effectiveQty.toFixed(0)} ${c.outputUnit}</div>
+          <div class="cp-cost-box-val" style="color:var(--txt)">${fmtNum(totalCost,2)}</div>
+          <div class="cp-cost-box-sub">฿ / ${fmtNum(effectiveQty,0)} ${c.outputUnit}</div>
         </div>
       </div>
       ${serveHtml}
@@ -3612,11 +3618,11 @@ function renderCompare(){
           <span class="badge ${gpCls(d.pct)}" style="flex-shrink:0">${gpLbl(d.pct)}</span>
         </div>
         <div class="cmp-bar-bg"><div class="cmp-bar-fill" style="width:${barW}%;background:${col}"></div></div>
-        <div class="cmp-sub">ต้นทุน <strong>${d.cost.toFixed(2)} ฿</strong> · กำไร <span style="color:var(--green);font-weight:700">${d.gp.toFixed(2)} ฿</span></div>
+        <div class="cmp-sub">ต้นทุน <strong>${fmtNum(d.cost,2)} ฿</strong> · กำไร <span style="color:var(--green);font-weight:700">${fmtNum(d.gp,2)} ฿</span></div>
       </div>
       <div class="cmp-right">
         <span class="cmp-pct" style="color:${col}">${d.pct.toFixed(1)}%</span>
-        <span class="cmp-price">ขาย ${d.price} ฿</span>
+        <span class="cmp-price">ขาย ${fmtNum(d.price,2)} ฿</span>
       </div>
     </div>`;
   });
