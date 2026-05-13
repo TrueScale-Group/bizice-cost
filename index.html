@@ -874,6 +874,66 @@ body{
   .scroll-area{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 }
 
+/* ── V3.3 — Library Advanced ── */
+/* Pin star button */
+.lib-pin-btn{
+  background:none;border:none;cursor:pointer;font-size:17px;
+  padding:3px 5px;border-radius:6px;transition:transform .15s;line-height:1;
+}
+.lib-pin-btn:hover{transform:scale(1.25)}
+.lib-pin-btn.pinned{filter:drop-shadow(0 0 3px #F5C518)}
+/* Dependency button */
+.lib-dep-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;
+  border-radius:8px;padding:4px 9px;font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.lib-dep-btn:hover{background:#DBEAFE}
+/* Hidden cost toggle */
+.lib-hc-toggle{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;color:var(--txt3);cursor:pointer;
+  padding:3px 8px;border-radius:8px;border:1px dashed var(--border2);
+  margin-top:6px;transition:all .15s;
+}
+.lib-hc-toggle:hover{color:var(--txt2);border-color:var(--border2)}
+.lib-hidden-costs{
+  margin-top:8px;padding:8px 10px;
+  background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;
+  font-size:12px;color:#92400E;
+}
+.lib-hidden-costs div{display:flex;justify-content:space-between;padding:2px 0}
+/* Serving unit chip on card */
+.lib-serve-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--purple-bg);color:var(--purple);
+  border:1px solid var(--purple-b);
+  border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;
+}
+/* Freight/waste section in form */
+.adv-toggle{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  padding:.55rem .6rem;border-radius:10px;background:var(--surf2);
+  border:1px dashed var(--border2);font-size:13px;color:var(--txt2);
+  font-weight:600;margin-bottom:.75rem;user-select:none;transition:background .15s;
+}
+.adv-toggle:hover{background:var(--surf3)}
+.adv-toggle .adv-arrow{transition:transform .2s;font-size:12px}
+.adv-toggle.open .adv-arrow{transform:rotate(90deg)}
+/* Dependency modal list */
+.dep-list-item{
+  display:flex;align-items:center;gap:10px;
+  padding:.65rem .9rem;border-radius:10px;
+  background:var(--surf2);margin-bottom:5px;
+  font-size:13.5px;
+}
+.dep-list-item .dep-badge{
+  font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;
+}
+.dep-badge-menu{background:#DCFCE7;color:#15803D}
+.dep-badge-comp{background:var(--purple-bg);color:var(--purple)}
+
 /* ── SIDEBAR — Desktop ≥1024px ── */
 .sidebar{display:none}
 
@@ -1161,6 +1221,43 @@ body{
         <button class="btn-dashed" id="li-add-level" onclick="addLiLevel()" style="margin-top:4px">＋ เพิ่มหน่วยย่อย</button>
       </div>
       <div class="unit-calc" id="li-result" style="display:none"></div>
+
+      <!-- V3.3 — Advanced: Freight, Waste, Serving Unit -->
+      <div class="adv-toggle" id="adv-toggle-btn" onclick="toggleAdvSection()">
+        <span class="adv-arrow">▶</span> ⚙️ ตั้งค่าขั้นสูง (ค่าขนส่ง / Waste / หน่วยตัก)
+      </div>
+      <div id="adv-section" style="display:none;margin-bottom:.85rem">
+        <div class="g2" style="margin-bottom:.8rem">
+          <div>
+            <label class="flabel">💰 ค่าขนส่ง (฿/Case) <span style="color:var(--txt3);font-weight:400">ไม่บังคับ</span></label>
+            <input class="finput" type="number" id="li-freight" placeholder="เช่น 50" min="0" step="0.01" oninput="updateLiPrices()">
+          </div>
+          <div>
+            <label class="flabel">♻️ Waste Buffer (%) <span style="color:var(--txt3);font-weight:400">ไม่บังคับ</span></label>
+            <input class="finput" type="number" id="li-waste" placeholder="เช่น 5" min="0" max="50" step="0.1" oninput="updateLiPrices()">
+          </div>
+        </div>
+        <div style="background:var(--surf2);border-radius:12px;padding:.85rem 1rem;margin-bottom:.75rem">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:600;margin-bottom:.65rem">
+            <input type="checkbox" id="li-serve-enabled" onchange="toggleServeUnit()" style="width:16px;height:16px;cursor:pointer">
+            🥄 เปิดใช้งานหน่วยตัก/ปั๊ม (สำหรับหน้าร้าน)
+          </label>
+          <div id="li-serve-inputs" style="display:none">
+            <div class="g2">
+              <div>
+                <label class="flabel">ชื่อหน่วย เช่น ตัก, ปั๊ม, ช้อน</label>
+                <input class="finput" id="li-serve-name" placeholder="ตัก" oninput="updateLiPrices()">
+              </div>
+              <div>
+                <label class="flabel">1 หน่วยตัก = <span id="li-serve-base-unit-label">?</span> <span id="li-serve-final-unit-label" style="color:var(--txt3)"></span></label>
+                <input class="finput" type="number" id="li-serve-qty" placeholder="40" min="0.0001" step="any" oninput="updateLiPrices()">
+              </div>
+            </div>
+            <div id="li-serve-result" style="margin-top:6px;display:none;background:var(--purple-bg);color:var(--purple);border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:700"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-actions">
         <button class="btn btn-ghost" onclick="closeIngrForm()">ยกเลิก</button>
         <button class="btn btn-red" onclick="saveIngr()">✓ บันทึก</button>
@@ -1580,6 +1677,25 @@ body{
   </div>
 </div>
 
+<!-- ═══════════════ MODAL — DEPENDENCY TRACKER (V3.3) ═══════════════ -->
+<div id="modal-dep" class="modal-overlay" onclick="if(event.target===this)closeDep()">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🔗 เมนูและสูตรที่ใช้วัตถุดิบนี้</div>
+        <div class="modal-sub" id="dep-subtitle">—</div>
+      </div>
+      <button onclick="closeDep()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--txt3);padding:4px">✕</button>
+    </div>
+    <div style="padding:1.25rem 1.5rem">
+      <div id="dep-list-content"><div style="text-align:center;color:var(--txt3);padding:1.5rem">กำลังโหลด...</div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDep()">ปิด</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── STORAGE KEYS ───
 const SK_M='mx_menus_v4', SK_L='mx_library_v1', SK_C='mx_compound_v1';
@@ -1833,6 +1949,16 @@ function openAddIngr(id=null){
   editIngrId=id; liLevels=[];
   const f=document.getElementById('ingr-form');
   f.style.display='block';
+  // reset advanced section
+  document.getElementById('adv-section').style.display='none';
+  document.getElementById('adv-toggle-btn').classList.remove('open');
+  document.getElementById('li-freight').value='';
+  document.getElementById('li-waste').value='';
+  document.getElementById('li-serve-enabled').checked=false;
+  document.getElementById('li-serve-inputs').style.display='none';
+  document.getElementById('li-serve-name').value='';
+  document.getElementById('li-serve-qty').value='';
+  document.getElementById('li-serve-result').style.display='none';
   if(id){
     const i=library.find(x=>x.id===id);
     if(!i)return;
@@ -1845,6 +1971,19 @@ function openAddIngr(id=null){
     } else {
       document.getElementById('li-base-unit').value=i.unit||'';
       liLevels=[];
+    }
+    // load advanced fields
+    if(i.freight||i.waste||i.servingUnit){
+      document.getElementById('adv-section').style.display='block';
+      document.getElementById('adv-toggle-btn').classList.add('open');
+    }
+    if(i.freight)document.getElementById('li-freight').value=i.freight;
+    if(i.waste)document.getElementById('li-waste').value=i.waste;
+    if(i.servingUnit){
+      document.getElementById('li-serve-enabled').checked=true;
+      document.getElementById('li-serve-inputs').style.display='block';
+      document.getElementById('li-serve-name').value=i.servingUnit.name||'';
+      document.getElementById('li-serve-qty').value=i.servingUnit.qty||'';
     }
   } else {
     document.getElementById('li-name').value='';
@@ -1889,12 +2028,15 @@ function renderLiLevels(){
 
 function updateLiPrices(){
   const base=parseFloat(document.getElementById('li-base')?.value)||0;
+  const freight=parseFloat(document.getElementById('li-freight')?.value)||0;
+  const wastePct=parseFloat(document.getElementById('li-waste')?.value)||0;
   const baseUnit=document.getElementById('li-base-unit')?.value.trim()||'?';
   let divisor=1;
   liLevels.forEach((lv,idx)=>{
     divisor*=(parseFloat(document.getElementById('lil-qty-'+idx)?.value)||lv.qty||1);
     lv.qty=parseFloat(document.getElementById('lil-qty-'+idx)?.value)||lv.qty||1;
-    const price=base>0?base/divisor:0;
+    const rawPrice=base>0?(base+freight)/divisor:0;
+    const price=rawPrice*(1+wastePct/100);
     const unitName=document.getElementById('lil-name-'+idx)?.value||lv.name||'?';
     const priceEl=document.getElementById('lil-price-'+idx);
     if(priceEl)priceEl.textContent=price>0?fmtPrice(price)+' ฿/'+unitName:'—';
@@ -1905,10 +2047,31 @@ function updateLiPrices(){
   if(!res)return;
   if(base>0){
     const finalUnit=liLevels.length>0?(document.getElementById('lil-name-'+(liLevels.length-1))?.value||liLevels[liLevels.length-1].name||'?'):baseUnit;
-    const finalPrice=base/divisor;
+    const rawFinal=(base+freight)/divisor;
+    const finalPrice=rawFinal*(1+wastePct/100);
     res.style.display='block';
-    res.innerHTML=`💡 ราคาสุดท้าย: <strong>${fmtPrice(finalPrice)} ฿/${finalUnit}</strong> — ใช้หน่วยนี้ในสูตรเมนู`;
+    let hint='';
+    if(freight>0)hint+=` (+ขนส่ง ${freight}฿)`;
+    if(wastePct>0)hint+=` (+waste ${wastePct}%)`;
+    res.innerHTML=`💡 ราคาสุดท้าย: <strong>${fmtPrice(finalPrice)} ฿/${finalUnit}</strong>${hint} — ใช้หน่วยนี้ในสูตรเมนู`;
   } else { res.style.display='none'; }
+  // update serving unit section labels & cost
+  const finalUnitLabel=liLevels.length>0?(document.getElementById('lil-name-'+(liLevels.length-1))?.value||liLevels[liLevels.length-1].name||baseUnit):baseUnit;
+  const lblEl=document.getElementById('li-serve-base-unit-label');
+  if(lblEl)lblEl.textContent=finalUnitLabel;
+  const serveEnabled=document.getElementById('li-serve-enabled')?.checked;
+  if(serveEnabled&&base>0){
+    const rawFinal=(base+freight)/divisor;
+    const finalPrice=rawFinal*(1+wastePct/100);
+    const serveQty=parseFloat(document.getElementById('li-serve-qty')?.value)||0;
+    const serveName=document.getElementById('li-serve-name')?.value.trim()||'ตัก';
+    const serveRes=document.getElementById('li-serve-result');
+    if(serveQty>0&&serveRes){
+      const costPerServe=finalPrice*serveQty;
+      serveRes.style.display='block';
+      serveRes.textContent=`🥄 1 ${serveName} (${serveQty} ${finalUnitLabel}) = ${fmtPrice(costPerServe)} ฿`;
+    } else if(serveRes){serveRes.style.display='none';}
+  }
 }
 
 function fmtPrice(p){
@@ -1949,12 +2112,27 @@ function saveIngr(){
   const lastIdx=liLevels.length-1;
   const finalUnit=lastIdx>=0?(document.getElementById('lil-name-'+lastIdx)?.value||liLevels[lastIdx].name||baseUnit):baseUnit;
   const levels=[{name:baseUnit,qty:1},...liLevels.map((_,idx)=>({name:document.getElementById('lil-name-'+idx)?.value||liLevels[idx].name,qty:parseFloat(document.getElementById('lil-qty-'+idx)?.value)||liLevels[idx].qty||1}))];
+  const freight=parseFloat(document.getElementById('li-freight').value)||0;
+  const waste=parseFloat(document.getElementById('li-waste').value)||0;
+  const effectiveBase=(base+freight)*(1+waste/100);
+  const unitPrice=effectiveBase/divisor;
+  const serveEnabled=document.getElementById('li-serve-enabled').checked;
+  const servingUnit=serveEnabled?{
+    name:document.getElementById('li-serve-name').value.trim()||'ตัก',
+    qty:parseFloat(document.getElementById('li-serve-qty').value)||0,
+    costPerServe:unitPrice*(parseFloat(document.getElementById('li-serve-qty').value)||0)
+  }:null;
+  const existing=editIngrId?library.find(x=>x.id===editIngrId):null;
   const item={
     id:editIngrId||Date.now().toString(),
     name, cat:document.getElementById('li-cat').value,
     basePrice:base, total:base, qty:divisor,
-    unit:finalUnit, unitPrice:base/divisor,
+    unit:finalUnit, unitPrice,
     levels,
+    freight:freight||undefined, waste:waste||undefined,
+    servingUnit:servingUnit||undefined,
+    pinned:existing?.pinned||false,
+    priceHistory:existing?.priceHistory||[],
     updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
   };
   if(editIngrId){const i=library.findIndex(x=>x.id===editIngrId);if(i>=0)library[i]=item}
@@ -1979,6 +2157,8 @@ function renderLibrary(){
   const list=document.getElementById('lib-list');
   let data=library;
   if(activeLibCat!=='all')data=data.filter(x=>x.cat===activeLibCat);
+  // Pinned items first
+  data=[...data.filter(x=>x.pinned),...data.filter(x=>!x.pinned)];
   if(!data.length){
     list.innerHTML=`<div class="empty" style="grid-column:1/-1">
       <span class="empty-icon">📦</span>
@@ -1986,19 +2166,37 @@ function renderLibrary(){
       <div class="empty-sub">กด "+ เพิ่มวัตถุดิบ" เพื่อเริ่มบันทึก</div>
     </div>`;return;
   }
-  list.innerHTML=data.map(i=>`
-    <div class="lib-card">
+  list.innerHTML=data.map(i=>{
+    const hasHidden=i.freight||i.waste;
+    const hcId='hc-'+i.id;
+    const hiddenBlock=hasHidden?`
       <div>
-        <div class="lib-name">${i.name}</div>
+        <span class="lib-hc-toggle" onclick="toggleHiddenCosts('${hcId}')">👁 ต้นทุนซ่อน</span>
+        <div class="lib-hidden-costs" id="${hcId}" style="display:none">
+          ${i.freight?`<div><span>ค่าขนส่ง</span><span>${i.freight} ฿/Case</span></div>`:''}
+          ${i.waste?`<div><span>Waste Buffer</span><span>${i.waste}%</span></div>`:''}
+        </div>
+      </div>`:'';
+    const serveChip=i.servingUnit?`<span class="lib-serve-chip">🥄 ${i.servingUnit.name} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span>`:'';
+    return `
+    <div class="lib-card" style="${i.pinned?'border:2px solid #F5C518;':''}" id="libcard-${i.id}">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <button class="lib-pin-btn ${i.pinned?'pinned':''}" onclick="togglePin('${i.id}')" title="${i.pinned?'ถอดปักหมุด':'ปักหมุด'}">${i.pinned?'⭐':'☆'}</button>
+          <div class="lib-name" style="margin:0">${i.name}</div>
+        </div>
         <div class="lib-detail">
           <span class="cat-badge cat-${i.cat}">${CAT_EMOJI[i.cat]} ${i.cat}</span>
           <span style="margin-left:6px;font-size:11px">${i.qty} ${i.unit} = ${i.total} ฿</span>
+          ${serveChip}
         </div>
+        ${hiddenBlock}
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:flex-start;gap:10px;flex-shrink:0">
         <div style="text-align:right">
           <div class="lib-unit-price">${i.unitPrice.toFixed(4)}</div>
           <div class="lib-unit-label">฿/${i.unit}</div>
+          <button class="lib-dep-btn" style="margin-top:5px" onclick="openDep('${i.id}')">🔗 ดูเมนูที่ใช้</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:3px">
           <button class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;padding:5px 8px;font-size:11px" onclick="openPriceAdj('${i.id}')" title="ปรับปรุงราคา">🔄 ปรับราคา</button>
@@ -2008,10 +2206,75 @@ function renderLibrary(){
           </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 function setLibCat(c){activeLibCat=c;renderLibrary()}
+
+// ── V3.3 Helpers ──
+function toggleAdvSection(){
+  const s=document.getElementById('adv-section');
+  const btn=document.getElementById('adv-toggle-btn');
+  const open=s.style.display==='block';
+  s.style.display=open?'none':'block';
+  btn.classList.toggle('open',!open);
+}
+function toggleServeUnit(){
+  const en=document.getElementById('li-serve-enabled').checked;
+  document.getElementById('li-serve-inputs').style.display=en?'block':'none';
+  if(en)updateLiPrices();
+}
+function toggleHiddenCosts(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function togglePin(id){
+  const item=library.find(x=>x.id===id);
+  if(!item)return;
+  item.pinned=!item.pinned;
+  save();renderLibrary();
+  toast(item.pinned?'ปักหมุดแล้วค่ะ ⭐':'ถอดหมุดแล้วค่ะ');
+}
+function openDep(id){
+  const item=library.find(x=>x.id===id);
+  if(!item)return;
+  document.getElementById('dep-subtitle').textContent=item.name;
+  const usedMenus=menus.filter(m=>m.ingredients&&m.ingredients.some(ing=>ing.libId===id));
+  const usedComps=compounds.filter(c=>c.ingredients&&c.ingredients.some(ing=>ing.libId===id));
+  const cont=document.getElementById('dep-list-content');
+  if(!usedMenus.length&&!usedComps.length){
+    cont.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--txt3)">
+      <div style="font-size:2rem;margin-bottom:.5rem">🔍</div>
+      <div style="font-weight:600">ยังไม่มีเมนูหรือสูตรใดใช้วัตถุดิบนี้ค่ะ</div>
+    </div>`;
+  } else {
+    cont.innerHTML=[
+      usedMenus.length?`<div style="font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">เมนู (${usedMenus.length})</div>`:'',
+      ...usedMenus.map(m=>`<div class="dep-list-item">
+        <span style="font-size:18px">${menuEmoji(m.cat||'')}</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${m.name}</div>
+          <div style="font-size:11.5px;color:var(--txt3)">${m.cat||'—'}</div>
+        </div>
+        <span class="dep-badge dep-badge-menu">เมนู</span>
+      </div>`),
+      usedComps.length?`<div style="font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem;margin-top:.75rem">สูตรผสม (${usedComps.length})</div>`:'',
+      ...usedComps.map(c=>`<div class="dep-list-item">
+        <span style="font-size:18px">🧪</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${c.name}</div>
+          <div style="font-size:11.5px;color:var(--txt3)">${c.unit||'—'}</div>
+        </div>
+        <span class="dep-badge dep-badge-comp">สูตรผสม</span>
+      </div>`)
+    ].join('');
+  }
+  document.getElementById('modal-dep').style.display='block';
+}
+function closeDep(){
+  document.getElementById('modal-dep').style.display='none';
+}
 
 // ─────────────────────────────────────────
 // BREAKDOWN CALCULATOR (Feature 1)
