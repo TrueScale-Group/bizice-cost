@@ -1676,7 +1676,7 @@ function loadSettingsPage(){
       rb.style.color=isOwner?'#92400E':'#1E40AF';
       rb.style.borderColor=isOwner?'#FDE68A':'#BFDBFE';
     }
-    const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
+    const savedAvatar=getAvatar(s);
     const img=document.getElementById('st-avatar-img');
     const emoji=document.getElementById('st-avatar-emoji');
     if(savedAvatar&&img){img.src=savedAvatar;img.style.display='block';if(emoji)emoji.style.display='none';}
@@ -1730,6 +1730,16 @@ function goTab(name){
   if(name==='compare')renderCompare();
 }
 
+function getAvatar(s){
+  // s.photo (set by Hub v2+) → bizice_avatar_phone (fallback) → null
+  return s.photo || localStorage.getItem('bizice_avatar_'+(s.phone||'')) || null;
+}
+function applyAvatarEl(el, s){
+  const photo=getAvatar(s);
+  if(photo){el.innerHTML=`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  else{el.textContent=s.name?s.name[0].toUpperCase():'👤';}
+}
+
 function initSidebar(){
   const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
   if(!s)return;
@@ -1737,18 +1747,16 @@ function initSidebar(){
   const mtbN=document.getElementById('mtb-name');if(mtbN)mtbN.textContent=s.name||'—';
   const mtbR=document.getElementById('mtb-role');if(mtbR)mtbR.textContent=s.role==='owner'?'👑 Owner':'👤 Staff';
   const mtbAv=document.getElementById('mtb-avatar');
-  if(mtbAv){const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
-    if(savedAvatar)mtbAv.innerHTML=`<img src="${savedAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    else mtbAv.textContent=s.name?s.name[0].toUpperCase():'👤';}
+  if(mtbAv)applyAvatarEl(mtbAv,s);
   // Mobile user bar
   const mubN=document.getElementById('mub-name');if(mubN)mubN.textContent=s.name||'—';
   const mubR=document.getElementById('mub-role');if(mubR)mubR.textContent=s.role==='owner'?'👑 Owner':'👤 Staff';
   const mubAv=document.getElementById('mub-avatar');
-  if(mubAv){const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
+  if(mubAv){
     const roleColor=s.role==='owner'?'linear-gradient(135deg,#D97706,#92400E)':'linear-gradient(135deg,#1D4ED8,#1e40af)';
     mubAv.style.background=roleColor;
-    if(savedAvatar)mubAv.innerHTML=`<img src="${savedAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    else mubAv.textContent=s.name?s.name[0].toUpperCase():'👤';}
+    applyAvatarEl(mubAv,s);
+  }
   // Date: "จ. 13 พ.ค."
   const mubD=document.getElementById('mub-date');
   if(mubD){
@@ -1759,19 +1767,9 @@ function initSidebar(){
   }
   const nm=document.getElementById('sb-name');if(nm)nm.textContent=s.name||'—';
   const role=document.getElementById('sb-role');
-  if(role){
-    const isOwner=s.role==='owner';
-    role.textContent=isOwner?'👑 Owner':'👤 Staff';
-  }
+  if(role){const isOwner=s.role==='owner';role.textContent=isOwner?'👑 Owner':'👤 Staff';}
   const av=document.getElementById('sb-avatar');
-  if(av){
-    const savedAvatar=localStorage.getItem('bizice_avatar_'+(s.phone||''));
-    if(savedAvatar){
-      av.innerHTML=`<img src="${savedAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    } else {
-      av.textContent=s.name?s.name[0].toUpperCase():'👤';
-    }
-  }
+  if(av)applyAvatarEl(av,s);
 }
 
 
