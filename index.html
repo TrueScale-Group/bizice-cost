@@ -142,11 +142,38 @@ body{
 .tab-text{font-size:13px}
 
 /* ── SCROLL AREA ── */
-.scroll-area{flex:1;overflow-y:auto;min-height:0}
+.scroll-area{flex:1;overflow-y:auto;min-height:0;overscroll-behavior-y:none}
 .scroll-area::-webkit-scrollbar{width:6px}
 .scroll-area::-webkit-scrollbar-track{background:transparent}
 .scroll-area::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
 .scroll-area::-webkit-scrollbar-thumb:hover{background:#ccc}
+
+/* ── Pull-to-Refresh indicator ── */
+#ptr-indicator{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  height:0;overflow:hidden;
+  transition:height .22s cubic-bezier(.34,1.56,.64,1);
+}
+#ptr-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+#ptr-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+#ptr-ring .ptr-track{fill:none;stroke:#e5e7eb;stroke-width:3}
+#ptr-ring .ptr-arc  {fill:none;stroke:url(#ptr-grad);stroke-width:3;
+  stroke-linecap:round;stroke-dasharray:126;stroke-dashoffset:126;
+  transition:stroke-dashoffset .08s linear}
+#ptr-icon{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:transform .2s ease;
+}
+#ptr-label{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.3px}
+#ptr-indicator.ptr-ready  #ptr-icon{transform:scale(1.15)}
+#ptr-indicator.ptr-loading #ptr-icon{animation:ptr-bounce .6s ease infinite alternate}
+#ptr-indicator.ptr-loading .ptr-arc{animation:ptr-spin-arc 1s linear infinite;stroke-dashoffset:32}
+@keyframes ptr-bounce{0%{transform:scale(1) rotate(-8deg)}100%{transform:scale(1.2) rotate(8deg)}}
+@keyframes ptr-spin-arc{to{transform:rotate(270deg)}}
+/* ── Topbar Refresh Button ── */
+#topbar-refresh-btn:hover{color:#e31e24!important;background:rgba(227,30,36,.08)!important}
+#topbar-refresh-btn.spinning{animation:topbar-spin .7s linear infinite;pointer-events:none}
+@keyframes topbar-spin{to{transform:rotate(360deg)}}
 
 /* ── LAYOUT ── */
 .main{max-width:1100px;margin:0 auto;padding:1.5rem;overflow-x:hidden}
@@ -1272,7 +1299,11 @@ body{
     </div>
   </div>
   <div class="topbar-right">
-
+<button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล"
+  style="background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;
+         color:#9ca3af;font-size:18px;line-height:1;transition:color .2s;display:flex;align-items:center;">
+  🔄
+</button>
     <div class="tabs">
       <button class="tab active" onclick="goTab('menu')"><span class="tab-icon">🍦</span><span class="tab-text">เมนู</span></button>
       <button class="tab" onclick="goTab('library')"><span class="tab-icon">📦</span><span class="tab-text">คลัง</span></button>
@@ -1285,7 +1316,23 @@ body{
 </div>
 
 <!-- SCROLL AREA -->
-<div class="scroll-area">
+<div class="scroll-area" id="main-scroll">
+<div id="ptr-indicator">
+  <div id="ptr-ring">
+    <svg width="44" height="44" viewBox="0 0 44 44">
+      <defs>
+        <linearGradient id="ptr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#e31e24"/>
+          <stop offset="100%" stop-color="#ff7b7b"/>
+        </linearGradient>
+      </defs>
+      <circle class="ptr-track" cx="22" cy="22" r="20"/>
+      <circle class="ptr-arc"   cx="22" cy="22" r="20"/>
+    </svg>
+    <div id="ptr-icon">🧊</div>
+  </div>
+  <div id="ptr-label">ดึงลงเพื่อรีเฟรช</div>
+</div>
 <div class="main">
 
   <!-- ═══ MENU TAB ═══ -->
@@ -4043,6 +4090,90 @@ function importJSON(event){
 })();
 </script>
 <script>
+// ── Soft Refresh (ปุ่ม 🔄 + Auto) ──────────────────────────────────────────
+let _softRefreshing = false;
+async function softRefresh(){
+  if(_softRefreshing) return;
+  _softRefreshing = true;
+  const btn = document.getElementById('topbar-refresh-btn');
+  if(btn) btn.classList.add('spinning');
+  try{
+    await load();
+    if(typeof renderMenus === 'function') renderMenus();
+    if(typeof renderLibrary === 'function') renderLibrary();
+    if(typeof renderCompounds === 'function') renderCompounds();
+    if(typeof renderBdLevels === 'function') renderBdLevels();
+    if(typeof renderCompare === 'function') renderCompare();
+    if(typeof renderSettings === 'function') renderSettings();
+  }catch(e){}
+  if(btn) btn.classList.remove('spinning');
+  _softRefreshing = false;
+}
+
+// Auto Refresh ทุก 5 นาที (เฉพาะตอนที่แท็บอยู่ใน focus)
+setInterval(() => {
+  if(!document.hidden) softRefresh();
+}, 5 * 60 * 1000);
+
+// ── Pull-to-Refresh (mobile) ─────────────────────────────────────────────────
+(function(){
+  const THRESHOLD = 68;
+  const MAX_PULL  = 88;
+  const CIRC      = 126;
+
+  let startY = 0, pulling = false, refreshing = false;
+  const el  = () => document.getElementById('main-scroll');
+  const ptr = () => document.getElementById('ptr-indicator');
+  const arc = () => ptr()?.querySelector('.ptr-arc');
+  const lbl = () => document.getElementById('ptr-label');
+
+  function setArc(progress){ const a=arc(); if(a) a.style.strokeDashoffset = CIRC*(1-Math.min(progress,1)); }
+
+  function setState(state, h){
+    const p = ptr(); if(!p) return;
+    p.style.height = h+'px';
+    p.classList.toggle('ptr-ready',   state==='ready');
+    p.classList.toggle('ptr-loading', state==='loading');
+    if(lbl()){
+      if(state==='idle')    lbl().textContent='ดึงลงเพื่อรีเฟรช';
+      if(state==='ready')   lbl().textContent='🎉 ปล่อยเพื่อรีเฟรช';
+      if(state==='loading') lbl().textContent='กำลังโหลด…';
+    }
+  }
+
+  async function doRefresh(){
+    if(refreshing) return;
+    refreshing=true;
+    setState('loading',72); setArc(1);
+    try{ await softRefresh(); }catch(e){}
+    await new Promise(r=>setTimeout(r,400));
+    setState('idle',0); setArc(0);
+    refreshing=false;
+  }
+
+  document.addEventListener('touchstart',e=>{
+    const s=el(); if(!s||s.scrollTop>0) return;
+    startY=e.touches[0].clientY; pulling=true;
+  },{passive:true});
+
+  document.addEventListener('touchmove',e=>{
+    if(!pulling||refreshing) return;
+    const s=el(); if(!s||s.scrollTop>0){pulling=false;return;}
+    const dy=e.touches[0].clientY-startY;
+    if(dy<=0){setState('idle',0);setArc(0);return;}
+    const h=Math.min(dy*0.42,MAX_PULL);
+    setArc(h/THRESHOLD);
+    setState(h>=THRESHOLD?'ready':'idle',h);
+  },{passive:true});
+
+  document.addEventListener('touchend',()=>{
+    if(!pulling) return; pulling=false;
+    const h=parseFloat(ptr()?.style.height)||0;
+    if(h>=THRESHOLD) doRefresh();
+    else{setState('idle',0);setArc(0);}
+  });
+})();
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
