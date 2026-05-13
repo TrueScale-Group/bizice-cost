@@ -874,10 +874,12 @@ body{
   .scroll-area{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 }
 
-/* Mobile add-menu button toggle */
+/* Mobile add buttons — hide header btn, show full-width btn below */
 @media(max-width:640px){
   .add-menu-desktop{display:none!important}
   .add-menu-mobile{display:inline-flex!important}
+  .add-tab-desktop{display:none!important}
+  .add-tab-mobile{display:inline-flex!important}
 }
 
 /* ── V3.3 — Library Advanced ── */
@@ -1194,8 +1196,9 @@ body{
         <div class="ph-title">คลังวัตถุดิบ</div>
         <div class="ph-sub">บันทึกของที่ซื้อมา — ระบบคำนวณราคาต่อหน่วยให้อัตโนมัติ</div>
       </div>
-      <button class="btn btn-red" onclick="openAddIngr()">＋ เพิ่มวัตถุดิบ</button>
+      <button class="btn btn-red add-tab-desktop" onclick="openAddIngr()">＋ เพิ่มวัตถุดิบ</button>
     </div>
+    <button class="btn btn-red add-tab-mobile" onclick="openAddIngr()" style="display:none;width:100%;justify-content:center;margin-bottom:.85rem">＋ เพิ่มวัตถุดิบ</button>
 
     <div class="card" id="ingr-form" style="display:none">
       <div class="section-label">เพิ่ม / แก้ไข วัตถุดิบ</div>
@@ -1282,8 +1285,9 @@ body{
         <div class="ph-title">สูตรผสม</div>
         <div class="ph-sub">สูตรที่ผสมจากวัตถุดิบหลายอย่าง — คำนวณต้นทุนต่อหน่วยอัตโนมัติ</div>
       </div>
-      <button class="btn btn-purple" onclick="openAddCompound()">＋ เพิ่มสูตรผสม</button>
+      <button class="btn btn-purple add-tab-desktop" onclick="openAddCompound()">＋ เพิ่มสูตรผสม</button>
     </div>
+    <button class="btn btn-purple add-tab-mobile" onclick="openAddCompound()" style="display:none;width:100%;justify-content:center;margin-bottom:.85rem">＋ เพิ่มสูตรผสม</button>
     <div class="compound-grid" id="compound-list"></div>
   </div>
 
