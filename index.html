@@ -926,6 +926,69 @@ body{
   transform:translateX(-50%) translateY(0);
 }
 
+/* ── V3.5 — Duel Compare + Settings Polish ── */
+/* Duel selector row */
+.duel-selectors{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  gap:10px;align-items:center;margin-bottom:1.1rem;
+}
+.duel-vs{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--red),var(--red-d));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;
+  box-shadow:var(--sh-red);flex-shrink:0;
+}
+.duel-select{
+  width:100%;padding:9px 12px;font-size:13px;
+  font-family:'Sarabun',sans-serif;background:#fff;
+  border:1.5px solid var(--border2);border-radius:12px;
+  color:var(--txt);outline:none;cursor:pointer;
+  box-shadow:var(--sh);transition:border-color .15s;
+}
+.duel-select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(227,30,36,.09)}
+/* Duel cards side by side */
+.duel-cards{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.duel-card{
+  background:#fff;border-radius:16px;
+  border:2px solid var(--border);padding:1rem;
+  position:relative;transition:all .2s;
+}
+.duel-card.winner{border-color:#F5C518;box-shadow:0 0 0 3px rgba(245,197,24,.15),var(--sh-md)}
+.duel-winner-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#F5C518,#D97706);color:#fff;
+  font-size:11px;font-weight:800;padding:3px 12px;border-radius:20px;
+  white-space:nowrap;box-shadow:0 2px 8px rgba(217,119,6,.3);
+}
+.duel-name{font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px;text-align:center}
+.duel-cat{font-size:11px;color:var(--txt3);text-align:center;margin-bottom:.75rem}
+.duel-stat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.duel-stat-row:last-child{border:none}
+.duel-stat-label{color:var(--txt3);font-weight:500}
+.duel-stat-val{font-weight:700;color:var(--txt)}
+.duel-stat-val.better{color:var(--green)}
+.duel-stat-val.worse{color:var(--red)}
+/* Ingredient breakdown table */
+.duel-breakdown{background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:1rem}
+.duel-breakdown-header{
+  display:grid;grid-template-columns:1fr 80px 80px;
+  gap:4px;padding:8px 12px;
+  background:var(--surf2);
+  font-size:10.5px;font-weight:700;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.duel-breakdown-row{
+  display:grid;grid-template-columns:1fr 80px 80px;
+  gap:4px;padding:7px 12px;border-top:1px solid var(--border);
+  font-size:12.5px;align-items:center;
+}
+.duel-breakdown-row:nth-child(even){background:var(--surf2)}
+.duel-only{font-size:10px;background:var(--surf3);border-radius:4px;padding:1px 5px;color:var(--txt3)}
+/* Sync button + status */
+.sync-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sync-status{font-size:11.5px;color:var(--txt3);font-style:italic}
+
 /* ── V3.4 — Compound Enhancements ── */
 /* Yield pill */
 .yield-pill{
@@ -1386,6 +1449,23 @@ body{
         <div class="ph-sub">เปรียบเทียบ Food Cost % และกำไรทุกเมนู</div>
       </div>
     </div>
+
+    <!-- Duel Section -->
+    <div class="card" id="duel-section" style="margin-bottom:1rem">
+      <div class="section-label" style="margin-bottom:.85rem">⚔️ Duel Mode — เปรียบเทียบแบบคู่</div>
+      <div class="duel-selectors">
+        <select class="duel-select" id="duel-a" onchange="renderDuel()">
+          <option value="">— เลือกเมนู A —</option>
+        </select>
+        <div class="duel-vs">VS</div>
+        <select class="duel-select" id="duel-b" onchange="renderDuel()">
+          <option value="">— เลือกเมนู B —</option>
+        </select>
+      </div>
+      <div id="duel-content"></div>
+    </div>
+
+    <!-- Full ranking -->
     <div class="card" id="compare-content"></div>
   </div>
 
@@ -1540,12 +1620,22 @@ body{
           </div>
         </div>
 
-        <!-- ⚠️ Danger Zone — editor only -->
-        <div class="card st-editor-only" style="border:1.5px solid #FECACA">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:.3rem">
-            <div class="st-section" style="margin:0;color:#DC2626">Danger Zone</div>
+        <!-- ☁️ Manual Sync -->
+        <div class="card">
+          <div class="st-section" style="margin-bottom:.6rem">☁️ ซิงก์ข้อมูล</div>
+          <div class="sync-row" style="margin-bottom:.55rem">
+            <button onclick="manualSync()" style="display:flex;align-items:center;gap:8px;padding:.65rem 1.1rem;background:linear-gradient(135deg,#1D4ED8,#1e40af);color:#fff;border:none;border-radius:var(--rl);cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;box-shadow:0 2px 8px rgba(29,78,216,.25);transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">☁️ Sync ข้อมูลตอนนี้</button>
+            <span class="sync-status" id="sync-status-lbl">ยังไม่ได้ซิงก์</span>
           </div>
-          <div style="font-size:12px;color:var(--txt3);margin-bottom:.85rem">การกระทำนี้ <strong style="color:#DC2626">ไม่สามารถย้อนกลับได้</strong></div>
+          <div style="font-size:11.5px;color:var(--txt3)">กด Sync เพื่อบังคับบันทึกข้อมูลทั้งหมดขึ้น Firebase ทันที</div>
+        </div>
+
+        <!-- ⚠️ Danger Zone — Owner only -->
+        <div class="card st-editor-only" id="danger-zone-card" style="border:1.5px solid #FECACA;display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:.3rem">
+            <div class="st-section" style="margin:0;color:#DC2626">🔒 Owner Vault — Danger Zone</div>
+          </div>
+          <div style="font-size:12px;color:var(--txt3);margin-bottom:.85rem">การกระทำนี้ <strong style="color:#DC2626">ไม่สามารถย้อนกลับได้</strong> — เฉพาะ Owner เท่านั้น</div>
           <button onclick="clearAllData()" style="width:100%;display:flex;align-items:center;gap:12px;padding:.85rem 1rem;background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA;border-radius:var(--rl);cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
             <div style="width:40px;height:40px;background:#FEE2E2;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🗑️</div>
             <div style="text-align:left">
@@ -1998,6 +2088,13 @@ function loadSettingsPage(){
   document.querySelectorAll('.st-editor-only').forEach(el=>{
     el.style.display=isEditor?'':'none';
   });
+  // ── Danger Zone: Owner only ──
+  const dzCard=document.getElementById('danger-zone-card');
+  if(dzCard){
+    try{const s2=JSON.parse(localStorage.getItem('bizice_session')||'null');
+      dzCard.style.display=(s2&&s2.role==='owner')?'':'none';
+    }catch{dzCard.style.display='none';}
+  }
 }
 function clearAllData(){
   const pin = prompt('🔒 ใส่รหัส 4 หลักเพื่อยืนยันการลบข้อมูลทั้งหมด:');
@@ -3606,7 +3703,145 @@ function savePriceAdj(){
   closePriceAdj();
 }
 
+// ─────────────────────────────────────────
+// V3.5 — DUEL MODE + MANUAL SYNC
+// ─────────────────────────────────────────
+let lastSyncTime=null;
+
+function manualSync(){
+  const btn=event.currentTarget;
+  const lbl=document.getElementById('sync-status-lbl');
+  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังซิงก์...';}
+  db.collection('mixue_data').doc(DOC).set({menus,library,compounds},{merge:true})
+    .then(()=>{
+      lastSyncTime=new Date();
+      const ts=lastSyncTime.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      if(lbl)lbl.textContent='ซิงก์ล่าสุดเมื่อ: '+ts;
+      if(btn){btn.disabled=false;btn.textContent='☁️ Sync ข้อมูลตอนนี้';}
+      toast('ซิงก์สำเร็จแล้วค่า! ☁️');
+    })
+    .catch(()=>{
+      if(lbl)lbl.textContent='ซิงก์ไม่สำเร็จ ลองใหม่';
+      if(btn){btn.disabled=false;btn.textContent='☁️ Sync ข้อมูลตอนนี้';}
+      toast('ซิงก์ไม่สำเร็จ ❌','⚠');
+    });
+}
+
+function populateDuelSelectors(){
+  const selA=document.getElementById('duel-a');
+  const selB=document.getElementById('duel-b');
+  if(!selA||!selB)return;
+  const prevA=selA.value, prevB=selB.value;
+  [selA,selB].forEach((sel,i)=>{
+    const placeholder=i===0?'— เลือกเมนู A —':'— เลือกเมนู B —';
+    sel.innerHTML=`<option value="">${placeholder}</option>`;
+    menus.forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m.id;opt.textContent=m.name;
+      sel.appendChild(opt);
+    });
+  });
+  if(prevA)selA.value=prevA;
+  if(prevB)selB.value=prevB;
+}
+
+function renderDuel(){
+  const selA=document.getElementById('duel-a');
+  const selB=document.getElementById('duel-b');
+  const cont=document.getElementById('duel-content');
+  if(!selA||!selB||!cont)return;
+  const mA=menus.find(m=>m.id===selA.value);
+  const mB=menus.find(m=>m.id===selB.value);
+  if(!mA||!mB){
+    cont.innerHTML=mA||mB?'<div style="text-align:center;padding:1rem;font-size:13px;color:var(--txt3)">เลือกเมนูทั้งสองด้านเพื่อเปรียบเทียบ</div>':'';
+    return;
+  }
+  // Calc best size for each (use first available size)
+  function getBestSize(m){
+    for(const sz of['S','M','L']){
+      const p=sz==='S'?m.priceS:sz==='M'?m.priceM:m.priceL;
+      if(p>0)return{sz,price:p};
+    }
+    return{sz:'S',price:0};
+  }
+  const bestA=getBestSize(mA), bestB=getBestSize(mB);
+  const costA=calcCost(mA.ingredients,bestA.sz);
+  const costB=calcCost(mB.ingredients,bestB.sz);
+  const pctA=bestA.price>0?costA/bestA.price*100:0;
+  const pctB=bestB.price>0?costB/bestB.price*100:0;
+  const gpA=bestA.price-costA, gpB=bestB.price-costB;
+
+  const isABestPct=pctA<=pctB;
+  const isABestGP=gpA>=gpB;
+
+  function cardHtml(m,sz,price,cost,pct,gp,isBestPct,isBestGP){
+    const winner=isBestPct||isBestGP;
+    return`<div class="duel-card${winner?' winner':''}">
+      ${isBestGP?'<div class="duel-winner-badge" style="background:linear-gradient(90deg,#F5C518,#FBBF24)">🏆 กำไรต่อแก้วสูงสุด</div>':''}
+      ${isBestPct&&!isBestGP?'<div class="duel-winner-badge" style="background:linear-gradient(90deg,#15803D,#16a34a)">🟢 ต้นทุนต่ำสุด</div>':''}
+      ${isBestGP&&isBestPct?'<div class="duel-winner-badge" style="background:linear-gradient(90deg,#6D28D9,#7C3AED);margin-top:3px">🟢 ต้นทุนต่ำสุด</div>':''}
+      <div style="padding:.85rem">
+        <div class="duel-name">${m.name}</div>
+        <div class="duel-cat">${m.cat} · แก้ว ${sz}</div>
+        <div class="duel-stat-row"><span class="duel-stat-label">ราคาขาย</span><span class="duel-stat-val">${fmtNum(price,2)} ฿</span></div>
+        <div class="duel-stat-row"><span class="duel-stat-label">ต้นทุน</span><span class="duel-stat-val">${fmtNum(cost,2)} ฿</span></div>
+        <div class="duel-stat-row"><span class="duel-stat-label">Food Cost</span><span class="duel-stat-val ${isBestPct?'better':'worse'}">${pct.toFixed(1)}%</span></div>
+        <div class="duel-stat-row"><span class="duel-stat-label">กำไร/แก้ว</span><span class="duel-stat-val ${isBestGP?'better':'worse'}">${fmtNum(gp,2)} ฿</span></div>
+      </div>
+    </div>`;
+  }
+
+  // Ingredient breakdown
+  function buildIngrMap(m,sz){
+    const map={};
+    (m.ingredients||[]).forEach(ing=>{
+      if(!ing.libId&&!ing.name)return;
+      const qty=sz==='S'?(ing.qtyS||ing.qty||0):sz==='M'?(ing.qtyM||ing.qty||0):(ing.qtyL||ing.qty||0);
+      if(qty<=0)return;
+      const lib=library.find(l=>l.id===ing.libId)||{};
+      const unit=lib.serveEnabled&&lib.serveName?lib.serveName:(lib.unit||ing.unit||'g');
+      const cpu=lib.serveEnabled&&lib.serveQty>0?(lib.unitPrice*(lib.serveQty)):(lib.unitPrice||0);
+      const cost=lib.serveEnabled&&lib.serveQty>0?qty*cpu:(qty*(lib.unitPrice||0));
+      map[ing.libId||ing.name]={name:ing.name||lib.name||'?',qty,unit,cost};
+    });
+    return map;
+  }
+
+  const mapA=buildIngrMap(mA,bestA.sz);
+  const mapB=buildIngrMap(mB,bestB.sz);
+  const allKeys=new Set([...Object.keys(mapA),...Object.keys(mapB)]);
+  let bRows='';
+  allKeys.forEach(k=>{
+    const a=mapA[k],b=mapB[k];
+    const nameStr=(a||b).name;
+    const costAv=a?a.cost:null, costBv=b?b.cost:null;
+    const aBetter=costAv!==null&&costBv!==null&&costAv<costBv;
+    const bBetter=costAv!==null&&costBv!==null&&costBv<costAv;
+    bRows+=`<div class="duel-breakdown-row">
+      <span style="flex:1;font-weight:500;font-size:12.5px">${nameStr}</span>
+      <span style="width:80px;text-align:right;font-size:12px;color:${aBetter?'var(--green)':costAv===null?'var(--txt3)':'var(--txt)'};font-weight:${aBetter?700:400}">${costAv!==null?fmtNum(costAv,2)+' ฿':'<span class="duel-only">ไม่มี</span>'}</span>
+      <span style="width:80px;text-align:right;font-size:12px;color:${bBetter?'var(--green)':costBv===null?'var(--txt3)':'var(--txt)'};font-weight:${bBetter?700:400}">${costBv!==null?fmtNum(costBv,2)+' ฿':'<span class="duel-only">ไม่มี</span>'}</span>
+    </div>`;
+  });
+
+  cont.innerHTML=`
+    <div class="duel-cards">
+      ${cardHtml(mA,bestA.sz,bestA.price,costA,pctA,gpA,isABestPct,isABestGP)}
+      ${cardHtml(mB,bestB.sz,bestB.price,costB,pctB,gpB,!isABestPct,!isABestGP)}
+    </div>
+    ${allKeys.size>0?`<div class="duel-breakdown">
+      <div class="duel-breakdown-header">
+        <span style="flex:1">วัตถุดิบ</span>
+        <span style="width:80px;text-align:right">${mA.name}</span>
+        <span style="width:80px;text-align:right">${mB.name}</span>
+      </div>
+      ${bRows}
+    </div>`:''}`;
+}
+
 function renderCompare(){
+  populateDuelSelectors();
+  renderDuel();
   const el=document.getElementById('compare-content');
   const allData=[];
   menus.forEach(m=>{
