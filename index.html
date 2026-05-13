@@ -1349,10 +1349,7 @@ body{
     <div class="ph">
       <div>
         <div class="ph-title">เปรียบเทียบต้นทุน</div>
-        <div style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;background:var(--surf2);border:1px solid var(--border2);border-radius:20px;padding:3px 10px">
-          <span style="font-size:11px;color:var(--txt3)">📊</span>
-          <span style="font-size:11px;font-weight:600;color:var(--txt2)">เรียง Food Cost % ต่ำ → สูง</span>
-        </div>
+        <div class="ph-sub">เปรียบเทียบ Food Cost % และกำไรทุกเมนู</div>
       </div>
     </div>
     <div class="card" id="compare-content"></div>
@@ -1827,6 +1824,7 @@ const DOC='mixue-cost-manager'; // single document id
 let menus=[], library=[], compounds=[];
 let editMenuId=null, editIngrId=null, editCompoundId=null, mIngrCount=0, cpIngrCount=0;
 let activeMenuCat='all', activeLibCat='all', activeMenuSort='default';
+let activeLibSort='default', activeCompoundSort='default', activeCompareSort='pct-asc';
 
 // ─── LOAD / SAVE ───
 async function load(){
@@ -2249,11 +2247,36 @@ function renderLibrary(){
     `<span class="fchip${activeLibCat===c?' active':''}" onclick="setLibCat('${c}')">${c==='all'?'ทั้งหมด':CAT_EMOJI[c]+' '+c}</span>`
   ).join('');
 
+  // Sort bar for library
+  let sortBar=document.getElementById('lib-sort-bar');
+  if(!sortBar){
+    sortBar=document.createElement('div');
+    sortBar.id='lib-sort-bar';
+    sortBar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap';
+    document.getElementById('lib-filter-bar').insertAdjacentElement('afterend',sortBar);
+  }
+  sortBar.innerHTML=`<span style="font-size:12px;font-weight:600;color:var(--txt3)">เรียงตาม</span>
+    <select class="sort-select" onchange="setLibSort(this.value)">
+      <option value="default"${activeLibSort==='default'?' selected':''}>ค่าเริ่มต้น</option>
+      <option value="name-az"${activeLibSort==='name-az'?' selected':''}>ชื่อ A→Z</option>
+      <option value="price-asc"${activeLibSort==='price-asc'?' selected':''}>ราคา/หน่วย ต่ำ→สูง</option>
+      <option value="price-desc"${activeLibSort==='price-desc'?' selected':''}>ราคา/หน่วย สูง→ต่ำ</option>
+      <option value="total-asc"${activeLibSort==='total-asc'?' selected':''}>ราคาซื้อ ต่ำ→สูง</option>
+      <option value="total-desc"${activeLibSort==='total-desc'?' selected':''}>ราคาซื้อ สูง→ต่ำ</option>
+    </select>`;
+
   const list=document.getElementById('lib-list');
   let data=library;
   if(activeLibCat!=='all')data=data.filter(x=>x.cat===activeLibCat);
-  // Pinned items first
-  data=[...data.filter(x=>x.pinned),...data.filter(x=>!x.pinned)];
+  // Sort
+  const pinned=data.filter(x=>x.pinned);
+  let unpinned=data.filter(x=>!x.pinned);
+  if(activeLibSort==='name-az') unpinned=[...unpinned].sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  else if(activeLibSort==='price-asc') unpinned=[...unpinned].sort((a,b)=>a.unitPrice-b.unitPrice);
+  else if(activeLibSort==='price-desc') unpinned=[...unpinned].sort((a,b)=>b.unitPrice-a.unitPrice);
+  else if(activeLibSort==='total-asc') unpinned=[...unpinned].sort((a,b)=>(a.basePrice||a.total)-(b.basePrice||b.total));
+  else if(activeLibSort==='total-desc') unpinned=[...unpinned].sort((a,b)=>(b.basePrice||b.total)-(a.basePrice||a.total));
+  data=[...pinned,...unpinned];
   if(!data.length){
     list.innerHTML=`<div class="empty" style="grid-column:1/-1">
       <span class="empty-icon">📦</span>
@@ -2319,6 +2342,9 @@ function renderLibrary(){
   }).join('');
 }
 function setLibCat(c){activeLibCat=c;renderLibrary()}
+function setLibSort(v){activeLibSort=v;renderLibrary()}
+function setCpSort(v){activeCompoundSort=v;renderCompounds()}
+function setCmpSort(v){activeCompareSort=v;renderCompare()}
 
 // ── V3.3 Helpers ──
 function toggleAdvSection(){
@@ -3328,7 +3354,26 @@ function renderCompounds(){
       <button class="btn btn-purple" onclick="openAddCompound()">＋ เพิ่มสูตรผสมแรก</button>
     </div>`;return;
   }
-  list.innerHTML=compounds.map(c=>{
+  // Sort bar
+  let sortBar=document.getElementById('compound-sort-bar');
+  if(!sortBar){
+    sortBar=document.createElement('div');
+    sortBar.id='compound-sort-bar';
+    sortBar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:.75rem';
+    list.insertAdjacentElement('beforebegin',sortBar);
+  }
+  sortBar.innerHTML=`<span style="font-size:12px;font-weight:600;color:var(--txt3)">เรียงตาม</span>
+    <select class="sort-select" onchange="setCpSort(this.value)">
+      <option value="default"${activeCompoundSort==='default'?' selected':''}>ค่าเริ่มต้น</option>
+      <option value="name-az"${activeCompoundSort==='name-az'?' selected':''}>ชื่อ A→Z</option>
+      <option value="cost-asc"${activeCompoundSort==='cost-asc'?' selected':''}>ต้นทุน/หน่วย ต่ำ→สูง</option>
+      <option value="cost-desc"${activeCompoundSort==='cost-desc'?' selected':''}>ต้นทุน/หน่วย สูง→ต่ำ</option>
+    </select>`;
+  let data=[...compounds];
+  if(activeCompoundSort==='name-az') data.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  else if(activeCompoundSort==='cost-asc') data.sort((a,b)=>(a.costPerOutputUnit||0)-(b.costPerOutputUnit||0));
+  else if(activeCompoundSort==='cost-desc') data.sort((a,b)=>(b.costPerOutputUnit||0)-(a.costPerOutputUnit||0));
+  list.innerHTML=data.map(c=>{
     const cpu=c.costPerOutputUnit||0;
     const totalCost=c.ingredients.reduce((s,ing)=>s+ing.qty*ing.unitPrice,0);
     const yieldPct=c.yield||100;
@@ -3501,7 +3546,28 @@ function renderCompare(){
     el.innerHTML='<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">ยังไม่มีข้อมูลค่ะ</div><div class="empty-sub">เพิ่มเมนูในแท็บ "เมนู" ก่อนนะคะ</div></div>';
     return;
   }
-  allData.sort((a,b)=>a.pct-b.pct);
+  // Sort bar
+  let sortBar=document.getElementById('compare-sort-bar');
+  if(!sortBar){
+    sortBar=document.createElement('div');
+    sortBar.id='compare-sort-bar';
+    sortBar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:.75rem';
+    el.insertAdjacentElement('beforebegin',sortBar);
+  }
+  sortBar.innerHTML=`<span style="font-size:12px;font-weight:600;color:var(--txt3)">เรียงตาม</span>
+    <select class="sort-select" onchange="setCmpSort(this.value)">
+      <option value="pct-asc"${activeCompareSort==='pct-asc'?' selected':''}>Cost% ต่ำ→สูง</option>
+      <option value="pct-desc"${activeCompareSort==='pct-desc'?' selected':''}>Cost% สูง→ต่ำ</option>
+      <option value="gp-desc"${activeCompareSort==='gp-desc'?' selected':''}>กำไร สูง→ต่ำ</option>
+      <option value="gp-asc"${activeCompareSort==='gp-asc'?' selected':''}>กำไร ต่ำ→สูง</option>
+      <option value="name-az"${activeCompareSort==='name-az'?' selected':''}>ชื่อ A→Z</option>
+    </select>`;
+  if(activeCompareSort==='pct-asc') allData.sort((a,b)=>a.pct-b.pct);
+  else if(activeCompareSort==='pct-desc') allData.sort((a,b)=>b.pct-a.pct);
+  else if(activeCompareSort==='gp-desc') allData.sort((a,b)=>b.gp-a.gp);
+  else if(activeCompareSort==='gp-asc') allData.sort((a,b)=>a.gp-b.gp);
+  else if(activeCompareSort==='name-az') allData.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  else allData.sort((a,b)=>a.pct-b.pct);
   const maxPct=Math.max(...allData.map(d=>d.pct),60);
 
   // Summary stats
