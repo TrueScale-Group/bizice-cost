@@ -402,8 +402,8 @@ body{
   background:#fff;border-radius:16px;
   border:1px solid rgba(0,0,0,0.05);
   box-shadow:0 2px 10px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.03);
-  padding:.9rem 1.1rem;
-  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 1.1rem;
+  display:flex;flex-direction:column;
   transition:all .2s ease;
 }
 .lib-card:hover{box-shadow:0 5px 18px rgba(0,0,0,0.10);transform:translateY(-2px)}
@@ -2177,33 +2177,47 @@ function renderLibrary(){
           ${i.waste?`<div><span>Waste Buffer</span><span>${i.waste}%</span></div>`:''}
         </div>
       </div>`:'';
-    const serveChip=i.servingUnit?`<span class="lib-serve-chip">🥄 ${i.servingUnit.name} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span>`:'';
+    const serveChip=i.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${i.servingUnit.name} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span></div>`:'';
+    // Format purchase summary clearly
+    const baseLabel=i.levels&&i.levels.length>0?i.levels[0].name:i.unit;
+    const purchaseSummary=`ซื้อ ${Number(i.basePrice||i.total).toLocaleString('th-TH')} ฿ / ${baseLabel}`;
     return `
-    <div class="lib-card" style="${i.pinned?'border:2px solid #F5C518;':''}" id="libcard-${i.id}">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <button class="lib-pin-btn ${i.pinned?'pinned':''}" onclick="togglePin('${i.id}')" title="${i.pinned?'ถอดปักหมุด':'ปักหมุด'}">${i.pinned?'⭐':'☆'}</button>
-          <div class="lib-name" style="margin:0">${i.name}</div>
+    <div class="lib-card" style="${i.pinned?'border:2px solid #F5C518;box-shadow:0 0 0 3px rgba(245,197,24,.15);':''}" id="libcard-${i.id}">
+      <!-- Row 1: Name + Pin -->
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
+        <button class="lib-pin-btn ${i.pinned?'pinned':''}" onclick="togglePin('${i.id}')" title="${i.pinned?'ถอดปักหมุด':'ปักหมุด'}" style="margin-top:1px;flex-shrink:0">${i.pinned?'⭐':'☆'}</button>
+        <div style="flex:1;min-width:0">
+          <div class="lib-name" style="margin:0;font-size:14.5px">${i.name}</div>
+          <span class="cat-badge cat-${i.cat}" style="margin-top:3px;display:inline-block">${CAT_EMOJI[i.cat]} ${i.cat}</span>
         </div>
-        <div class="lib-detail">
-          <span class="cat-badge cat-${i.cat}">${CAT_EMOJI[i.cat]} ${i.cat}</span>
-          <span style="margin-left:6px;font-size:11px">${i.qty} ${i.unit} = ${i.total} ฿</span>
-          ${serveChip}
-        </div>
-        ${hiddenBlock}
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;flex-shrink:0">
-        <div style="text-align:right">
-          <div class="lib-unit-price">${i.unitPrice.toFixed(4)}</div>
-          <div class="lib-unit-label">฿/${i.unit}</div>
-          <button class="lib-dep-btn" style="margin-top:5px" onclick="openDep('${i.id}')">🔗 ดูเมนูที่ใช้</button>
+      <!-- Row 2: Stats row -->
+      <div style="display:flex;align-items:stretch;gap:8px;margin-bottom:8px">
+        <!-- Unit price box (big) -->
+        <div style="flex:1;background:var(--red-p);border-radius:10px;padding:8px 10px;text-align:center;min-width:0">
+          <div style="font-size:11px;color:var(--txt3);font-weight:600;margin-bottom:2px">ราคาต่อหน่วย</div>
+          <div style="font-size:18px;font-weight:800;color:var(--red);line-height:1.1">${fmtPrice(i.unitPrice)}</div>
+          <div style="font-size:11px;color:var(--red-d);font-weight:600">฿ / ${i.unit}</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <button class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;padding:5px 8px;font-size:11px" onclick="openPriceAdj('${i.id}')" title="ปรับปรุงราคา">🔄 ปรับราคา</button>
-          <div style="display:flex;gap:3px">
-            <button class="btn-del" onclick="openAddIngr('${i.id}')" title="แก้ไข">✏️</button>
-            <button class="btn-del" onclick="deleteIngr('${i.id}')" title="ลบ">🗑</button>
-          </div>
+        <!-- Purchase info box -->
+        <div style="flex:1.2;background:var(--surf2);border-radius:10px;padding:8px 10px;min-width:0">
+          <div style="font-size:10.5px;color:var(--txt3);font-weight:600;margin-bottom:3px">📦 ราคาซื้อ</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${Number(i.basePrice||i.total).toLocaleString('th-TH')} ฿</div>
+          <div style="font-size:11px;color:var(--txt3)">ต่อ 1 ${baseLabel}</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:1px">= ${Number(i.qty).toLocaleString('th-TH')} ${i.unit}</div>
+        </div>
+      </div>
+      <!-- Serving unit chip -->
+      ${serveChip}
+      <!-- Hidden costs -->
+      ${hiddenBlock}
+      <!-- Action row -->
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="lib-dep-btn" onclick="openDep('${i.id}')">🔗 ใช้ในเมนู</button>
+        <button class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;padding:5px 9px;font-size:11.5px;border-radius:8px" onclick="openPriceAdj('${i.id}')">🔄 ปรับราคา</button>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="btn-del" onclick="openAddIngr('${i.id}')" title="แก้ไข">✏️</button>
+          <button class="btn-del" onclick="deleteIngr('${i.id}')" title="ลบ">🗑</button>
         </div>
       </div>
     </div>`;
