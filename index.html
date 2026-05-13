@@ -3795,14 +3795,16 @@ function renderDuel(){
   function buildIngrMap(m,sz){
     const map={};
     (m.ingredients||[]).forEach(ing=>{
-      if(!ing.libId&&!ing.name)return;
-      const qty=sz==='S'?(ing.qtyS||ing.qty||0):sz==='M'?(ing.qtyM||ing.qty||0):(ing.qtyL||ing.qty||0);
+      // Only include ingredients that apply to this size (or global)
+      if(ing.sizeTarget && ing.sizeTarget!==sz) return;
+      const name=ing.name||'?';
+      const key=ing.sourceId||name;
+      const qty=parseFloat(ing.qty)||0;
       if(qty<=0)return;
-      const lib=library.find(l=>l.id===ing.libId)||{};
-      const unit=lib.serveEnabled&&lib.serveName?lib.serveName:(lib.unit||ing.unit||'g');
-      const cpu=lib.serveEnabled&&lib.serveQty>0?(lib.unitPrice*(lib.serveQty)):(lib.unitPrice||0);
-      const cost=lib.serveEnabled&&lib.serveQty>0?qty*cpu:(qty*(lib.unitPrice||0));
-      map[ing.libId||ing.name]={name:ing.name||lib.name||'?',qty,unit,cost};
+      const cost=qty*(parseFloat(ing.pricePerUnit)||0);
+      const unit=ing.unit||'';
+      if(map[key]){map[key].cost+=cost;map[key].qty+=qty;}
+      else map[key]={name,qty,unit,cost};
     });
     return map;
   }
