@@ -1693,7 +1693,7 @@ body{
         <div style="display:flex;align-items:center;gap:8px">
           <div id="m-cat-emoji" style="font-size:28px;line-height:1;flex-shrink:0">🍦</div>
           <select class="fselect" id="m-cat" onchange="document.getElementById('m-cat-emoji').textContent=menuEmoji(this.value)">
-            <option>🍓 ชาผลไม้</option><option>🍦 ไอศกรีม</option><option>🧋 ชานม</option><option>☕ กาแฟ</option>
+            <option>🍓 ชาผลไม้</option><option>🍦 ไอศกรีม</option><option>🧋 ชานม</option><option>☕ กาแฟ</option><option>🍵 ชาออริจินัล</option>
           </select>
         </div>
       </div>
@@ -1930,7 +1930,7 @@ let bdLastResult=null;
 
 const CATS=['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','วัตถุดิบ','บรรจุภัณฑ์','อื่นๆ'];
 const CAT_EMOJI={'แยม':'🍓','ผลไม้':'🍑','ไซรัป':'🍯','ท็อปปิ้ง':'🍫','วัตถุดิบ':'🥛','บรรจุภัณฑ์':'📦','อื่นๆ':'🔖'};
-const MENU_CAT_EMOJI={'ชาผลไม้':'🍓','ไอศกรีม':'🍦','ชานม':'🧋','กาแฟ':'☕'};
+const MENU_CAT_EMOJI={'ชาผลไม้':'🍓','ไอศกรีม':'🍦','ชานม':'🧋','กาแฟ':'☕','ชาออริจินัล':'🍵'};
 function menuEmoji(cat){return Object.entries(MENU_CAT_EMOJI).find(([k])=>cat&&cat.includes(k))?.[1]||'🍽'}
 const LIB_SUGGESTIONS={'แยม':'เช่น แยมสตรอว์เบอร์รี, แยมพีช, แยมมะม่วง','ผลไม้':'เช่น ส้ม, มะนาว, สับปะรด','ไซรัป':'เช่น บราวน์ชูก้า, ช้อกโกแลต, เฮเซลนัท','ท็อปปิ้ง':'เช่น คริสตัล, วุ้นมะพร้าว, ไข่มุก, วาฟเฟิล','วัตถุดิบ':'เช่น ไอติมนม, ผงพุดดิ้ง, ชาเขียว, กาแฟ','บรรจุภัณฑ์':'เช่น แก้ว 400, แก้ว 500, ฝาโดม, หลอดใหญ่','อื่นๆ':'เช่น กระดาษใบเสร็จ, สติ๊กเกอร์'};
 function updateLibPlaceholder(){
