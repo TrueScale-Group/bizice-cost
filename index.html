@@ -1452,17 +1452,25 @@ body{
 
     <!-- Duel Section -->
     <div class="card" id="duel-section" style="margin-bottom:1rem">
-      <div class="section-label" style="margin-bottom:.85rem">⚔️ Duel Mode — เปรียบเทียบแบบคู่</div>
-      <div class="duel-selectors">
-        <select class="duel-select" id="duel-a" onchange="renderDuel()">
-          <option value="">— เลือกเมนู A —</option>
-        </select>
-        <div class="duel-vs">VS</div>
-        <select class="duel-select" id="duel-b" onchange="renderDuel()">
-          <option value="">— เลือกเมนู B —</option>
-        </select>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem">
+        <div class="section-label" style="margin:0">⚔️ Duel Mode — เปรียบเทียบแบบคู่</div>
+        <button id="duel-reset-btn" onclick="resetDuel()" style="display:none;align-items:center;gap:5px;padding:6px 14px;background:var(--surf2);border:1.5px solid var(--border2);border-radius:20px;font-size:12.5px;font-weight:700;color:var(--txt2);cursor:pointer;font-family:inherit">✕ รีเซ็ต</button>
       </div>
-      <div id="duel-content"></div>
+      <!-- Picker state -->
+      <div id="duel-picker">
+        <div class="duel-selectors">
+          <select class="duel-select" id="duel-a">
+            <option value="">— เลือกเมนู A —</option>
+          </select>
+          <div class="duel-vs">VS</div>
+          <select class="duel-select" id="duel-b">
+            <option value="">— เลือกเมนู B —</option>
+          </select>
+        </div>
+        <button onclick="startDuel()" style="width:100%;margin-top:.75rem;padding:.75rem;background:linear-gradient(135deg,var(--red),var(--red-d));color:#fff;border:none;border-radius:var(--rl);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:var(--sh-red);letter-spacing:.3px">⚔️ เริ่มเปรียบเทียบ</button>
+      </div>
+      <!-- Result state -->
+      <div id="duel-content" style="display:none"></div>
     </div>
 
     <!-- Full ranking -->
@@ -3727,6 +3735,29 @@ function manualSync(){
     });
 }
 
+function startDuel(){
+  const selA=document.getElementById('duel-a');
+  const selB=document.getElementById('duel-b');
+  if(!selA.value||!selB.value){toast('เลือกเมนูทั้ง 2 ด้านก่อนนะคะ','⚠');return;}
+  if(selA.value===selB.value){toast('เลือกเมนูคนละอัน ค่าเดียวกันเปรียบไม่ได้ค่ะ','⚠');return;}
+  document.getElementById('duel-picker').style.display='none';
+  document.getElementById('duel-content').style.display='block';
+  const rb=document.getElementById('duel-reset-btn');
+  if(rb)rb.style.display='flex';
+  renderDuel();
+}
+function resetDuel(){
+  document.getElementById('duel-picker').style.display='block';
+  document.getElementById('duel-content').style.display='none';
+  document.getElementById('duel-content').innerHTML='';
+  const rb=document.getElementById('duel-reset-btn');
+  if(rb)rb.style.display='none';
+  // reset selects
+  const selA=document.getElementById('duel-a');
+  const selB=document.getElementById('duel-b');
+  if(selA)selA.value='';
+  if(selB)selB.value='';
+}
 function populateDuelSelectors(){
   const selA=document.getElementById('duel-a');
   const selB=document.getElementById('duel-b');
@@ -3752,10 +3783,7 @@ function renderDuel(){
   if(!selA||!selB||!cont)return;
   const mA=menus.find(m=>m.id===selA.value);
   const mB=menus.find(m=>m.id===selB.value);
-  if(!mA||!mB){
-    cont.innerHTML=mA||mB?'<div style="text-align:center;padding:1rem;font-size:13px;color:var(--txt3)">เลือกเมนูทั้งสองด้านเพื่อเปรียบเทียบ</div>':'';
-    return;
-  }
+  if(!mA||!mB){cont.innerHTML='';return;}
   // Calc best size for each (use first available size)
   function getBestSize(m){
     for(const sz of['S','M','L']){
@@ -3843,7 +3871,6 @@ function renderDuel(){
 
 function renderCompare(){
   populateDuelSelectors();
-  renderDuel();
   const el=document.getElementById('compare-content');
   const allData=[];
   menus.forEach(m=>{
