@@ -1256,6 +1256,9 @@ body{
       <div style="font-size:10.5px;color:var(--txt3)" id="mtb-role">—</div>
     </div>
     <div class="mub-avatar" id="mtb-avatar" style="width:32px;height:32px;font-size:13px;flex-shrink:0">👤</div>
+    <button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล"
+      style="width:34px;height:34px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;flex-shrink:0;transition:background .15s"
+      onmouseover="this.style.background='#DBEAFE'" onmouseout="this.style.background='#EFF6FF'">🔄</button>
   </div>
 </div>
 
@@ -1305,9 +1308,6 @@ body{
       <button class="tab" onclick="goTab('compound')"><span class="tab-icon">🧪</span><span class="tab-text">สูตรผสม</span></button>
       <button class="tab" onclick="goTab('compare')"><span class="tab-icon">📊</span><span class="tab-text">เปรียบเทียบ</span></button>
       <button class="tab" onclick="goTab('settings')"><span class="tab-icon">⚙️</span><span class="tab-text">ตั้งค่า</span></button>
-      <button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล" class="tab" style="flex:0 0 auto;width:44px">
-        <span class="tab-icon">🔄</span>
-      </button>
     </div>
   </div>
 </div>
