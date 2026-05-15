@@ -1210,6 +1210,42 @@ body{
 }
 .sb-logout:hover{background:#FEE2E2;border-color:#FCA5A5}
 
+/* ── DESKTOP CONTENT HEADER ── */
+.desk-content-header {
+  display: none;
+}
+@media(min-width:1024px) {
+  .desk-content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 2rem 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surf);
+    flex-shrink: 0;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+  .dch-title {
+    font-family: 'Prompt', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--txt);
+  }
+  .dch-date {
+    font-size: 13px;
+    color: var(--txt2);
+    margin-left: 10px;
+  }
+  .dch-time {
+    font-size: 12px;
+    color: var(--txt3);
+    margin-left: 6px;
+  }
+  /* Hide conn-online pill in topbar area on desktop */
+  .conn-online { display: none !important; }
+}
+
 /* ── PRICE ADJUSTMENT MODAL ── */
 .trend-toggle{display:flex;gap:8px;margin-top:4px}
 .trend-btn{
@@ -1367,6 +1403,16 @@ body{
   <div id="ptr-label">ดึงลงเพื่อรีเฟรช</div>
 </div>
 <div class="main">
+
+  <!-- Desktop Content Header (visible ≥1024px only) -->
+  <div class="desk-content-header" id="desk-content-header">
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+      <span class="dch-title" id="dch-page-title">—</span>
+      <span class="dch-date" id="dch-date">—</span>
+      <span class="dch-time" id="dch-time">—</span>
+    </div>
+    <div id="dch-conn-status"></div>
+  </div>
 
   <!-- ═══ MENU TAB ═══ -->
   <div id="tab-menu" class="page active">
@@ -4197,6 +4243,42 @@ setInterval(() => {
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+
+// ── Desktop Content Header (date + conn status) ──────────────────────────────
+(function initDeskContentHeader(){
+  function updateDCH(){
+    const now = new Date();
+    const dateEl = document.getElementById('dch-date');
+    const timeEl = document.getElementById('dch-time');
+    if(dateEl) dateEl.textContent = now.toLocaleDateString('th-TH', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    if(timeEl) timeEl.textContent = now.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) + ' น.';
+  }
+  updateDCH();
+  setInterval(updateDCH, 60000);
+
+  const connEl = document.getElementById('dch-conn-status');
+  function updateConn(){
+    if(!connEl) return;
+    const isOnline = navigator.onLine;
+    connEl.innerHTML = isOnline
+      ? '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#F0FDF4;color:#15803D"><span style="width:7px;height:7px;border-radius:50%;background:#15803D;display:inline-block"></span>Online</span>'
+      : '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#FEE2E2;color:#DC2626"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;display:inline-block"></span>Offline</span>';
+  }
+  updateConn();
+  window.addEventListener('online', updateConn);
+  window.addEventListener('offline', updateConn);
+
+  function updatePageTitle(){
+    const titleEl = document.getElementById('dch-page-title');
+    if(!titleEl) return;
+    const activeTab = document.querySelector('.snav-btn.active, [data-tab].active');
+    if(activeTab){
+      titleEl.textContent = activeTab.textContent.trim().replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u, '').trim();
+    }
+  }
+  updatePageTitle();
+  document.addEventListener('click', ()=>setTimeout(updatePageTitle, 100));
+})();
 let _goHomePending=false;
 let _goHomeTimer=null;
 function goHome(){
