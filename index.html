@@ -1311,6 +1311,9 @@ body{
 .guard-exit-bar>div{display:flex;gap:8px}
 .guard-btn-cancel{padding:4px 14px;border-radius:8px;border:1.5px solid #D97706;background:#fff;color:#D97706;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .guard-btn-exit{padding:4px 14px;border-radius:8px;border:none;background:#EF4444;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+@keyframes guardBarShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-7px)}35%{transform:translateX(7px)}55%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes guardXBounce{0%,100%{transform:scale(1) rotate(0)}20%{transform:scale(1.35) rotate(-12deg)}40%{transform:scale(1.25) rotate(10deg)}60%{transform:scale(1.1) rotate(-5deg)}80%{transform:scale(1.05) rotate(2deg)}}
+.guard-x-bounce{animation:guardXBounce 0.45s ease!important}
 </style>
 </head>
 <body>
@@ -2942,7 +2945,7 @@ function openAddMenu(id=null){
 let _guardPending=false;
 function guardClose(closeFn,isDirty,sel){
   if(!isDirty){_dismissGuardBar();closeFn();return}
-  if(_guardPending){_dismissGuardBar();closeFn();return}
+  if(_guardPending){_guardShake();return}   // bar แสดงอยู่ → shake ห้ามออก
   _guardPending=true;
   const box=typeof sel==='string'?document.querySelector(sel):sel;
   if(!box){closeFn();return}
@@ -2953,6 +2956,20 @@ function guardClose(closeFn,isDirty,sel){
   bar.querySelector('.guard-btn-exit').onclick=()=>{_guardPending=false;_removeGuardBar();closeFn()};
   const hdr=box.querySelector('.modal-header');
   if(hdr)hdr.insertAdjacentElement('afterend',bar);else box.insertAdjacentElement('afterbegin',bar);
+  // Bounce the X button
+  const xBtn=box.querySelector('.btn-del');
+  if(xBtn){xBtn.classList.add('guard-x-bounce');xBtn.addEventListener('animationend',()=>xBtn.classList.remove('guard-x-bounce'),{once:true})}
+}
+function _guardShake(){
+  const bar=document.querySelector('.guard-exit-bar');
+  if(!bar)return;
+  bar.style.animation='none';
+  void bar.offsetHeight;
+  bar.style.animation='guardBarShake 0.4s ease';
+  bar.addEventListener('animationend',()=>{bar.style.animation=''},{ once:true });
+  // Bounce X again
+  const xBtn=bar.parentElement?.querySelector('.btn-del');
+  if(xBtn){xBtn.classList.add('guard-x-bounce');xBtn.addEventListener('animationend',()=>xBtn.classList.remove('guard-x-bounce'),{once:true})}
 }
 function _removeGuardBar(){document.querySelector('.guard-exit-bar')?.remove()}
 function _dismissGuardBar(){_guardPending=false;_removeGuardBar()}
