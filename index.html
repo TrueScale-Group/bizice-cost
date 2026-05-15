@@ -1305,6 +1305,12 @@ body{
   .metric-val{font-size:22px}
   .metric-lbl{font-size:10px}
 }
+/* ── UnsavedGuard ── */
+.guard-exit-bar{display:flex;align-items:center;justify-content:space-between;background:#FFF7ED;border-bottom:1px solid #FED7AA;padding:8px 16px;gap:10px;flex-shrink:0}
+.guard-exit-bar>span{font-size:13px;color:#92400E;font-weight:600;font-family:'Sarabun',sans-serif}
+.guard-exit-bar>div{display:flex;gap:8px}
+.guard-btn-cancel{padding:4px 14px;border-radius:8px;border:1.5px solid #D97706;background:#fff;color:#D97706;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.guard-btn-exit{padding:4px 14px;border-radius:8px;border:none;background:#EF4444;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -1811,14 +1817,14 @@ body{
   </div>
 </div>
 
-<div id="modal-bg" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+<div id="modal-bg" class="modal-overlay" onclick="if(event.target===this)guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')">
 <div class="modal-box">
   <div class="modal-header">
     <div>
       <div class="modal-title" id="modal-title">เพิ่มเมนูใหม่</div>
       <div class="modal-sub">กรอกสูตรวัตถุดิบและราคาขาย</div>
     </div>
-    <button class="btn-del" onclick="closeModal()" style="font-size:18px;padding:8px">✕</button>
+    <button class="btn-del" onclick="guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')" style="font-size:18px;padding:8px">✕</button>
   </div>
 
   <div style="padding:1.5rem">
@@ -1859,7 +1865,7 @@ body{
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+    <button class="btn btn-ghost" onclick="guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')">ยกเลิก</button>
     <button class="btn btn-ghost" onclick="previewMenu()">👁 ดูตัวอย่าง</button>
     <button class="btn btn-red" onclick="saveMenu()">✓ บันทึกเมนู</button>
   </div>
@@ -1908,14 +1914,14 @@ body{
 </div>
 
 <!-- ═══════════════ MODAL — COMPOUND (Feature 2) ═══════════════ -->
-<div id="modal-compound" class="modal-overlay" onclick="if(event.target===this)closeCompoundModal()">
+<div id="modal-compound" class="modal-overlay" onclick="if(event.target===this)guardClose(closeCompoundModal,!!(document.getElementById('cp-name')?.value.trim()||cpIngrCount>0),'#modal-compound .modal-box')">
 <div class="modal-box" style="max-width:740px">
   <div class="modal-header" style="background:linear-gradient(to right,#fff 65%,var(--purple-bg))">
     <div>
       <div class="modal-title" id="compound-modal-title">เพิ่มสูตรผสม</div>
       <div class="modal-sub">ผสมวัตถุดิบหลายอย่างเป็นส่วนผสมใหม่</div>
     </div>
-    <button class="btn-del" onclick="closeCompoundModal()" style="font-size:18px;padding:8px">✕</button>
+    <button class="btn-del" onclick="guardClose(closeCompoundModal,!!(document.getElementById('cp-name')?.value.trim()||cpIngrCount>0),'#modal-compound .modal-box')" style="font-size:18px;padding:8px">✕</button>
   </div>
   <div style="padding:1.5rem">
 
@@ -1979,7 +1985,7 @@ body{
     </div>
   </div>
   <div class="modal-footer" style="background:var(--purple-bg)">
-    <button class="btn btn-ghost" onclick="closeCompoundModal()">ยกเลิก</button>
+    <button class="btn btn-ghost" onclick="guardClose(closeCompoundModal,!!(document.getElementById('cp-name')?.value.trim()||cpIngrCount>0),'#modal-compound .modal-box')">ยกเลิก</button>
     <button class="btn btn-purple" onclick="saveCompound()">✓ บันทึกสูตรผสม</button>
   </div>
 </div>
@@ -2928,7 +2934,30 @@ function openAddMenu(id=null){
   }
   document.getElementById('modal-bg').style.display='block';
 }
-function closeModal(){document.getElementById('modal-bg').style.display='none';editMenuId=null}
+/* ─── UnsavedGuard ────────────────────────────────────────────
+   guardClose(closeFn, isDirty, modalBoxSel)
+   isDirty     : boolean — มีข้อมูลที่ยังไม่บันทึก
+   modalBoxSel : CSS selector ของ modal box (inject confirm bar ที่นี่)
+   ─────────────────────────────────────────────────────────── */
+let _guardPending=false;
+function guardClose(closeFn,isDirty,sel){
+  if(!isDirty){_dismissGuardBar();closeFn();return}
+  if(_guardPending){_dismissGuardBar();closeFn();return}
+  _guardPending=true;
+  const box=typeof sel==='string'?document.querySelector(sel):sel;
+  if(!box){closeFn();return}
+  _removeGuardBar();
+  const bar=document.createElement('div');
+  bar.className='guard-exit-bar';
+  bar.innerHTML='<span>⚠️ ออกโดยไม่บันทึก?</span><div><button class="guard-btn-cancel" onclick="_dismissGuardBar()">ยกเลิก</button><button class="guard-btn-exit">ออก</button></div>';
+  bar.querySelector('.guard-btn-exit').onclick=()=>{_guardPending=false;_removeGuardBar();closeFn()};
+  const hdr=box.querySelector('.modal-header');
+  if(hdr)hdr.insertAdjacentElement('afterend',bar);else box.insertAdjacentElement('afterbegin',bar);
+}
+function _removeGuardBar(){document.querySelector('.guard-exit-bar')?.remove()}
+function _dismissGuardBar(){_guardPending=false;_removeGuardBar()}
+
+function closeModal(){document.getElementById('modal-bg').style.display='none';editMenuId=null;_dismissGuardBar()}
 
 const IST=['background:#fff;border:1px solid var(--border2);border-radius:8px;padding:6px 7px;font-size:13px;font-family:\'Sarabun\',sans-serif;color:var(--txt);outline:none;min-width:0;width:100%'].join('');
 
@@ -3456,7 +3485,7 @@ function openAddCompound(id=null){
 }
 function closeCompoundModal(){
   document.getElementById('modal-compound').style.display='none';
-  editCompoundId=null;
+  editCompoundId=null;_dismissGuardBar();
 }
 
 function addCpIngrRow(ing=null){
