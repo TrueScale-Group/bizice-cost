@@ -15,10 +15,17 @@
 (function(){
   const HUB = 'https://truescale-group.github.io/mixue-ice-sakon/';
   try{
-    const s = JSON.parse(localStorage.getItem('bizice_session')||'null');
-    if(!s || !s.name){ window.location.replace(HUB); }
+    const params = new URLSearchParams(location.search);
+    let s = JSON.parse(localStorage.getItem('bizice_session')||'null');
+    // Fallback: URL params (Hub passes user/mode when opening via iframe)
+    if((!s || !s.name) && params.get('user')){
+      s = { name: decodeURIComponent(params.get('user')||'ผู้ใช้'), role: params.get('mode')==='editor'?'editor':'viewer', expiry: Date.now()+86400000 };
+      try{ localStorage.setItem('bizice_session', JSON.stringify(s)); }catch(e){}
+    }
+    if(!s || !s.name){ window.location.replace(HUB); return; }
+    window._bizSession = s;
     // viewer mode — disable edit buttons after DOM loads
-    const mode = new URLSearchParams(location.search).get('mode')||'viewer';
+    const mode = params.get('mode') || s.role || 'viewer';
     if(mode === 'viewer'){
       document.addEventListener('DOMContentLoaded', function(){
         document.querySelectorAll('.edit-btn,.delete-btn,.add-btn,[onclick*="openAdd"],[onclick*="delete"],[onclick*="Delete"]').forEach(function(el){
@@ -72,7 +79,18 @@ body{
   transition:all .17s;
 }
 .back-btn:hover{background:#FFE4E5;border-color:rgba(227,30,36,0.3)}
-.back-btn::before{content:"🏠";font-size:16px}
+/* ลบ ::before — emoji อยู่ใน HTML แทน */
+
+/* Online pill */
+.conn-online{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:700;color:#16A34A;
+  background:#F0FDF4;border:1px solid #BBF7D0;
+  border-radius:20px;padding:3px 9px;white-space:nowrap;
+}
+.conn-online::before{content:'';width:7px;height:7px;border-radius:50%;
+  background:#22C55E;flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(34,197,94,.25)}
 
 /* Mobile top bar (back btn + user mini) */
 .mobile-top-bar{
@@ -524,6 +542,7 @@ body{
 }
 .toast.show{animation:toastIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
 .toast.hide{animation:toastOut .22s ease forwards}
+.toast.warn{background:rgba(234,179,8,0.96);color:#1a1a00;border-color:rgba(255,255,255,0.18)}
 
 /* ── PAGE HEADER ── */
 .ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem}
@@ -1184,12 +1203,12 @@ body{
 .sb-urole{font-size:11px;color:var(--txt3);margin-top:1px}
 .sb-logout{
   width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
-  padding:8px;background:var(--surf2);
-  border:1px solid var(--border2);border-radius:var(--r);
+  padding:8px;background:#FEF2F2;
+  border:1px solid #FECACA;border-radius:var(--r);
   font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;
-  color:var(--txt2);cursor:pointer;transition:all .17s;
+  color:#B01519;cursor:pointer;transition:all .17s;
 }
-.sb-logout:hover{background:var(--red-p);color:var(--red);border-color:#FECACA}
+.sb-logout:hover{background:#FEE2E2;border-color:#FCA5A5}
 
 /* ── PRICE ADJUSTMENT MODAL ── */
 .trend-toggle{display:flex;gap:8px;margin-top:4px}
@@ -1249,23 +1268,41 @@ body{
 
 <!-- MOBILE TOP BAR — same layout as Daily Income -->
 <div class="mobile-top-bar" id="mobile-top-bar">
-  <a class="back-btn" href="#" onclick="goHome();return false;" style="background:#E31E24;color:#fff;border:none;border-radius:20px;padding:6px 13px 6px 10px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:5px;text-decoration:none;flex-shrink:0">🏠 Home</a>
-  <div style="display:flex;align-items:center;gap:9px;flex:1;min-width:0;margin:0 8px">
-    <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.15);flex-shrink:0;border:2px solid rgba(227,30,36,0.15);background:linear-gradient(135deg,#E31E24,#B01519);display:flex;align-items:center;justify-content:center;font-size:18px">🧋</div>
-    <div style="font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mixue Cost Manager</div>
+  <!-- Home button — emoji ใน HTML เท่านั้น ไม่มี ::before แล้ว -->
+  <a class="back-btn" href="#" onclick="goHome();return false;"
+    style="background:#E31E24;color:#fff;border:none;border-radius:20px;
+           padding:6px 13px 6px 10px;font-size:13px;font-weight:600;
+           display:inline-flex;align-items:center;gap:5px;
+           text-decoration:none;flex-shrink:0">🏠 Home</a>
+
+  <!-- Brand -->
+  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;margin:0 8px">
+    <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;
+                box-shadow:0 2px 8px rgba(0,0,0,.12);flex-shrink:0;
+                border:2px solid rgba(227,30,36,0.18)">
+      <img src="./icon-cost.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
+    </div>
+    <div style="font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;
+                color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+      Mixue Cost Manager
+    </div>
   </div>
+
+  <!-- Right: Online + Refresh -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto">
-    <div id="mtb-role" style="font-size:12px;color:var(--txt3);font-weight:600;white-space:nowrap"></div>
+    <span class="conn-online">Online</span>
     <button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล"
-      style="background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;color:var(--txt3);font-size:18px;line-height:1;display:flex;align-items:center;transition:color .2s">🔄</button>
+      style="background:none;border:none;cursor:pointer;padding:4px 6px;
+             border-radius:8px;color:var(--txt3);font-size:18px;line-height:1;
+             display:flex;align-items:center;transition:color .2s">🔄</button>
   </div>
 </div>
 
 <!-- SIDEBAR (Desktop ≥1024px) -->
 <div class="sidebar" id="sidebar">
   <div class="sb-brand">
-    <div class="brand-icon" style="width:38px;height:38px;background:linear-gradient(135deg,#E31E24,#B01519);border-radius:11px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:var(--sh-red);flex-shrink:0">
-      <span style="font-size:22px">🧋</span>
+    <div class="brand-icon" style="width:38px;height:38px;border-radius:11px;overflow:hidden;box-shadow:var(--sh-red);flex-shrink:0">
+      <img src="./icon-cost.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
     </div>
     <div style="min-width:0">
       <div class="brand-name" style="font-size:14px;letter-spacing:-.2px">Cost Manager</div>
@@ -1287,7 +1324,7 @@ body{
         <div class="sb-urole" id="sb-role">—</div>
       </div>
     </div>
-    <button class="sb-logout" onclick="goHome()">🏠 ออกจากระบบ</button>
+    <button class="sb-logout" onclick="goHome()">🏠 กลับหน้าหลัก</button>
   </div>
 </div>
 
@@ -1541,9 +1578,8 @@ body{
         <div class="card">
           <div class="st-section">Account</div>
           <div style="display:flex;align-items:center;gap:14px;padding:.25rem 0 1rem">
-            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#E31E24,#9B0000);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;box-shadow:0 3px 10px rgba(227,30,36,.25)">
-              <span id="st-avatar-emoji">👤</span>
-              <img id="st-avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+            <div id="st-avatar-circle" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#E31E24,#9B0000);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;box-shadow:0 3px 10px rgba(227,30,36,.25)">
+              <span id="st-avatar-emoji">?</span>
             </div>
             <div style="flex:1;min-width:0">
               <div style="font-size:18px;font-weight:700;color:var(--txt);line-height:1.2" id="st-name">—</div>
@@ -1552,10 +1588,7 @@ body{
             <div id="st-role-badge" style="padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;background:#FEF9C3;color:#92400E;border:1.5px solid #FDE68A;flex-shrink:0">—</div>
           </div>
           <div class="st-divider"></div>
-          <div style="display:flex;align-items:center;gap:8px;padding-top:.65rem;font-size:12.5px;color:var(--txt3)">
-            <span style="font-size:14px">💡</span>
-            <span>จัดการโปรไฟล์และรหัสผ่านได้ที่ <strong style="color:var(--txt2)">BizICE Hub → Profile</strong></span>
-          </div>
+          <button onclick="goHome()" style="width:100%;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;color:#B01519;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">🏠 กลับหน้าหลัก</button>
         </div>
 
         <!-- 🎯 Food Cost Benchmark -->
@@ -1668,8 +1701,7 @@ body{
           <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:var(--surf2);border-radius:var(--r);font-size:12px;color:var(--txt3)">
             <span style="font-weight:600">BizICE Cost Manager</span>
             <div style="text-align:right">
-              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">v 3.5.0</span>
-              <span style="font-size:10px;color:var(--txt3);margin-top:2px;display:block">อัพเดท 13 พ.ค. 2569</span>
+              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">[v1.0.0] · อัพเดท 1 พ.ค. 2569</span>
             </div>
           </div>
         </div>
@@ -2047,9 +2079,10 @@ let toastTimer=null;
 function toast(msg,icon='✓'){
   const t=document.getElementById('toast');
   if(toastTimer)clearTimeout(toastTimer);
-  t.classList.remove('show','hide');
+  t.classList.remove('show','hide','warn');
   void t.offsetWidth;
   t.innerHTML=`<span style="font-size:15px">${icon}</span><span>${msg}</span>`;
+  if(icon==='⚠️')t.classList.add('warn');
   t.classList.add('show');
   toastTimer=setTimeout(()=>{
     t.classList.remove('show');t.classList.add('hide');
@@ -2108,17 +2141,13 @@ function loadSettingsPage(){
     const ph=document.getElementById('st-phone');if(ph)ph.textContent=s.phone||'—';
     const rb=document.getElementById('st-role-badge');
     if(rb){
-      const isOwner=s.role==='owner';
-      rb.textContent=isOwner?'👑 Owner':'👤 Staff';
-      rb.style.background=isOwner?'#FEF9C3':'#EFF6FF';
-      rb.style.color=isOwner?'#92400E':'#1E40AF';
-      rb.style.borderColor=isOwner?'#FDE68A':'#BFDBFE';
+      const role=(s.role||'viewer').toLowerCase();
+      if(role==='owner'){rb.textContent='👑 Owner';rb.style.background='#FEF9C3';rb.style.color='#92400E';rb.style.borderColor='#FDE68A';}
+      else if(role==='editor'){rb.textContent='✏️ Editor';rb.style.background='#EFF6FF';rb.style.color='#1E40AF';rb.style.borderColor='#BFDBFE';}
+      else{rb.textContent='👁️ Viewer';rb.style.background='#F5F3FF';rb.style.color='#6D28D9';rb.style.borderColor='#DDD6FE';}
     }
-    const savedAvatar=getAvatar(s);
-    const img=document.getElementById('st-avatar-img');
     const emoji=document.getElementById('st-avatar-emoji');
-    if(savedAvatar&&img){img.src=savedAvatar;img.style.display='block';if(emoji)emoji.style.display='none';}
-    else{if(img)img.style.display='none';if(emoji){emoji.style.display='flex';emoji.textContent=s.name?s.name[0].toUpperCase():'👤';}}
+    if(emoji){emoji.textContent=s.name?s.name[0].toUpperCase():'?';}
   }
 
   // ── Data counts ──
@@ -4168,12 +4197,23 @@ setInterval(() => {
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+let _goHomePending=false;
+let _goHomeTimer=null;
 function goHome(){
-  if(window.parent !== window){
-    // อยู่ใน iframe → บอก Hub ให้ปิด
-    window.parent.postMessage('closeApp','*');
+  if(_goHomePending){
+    // Second press — navigate
+    _goHomePending=false;
+    if(_goHomeTimer){clearTimeout(_goHomeTimer);_goHomeTimer=null;}
+    if(window.parent !== window){
+      window.parent.postMessage('closeApp','*');
+    } else {
+      window.location.href='https://truescale-group.github.io/mixue-ice-sakon/';
+    }
   } else {
-    window.location.href='https://truescale-group.github.io/mixue-ice-sakon/';
+    // First press — show warning toast
+    _goHomePending=true;
+    toast('กดอีกครั้งเพื่อกลับหน้าหลัก','⚠️');
+    _goHomeTimer=setTimeout(()=>{_goHomePending=false;_goHomeTimer=null;},2000);
   }
 }
 </script>
