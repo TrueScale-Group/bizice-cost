@@ -2428,8 +2428,6 @@ function updateLiPrices(){
 
 function fmtPrice(p){
   if(p===0)return'0';
-  if(p<0.01)return p.toFixed(6).replace(/0+$/,'');
-  if(p<1)return p.toFixed(4).replace(/0+$/,'');
   const n=p.toFixed(2);
   return parseFloat(n)>=1000?parseFloat(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):n;
 }
@@ -3019,7 +3017,7 @@ function onMenuItemSelect(id){
     if(c&&uEl&&pEl){
       uEl.textContent=c.outputUnit;uEl.dataset.unit=c.outputUnit;
       uEl.dataset.price=c.costPerOutputUnit||0;uEl.dataset.srcid=c.id;
-      pEl.textContent=(c.costPerOutputUnit||0).toFixed(4)+'฿';
+      pEl.textContent=(c.costPerOutputUnit||0).toFixed(2)+'฿';
     }
   } else {
     const lid=document.getElementById('mli-'+id)?.value;
@@ -3027,7 +3025,7 @@ function onMenuItemSelect(id){
     if(li&&uEl&&pEl){
       uEl.textContent=li.unit;uEl.dataset.unit=li.unit;
       uEl.dataset.price=li.unitPrice||0;uEl.dataset.srcid=li.id;
-      pEl.textContent=(li.unitPrice||0).toFixed(4)+'฿';
+      pEl.textContent=(li.unitPrice||0).toFixed(2)+'฿';
     } else {
       if(uEl){uEl.textContent='—';uEl.dataset.unit='';uEl.dataset.price=0;}
       if(pEl)pEl.textContent='—';
@@ -3501,7 +3499,7 @@ function addCpIngrRow(ing=null){
       const uEl=document.getElementById('cpu-'+id);
       const pEl=document.getElementById('cpp-'+id);
       if(uEl)uEl.textContent=selItem.unit;
-      if(pEl)pEl.textContent=selItem.unitPrice.toFixed(4)+'฿';
+      if(pEl)pEl.textContent=selItem.unitPrice.toFixed(2)+'฿';
       // store data attrs for getCpIngredients
       if(uEl){uEl.dataset.unit=selItem.unit;uEl.dataset.price=selItem.unitPrice}
     },0);
@@ -3527,7 +3525,7 @@ function onCpItemSelect(id){
   const pEl=document.getElementById('cpp-'+id);
   if(item&&uEl&&pEl){
     uEl.textContent=item.unit;uEl.dataset.unit=item.unit;
-    pEl.textContent=item.unitPrice.toFixed(4)+'฿';uEl.dataset.price=item.unitPrice;
+    pEl.textContent=item.unitPrice.toFixed(2)+'฿';uEl.dataset.price=item.unitPrice;
   } else {
     if(uEl){uEl.textContent='—';uEl.dataset.unit='';uEl.dataset.price=0;}
     if(pEl)pEl.textContent='—';
