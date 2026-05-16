@@ -1785,7 +1785,7 @@ body{
           <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:var(--surf2);border-radius:var(--r);font-size:12px;color:var(--txt3)">
             <span style="font-weight:600">BizICE Cost Manager</span>
             <div style="text-align:right">
-              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">[v1.2.0] · อัพเดท 16 พ.ค. 2569</span>
+              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">[v1.3.0] · อัพเดท 16 พ.ค. 2569</span>
             </div>
           </div>
         </div>
@@ -2014,14 +2014,14 @@ body{
 <div class="toast" id="toast"></div>
 
 <!-- ═══════════════ MODAL — PRICE ADJUSTMENT (V3.1) ═══════════════ -->
-<div id="modal-price-adj" class="modal-overlay" onclick="if(event.target===this)closePriceAdj()">
+<div id="modal-price-adj" class="modal-overlay" onclick="if(event.target===this)guardClose(closePriceAdj,!!(document.getElementById('padj-price')?.value||document.getElementById('padj-reason')?.value),'#modal-price-adj .modal-box')">
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
       <div>
         <div class="modal-title">🔄 ปรับปรุงราคาวัตถุดิบ</div>
         <div class="modal-sub" id="padj-subtitle">—</div>
       </div>
-      <button onclick="closePriceAdj()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--txt3);padding:4px">✕</button>
+      <button class="btn-del" onclick="guardClose(closePriceAdj,!!(document.getElementById('padj-price')?.value||document.getElementById('padj-reason')?.value),'#modal-price-adj .modal-box')" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--txt3);padding:4px">✕</button>
     </div>
     <div style="padding:1.25rem 1.5rem">
       <!-- New price -->
@@ -2057,7 +2057,7 @@ body{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closePriceAdj()">ยกเลิก</button>
+      <button class="btn btn-ghost" onclick="guardClose(closePriceAdj,!!(document.getElementById('padj-price')?.value||document.getElementById('padj-reason')?.value),'#modal-price-adj .modal-box')">ยกเลิก</button>
       <button class="btn btn-red" onclick="savePriceAdj()">✓ บันทึกการปรับราคา</button>
     </div>
   </div>
@@ -2961,8 +2961,8 @@ function openAddMenu(id=null){
    ─────────────────────────────────────────────────────────── */
 let _guardPending=false;
 function guardClose(closeFn,isDirty,sel){
-  if(!isDirty){_dismissGuardBar();closeFn();return}
-  if(_guardPending){_guardShake();return}   // bar แสดงอยู่ → shake ห้ามออก
+  if(_guardPending){_guardShake();return}   // bar แสดงอยู่ → shake เสมอ (ก่อน isDirty check)
+  if(!isDirty){closeFn();return}
   _guardPending=true;
   const box=typeof sel==='string'?document.querySelector(sel):sel;
   if(!box){closeFn();return}
@@ -3824,6 +3824,7 @@ function openPriceAdj(id){
 function closePriceAdj(){
   document.getElementById('modal-price-adj').style.display='none';
   padjId=null;
+  _dismissGuardBar();
 }
 
 function setTrend(t){
