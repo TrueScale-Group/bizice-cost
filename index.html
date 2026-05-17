@@ -19,7 +19,7 @@
     let s = JSON.parse(localStorage.getItem('bizice_session')||'null');
     // Fallback: URL params (Hub passes user/mode when opening via iframe)
     if((!s || !s.name) && params.get('user')){
-      s = { name: decodeURIComponent(params.get('user')||'ผู้ใช้'), role: params.get('mode')==='editor'?'editor':'viewer', expiry: Date.now()+86400000 };
+      s = { name: decodeURIComponent(params.get('user')||'ผู้ใช้'), phone: decodeURIComponent(params.get('phone')||''), role: params.get('mode')==='editor'?'editor':'viewer', expiry: Date.now()+86400000 };
       try{ localStorage.setItem('bizice_session', JSON.stringify(s)); }catch(e){}
     }
     if(!s || !s.name){ window.location.replace(HUB); return; }
