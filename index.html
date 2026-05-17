@@ -4353,24 +4353,8 @@ if('serviceWorker' in navigator){
   updatePageTitle();
   document.addEventListener('click', ()=>setTimeout(updatePageTitle, 100));
 })();
-let _goHomePending=false;
-let _goHomeTimer=null;
 function goHome(){
-  if(_goHomePending){
-    // Second press — navigate
-    _goHomePending=false;
-    if(_goHomeTimer){clearTimeout(_goHomeTimer);_goHomeTimer=null;}
-    if(window.parent !== window){
-      window.parent.postMessage('closeApp','*');
-    } else {
-      window.location.href='https://truescale-group.github.io/mixue-ice-sakon/';
-    }
-  } else {
-    // First press — show warning toast
-    _goHomePending=true;
-    toast('กดอีกครั้งเพื่อกลับหน้าหลัก','⚠️');
-    _goHomeTimer=setTimeout(()=>{_goHomePending=false;_goHomeTimer=null;},2000);
-  }
+  window.top.location.href='https://truescale-group.github.io/mixue-ice-sakon/';
 }
 </script>
 </body>
