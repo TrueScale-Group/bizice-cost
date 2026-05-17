@@ -1331,6 +1331,7 @@ body{
   .finput{font-size:15px;padding:9px 12px}
 }
 .guard-x-bounce{animation:guardXBounce 0.45s ease!important}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -1499,6 +1500,10 @@ body{
     </div>
 
     <div class="filter-bar" id="menu-filter-bar"></div>
+    <div id="menu-loading" style="display:flex;align-items:center;justify-content:center;padding:32px;gap:10px">
+      <div style="width:32px;height:32px;border-radius:50%;border:3px solid #F3F4F6;border-top-color:#E31E24;animation:spin .7s linear infinite"></div>
+      <span style="font-size:13px;color:#9CA3AF;font-weight:600">กำลังโหลด...</span>
+    </div>
     <div class="menu-grid" id="menu-list"></div>
   </div>
 
@@ -1589,6 +1594,10 @@ body{
     </div>
 
     <div class="filter-bar" id="lib-filter-bar"></div>
+    <div id="lib-loading" style="display:none;align-items:center;justify-content:center;padding:32px;gap:10px">
+      <div style="width:32px;height:32px;border-radius:50%;border:3px solid #F3F4F6;border-top-color:#E31E24;animation:spin .7s linear infinite"></div>
+      <span style="font-size:13px;color:#9CA3AF;font-weight:600">กำลังโหลด...</span>
+    </div>
     <div class="lib-grid" id="lib-list"></div>
   </div>
 
@@ -1602,6 +1611,10 @@ body{
       <button class="btn btn-purple add-tab-desktop" onclick="openAddCompound()">＋ เพิ่มสูตรผสม</button>
     </div>
     <button class="btn btn-purple add-tab-mobile" onclick="openAddCompound()" style="display:none;width:100%;justify-content:center;margin-bottom:.85rem">＋ เพิ่มสูตรผสม</button>
+    <div id="compound-loading" style="display:none;align-items:center;justify-content:center;padding:32px;gap:10px">
+      <div style="width:32px;height:32px;border-radius:50%;border:3px solid #F3F4F6;border-top-color:#E31E24;animation:spin .7s linear infinite"></div>
+      <span style="font-size:13px;color:#9CA3AF;font-weight:600">กำลังโหลด...</span>
+    </div>
     <div class="compound-grid" id="compound-list"></div>
   </div>
 
@@ -4220,9 +4233,15 @@ function importJSON(event){
 
 // ─── INIT ───
 (async()=>{
-  // show loading
-  document.getElementById('menu-list').innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">⏳</span><div class="empty-title">กำลังโหลดข้อมูล...</div></div>';
+  // show loading spinners
+  const _mlEl = document.getElementById('menu-loading');
+  const _llEl = document.getElementById('lib-loading');
+  const _clEl = document.getElementById('compound-loading');
+  if(_mlEl) _mlEl.style.display='flex';
   loadSettings();initSidebar();await load();
+  if(_mlEl) _mlEl.style.display='none';
+  if(_llEl) _llEl.style.display='none';
+  if(_clEl) _clEl.style.display='none';
   renderMenus();renderMenuMetrics();
 })();
 </script>
@@ -4236,15 +4255,29 @@ async function softRefresh(){
   const btn2 = document.getElementById('mtb-refresh-btn');
   if(btn) btn.classList.add('spinning');
   if(btn2) btn2.style.animation='topbar-spin .7s linear infinite';
+  // Show spinners in active tab
+  const _mlEl = document.getElementById('menu-loading');
+  const _llEl = document.getElementById('lib-loading');
+  const _clEl = document.getElementById('compound-loading');
+  if(_mlEl && document.getElementById('tab-menu')?.classList.contains('active')) _mlEl.style.display='flex';
+  if(_llEl && document.getElementById('tab-library')?.classList.contains('active')) _llEl.style.display='flex';
+  if(_clEl && document.getElementById('tab-compound')?.classList.contains('active')) _clEl.style.display='flex';
   try{
     await load();
+    if(_mlEl) _mlEl.style.display='none';
+    if(_llEl) _llEl.style.display='none';
+    if(_clEl) _clEl.style.display='none';
     if(typeof renderMenus === 'function') renderMenus();
     if(typeof renderLibrary === 'function') renderLibrary();
     if(typeof renderCompounds === 'function') renderCompounds();
     if(typeof renderBdLevels === 'function') renderBdLevels();
     if(typeof renderCompare === 'function') renderCompare();
     if(typeof renderSettings === 'function') renderSettings();
-  }catch(e){}
+  }catch(e){
+    if(_mlEl) _mlEl.style.display='none';
+    if(_llEl) _llEl.style.display='none';
+    if(_clEl) _clEl.style.display='none';
+  }
   if(btn) btn.classList.remove('spinning');
   if(btn2) btn2.style.animation='';
   _softRefreshing = false;
