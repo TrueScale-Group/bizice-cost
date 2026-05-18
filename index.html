@@ -1348,6 +1348,7 @@ body{
 .guard-x-bounce{animation:guardXBounce 0.45s ease!important}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -3614,12 +3615,12 @@ function openTlPopup(key){
   if(!el){
     el=document.createElement('div');
     el.id='tl-popup-overlay';
-    el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)';
+    el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);padding:1rem';
     el.onclick=function(e){if(e.target===el)closeTlPopup();};
     document.body.appendChild(el);
   }
   el.innerHTML=`
-    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.18)">
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.22)">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem .75rem;border-bottom:1px solid #f0f0f0;background:${bg}">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:22px">${emoji}</span>
@@ -3628,22 +3629,21 @@ function openTlPopup(key){
             <div style="font-size:12px;color:#888">${list.length} เมนู</div>
           </div>
         </div>
-        <button onclick="closeTlPopup()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;padding:4px 8px;border-radius:8px;line-height:1">✕</button>
+        <button onclick="closeTlPopup()" style="background:rgba(0,0,0,.07);border:none;font-size:16px;cursor:pointer;color:#555;padding:6px 10px;border-radius:10px;line-height:1;font-weight:700">✕</button>
       </div>
       <div style="overflow-y:auto;padding:.75rem 1rem;flex:1">
         ${list.sort((a,b)=>b.pct-a.pct).map(d=>`
-          <div onclick="closeTlPopup();setTimeout(()=>openAddMenu('${d.id}'),200)" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;margin-bottom:.4rem;background:#fafafa;border-radius:10px;cursor:pointer;border:1px solid #f0f0f0;transition:background .15s" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background='#fafafa'">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem .75rem;margin-bottom:.4rem;background:#fafafa;border-radius:10px;border:1px solid #f0f0f0">
             <div style="font-size:14px;font-weight:600;color:#1a1a1a">${d.name}</div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="font-size:13px;font-weight:700;color:${color}">${d.pct.toFixed(1)}%</div>
-              <div style="font-size:11px;color:#888">GP ${(100-d.pct).toFixed(1)}%</div>
-              <div style="font-size:11px;color:#aaa">✏️</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="font-size:14px;font-weight:700;color:${color}">${d.pct.toFixed(1)}%</div>
+              <div style="font-size:11px;color:#888;white-space:nowrap">GP ${(100-d.pct).toFixed(1)}%</div>
             </div>
           </div>`).join('')}
       </div>
     </div>`;
   el.style.display='flex';
-  requestAnimationFrame(()=>{ el.querySelector('div').style.animation='slideUp .28s cubic-bezier(.25,.8,.25,1)'; });
+  requestAnimationFrame(()=>{ const box=el.querySelector('div');box.style.animation='popIn .22s cubic-bezier(.175,.885,.32,1.275)'; });
 }
 function closeTlPopup(){
   const el=document.getElementById('tl-popup-overlay');
