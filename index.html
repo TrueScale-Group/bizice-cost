@@ -3711,17 +3711,13 @@ function addCpIngrRow(ing=null){
     <button class="btn-del" onclick="document.getElementById('cpr-${id}').remove();calcCompoundLive()">✕</button>
   `;
   document.getElementById('cp-ingr-container').appendChild(div);
-  // Fill unit/price badges from selected item
-  const selItem=library.find(x=>x.id===(initLibId||libItems[0]?.id));
+  // Fill unit/price badges from selected item (use first available if no initLibId)
+  const selItem=library.find(x=>x.id===initLibId)||libItems[0]||null;
   if(selItem){
-    setTimeout(()=>{
-      const uEl=document.getElementById('cpu-'+id);
-      const pEl=document.getElementById('cpp-'+id);
-      if(uEl)uEl.textContent=selItem.unit;
-      if(pEl)pEl.textContent=selItem.unitPrice.toFixed(2)+'฿';
-      // store data attrs for getCpIngredients
-      if(uEl){uEl.dataset.unit=selItem.unit;uEl.dataset.price=selItem.unitPrice}
-    },0);
+    const uEl=document.getElementById('cpu-'+id);
+    const pEl=document.getElementById('cpp-'+id);
+    if(uEl){uEl.textContent=selItem.unit;uEl.dataset.unit=selItem.unit;uEl.dataset.price=selItem.unitPrice;}
+    if(pEl)pEl.textContent=(selItem.unitPrice||0).toFixed(4)+'฿';
   }
   calcCompoundLive();
 }
@@ -3754,25 +3750,34 @@ function onCpItemSelect(id){
 
 function getCpIngredients(){
   return Array.from(document.querySelectorAll('[id^="cpr-"]')).map(row=>{
-    const id=row.id.split('-')[1];
+    const id=row.id.replace('cpr-','');
     const itemId=document.getElementById('cpi-'+id)?.value;
-    const item=library.find(x=>x.id===itemId);
+    if(!itemId)return null;
+    // Try library lookup by id first, fallback by name shown in option text
+    let item=library.find(x=>x.id===itemId);
+    if(!item){
+      const optText=document.getElementById('cpi-'+id)?.options?.[document.getElementById('cpi-'+id)?.selectedIndex]?.text||'';
+      item=library.find(x=>x.name===optText.trim());
+    }
     if(!item)return null;
     const qty=parseFloat(document.getElementById('cpq-'+id)?.value)||0;
+    // qty=0 is allowed at save time (user might zero it intentionally) — filter below
     return{name:item.name,qty,unit:item.unit,unitPrice:item.unitPrice||0,sourceId:item.id,sourceType:'library',libId:item.id,cat:item.cat};
-  }).filter(r=>r&&r.qty>0);
+  }).filter(r=>r!==null); // keep all valid items even qty=0 (saveCompound filters separately)
 }
 
 function calcCompoundLive(){
   const outputQty=parseFloat(document.getElementById('cp-output-qty')?.value)||0;
   const outputUnit=(document.getElementById('cp-output-unit')?.value||'').trim()||'หน่วย';
-  const yieldPct=Math.min(100,Math.max(1,parseFloat(document.getElementById('cp-yield')?.value)||100));
-  // sum from all cpr rows using live badge data
+  const yieldPct=Math.min(100,Math.max(0.01,parseFloat(document.getElementById('cp-yield')?.value)||100));
+  // sum from all cpr rows — use library unitPrice for accuracy (not dataset which may lag)
   let totalCost=0;
   document.querySelectorAll('[id^="cpr-"]').forEach(row=>{
-    const id=row.id.split('-')[1];
+    const id=row.id.replace('cpr-','');
     const qty=parseFloat(document.getElementById('cpq-'+id)?.value)||0;
-    const price=parseFloat(document.getElementById('cpu-'+id)?.dataset?.price||0);
+    const itemId=document.getElementById('cpi-'+id)?.value;
+    const item=library.find(x=>x.id===itemId);
+    const price=item?(item.unitPrice||0):parseFloat(document.getElementById('cpu-'+id)?.dataset?.price||0);
     totalCost+=qty*price;
   });
   // effective output after yield loss
@@ -3806,44 +3811,47 @@ function toggleCpServeUnit(){
 }
 
 function saveCompound(){
-  const name=document.getElementById('cp-name').value.trim();
-  if(!name){toast('กรุณาใส่ชื่อสูตรผสม','⚠');return}
-  const outputQty=parseFloat(document.getElementById('cp-output-qty').value)||0;
-  if(!outputQty){toast('กรุณาใส่ปริมาณที่ได้','⚠');return}
-  const ingr=getCpIngredients();
-  if(!ingr.length){toast('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 อย่าง','⚠');return}
+  try{
+    const name=(document.getElementById('cp-name')?.value||'').trim();
+    if(!name){toast('กรุณาใส่ชื่อสูตรผสม','⚠');return}
+    const outputQty=parseFloat(document.getElementById('cp-output-qty')?.value)||0;
+    if(!outputQty){toast('กรุณาใส่ปริมาณที่ได้ (เช่น 1000)','⚠');return}
+    const ingr=getCpIngredients();
+    // filter only rows with qty > 0 here (getCpIngredients keeps all valid items)
+    const validIngr=ingr.filter(r=>r.qty>0);
+    if(!validIngr.length){toast('กรุณาใส่ปริมาณวัตถุดิบอย่างน้อย 1 อย่าง','⚠');return}
 
-  const yieldPct=Math.min(100,Math.max(1,parseFloat(document.getElementById('cp-yield').value)||100));
-  const sop=document.getElementById('cp-sop').value.trim();
-  const serveEnabled=document.getElementById('cp-serve-enabled').checked;
-  const cpServeName=document.getElementById('cp-serve-name').value.trim()||'ตัก';
-  const cpServeQty=parseFloat(document.getElementById('cp-serve-qty').value)||0;
-  const outputUnit=document.getElementById('cp-output-unit').value.trim()||'หน่วย';
-  const effectiveQty=outputQty*(yieldPct/100);
-  const totalRawCost=ingr.reduce((s,ing)=>s+ing.qty*ing.unitPrice,0);
-  const costPerOutputUnit=effectiveQty>0?totalRawCost/effectiveQty:0;
-  const servingUnit=serveEnabled&&cpServeQty>0?{name:cpServeName,qty:cpServeQty,costPerServe:costPerOutputUnit*cpServeQty}:null;
-  const c={
-    id:editCompoundId||Date.now().toString(),
-    name,
-    outputQty,
-    outputUnit,
-    yield:yieldPct,
-    sop:sop||undefined,
-    servingUnit:servingUnit||undefined,
-    ingredients:ingr,
-    costPerOutputUnit,
-    updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
-  };
-
-  if(editCompoundId){
-    const i=compounds.findIndex(x=>x.id===editCompoundId);
-    if(i>=0)compounds[i]=c;
-  } else {
-    compounds.push(c);
+    const yieldPct=Math.min(100,Math.max(0.01,parseFloat(document.getElementById('cp-yield')?.value)||100));
+    const sop=(document.getElementById('cp-sop')?.value||'').trim();
+    const serveEnabled=document.getElementById('cp-serve-enabled')?.checked||false;
+    const cpServeName=(document.getElementById('cp-serve-name')?.value||'').trim()||'ตัก';
+    const cpServeQty=parseFloat(document.getElementById('cp-serve-qty')?.value)||0;
+    const outputUnit=(document.getElementById('cp-output-unit')?.value||'').trim()||'หน่วย';
+    const effectiveQty=outputQty*(yieldPct/100);
+    const totalRawCost=validIngr.reduce((s,i)=>s+i.qty*(i.unitPrice||0),0);
+    const costPerOutputUnit=effectiveQty>0?totalRawCost/effectiveQty:0;
+    const servingUnit=serveEnabled&&cpServeQty>0?{name:cpServeName,qty:cpServeQty,costPerServe:costPerOutputUnit*cpServeQty}:null;
+    const c={
+      id:editCompoundId||Date.now().toString(),
+      name,outputQty,outputUnit,yield:yieldPct,
+      sop:sop||undefined,
+      servingUnit:servingUnit||undefined,
+      ingredients:validIngr,
+      costPerOutputUnit,
+      updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
+    };
+    if(editCompoundId){
+      const i=compounds.findIndex(x=>x.id===editCompoundId);
+      if(i>=0)compounds[i]=c; else compounds.push(c);
+    } else {
+      compounds.push(c);
+    }
+    saveCompounds();closeCompoundModal();renderCompounds();
+    toast('บันทึกสูตรผสมแล้วค่ะ! 🧪');
+  }catch(err){
+    console.error('saveCompound error:',err);
+    toast('เกิดข้อผิดพลาด: '+err.message,'⚠️');
   }
-  saveCompounds();closeCompoundModal();renderCompounds();
-  toast('บันทึกสูตรผสมแล้วค่ะ! 🧪');
 }
 
 function calcEod(compoundId, cpu){
