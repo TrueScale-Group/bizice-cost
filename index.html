@@ -2902,7 +2902,7 @@ function openViewMenu(id){
       const st = i.sizeTarget || 'all';
       if(st === 'all') return true;
       if(st === 'U') return sz === 'U' || sz === 'S';
-      if(st === 'M') return sz === 'M' || sz === 'L';
+      if(st === 'M') return sz === 'M';   // M-specific: แสดงเฉพาะตอนดู M
       if(st === 'L') return sz === 'L';
       return true;
     }).map(i => {
@@ -2911,7 +2911,7 @@ function openViewMenu(id){
       if(st === 'all'){
         q = (sz==='U'||sz==='S') ? (i.qtyS||0) : sz==='M' ? (i.qtyM||0) : (i.qtyM||0)*1.25;
       } else if(st==='U'){ q = (sz==='U'||sz==='S') ? (i.qty||0) : 0; }
-      else if(st==='M'){ q = sz==='M' ? (i.qty||0) : sz==='L' ? (i.qty||0)*1.25 : 0; }
+      else if(st==='M'){ q = sz==='M' ? (i.qty||0) : 0; }  // M only
       else if(st==='L'){ q = sz==='L' ? (i.qty||0) : 0; }
       const lineCost = q * (i.pricePerUnit||0);
       if(lineCost === 0) return '';
@@ -3173,7 +3173,7 @@ function calcCost(ingr,size){
     } else if(st==='U'){
       q=(size==='U'||size==='S')?(i.qty||0):0;
     } else if(st==='M'){
-      q=size==='M'?(i.qty||0):size==='L'?(i.qty||0)*1.25:0;
+      q=size==='M'?(i.qty||0):0;  // M-specific: เฉพาะ M เท่านั้น ไม่รวม L
     } else if(st==='L'){
       q=size==='L'?(i.qty||0):0;
     }
@@ -4024,7 +4024,8 @@ function renderDuel(){
     const map={};
     (m.ingredients||[]).forEach(ing=>{
       // Only include ingredients that apply to this size (or global)
-      if(ing.sizeTarget && ing.sizeTarget!==sz) return;
+      const _st=ing.sizeTarget||'all';
+      if(_st!=='all' && _st!==sz) return;
       const name=ing.name||'?';
       const key=ing.sourceId||name;
       const qty=parseFloat(ing.qty)||0;
