@@ -3941,16 +3941,7 @@ function renderCompounds(){
         </div>
       </div>
       ${serveHtml}
-      <!-- EOD Waste Calculator -->
-      <div class="eod-calc">
-        <div class="eod-calc-title">🗑️ คำนวณยอดทิ้ง (EOD)</div>
-        <div class="eod-row">
-          <input class="eod-input" type="number" id="${eodId}" placeholder="ปริมาณเหลือ" min="0" step="1" oninput="calcEod('${c.id}',${cpu})">
-          <span style="font-size:12px;color:var(--txt3)">${c.outputUnit}</span>
-          <span style="font-size:13px;font-weight:700;color:var(--txt3)">=</span>
-          <span class="eod-result" id="${eodId}-res">— ฿</span>
-        </div>
-      </div>
+      <!-- EOD hidden — will be used in Inventory app -->
       ${sopHtml}
       <div class="compound-foot" style="margin-top:.65rem">
         <button class="btn btn-ghost btn-sm" onclick="openAddCompound('${c.id}')">✏ แก้ไข</button>
