@@ -2564,8 +2564,8 @@ function saveIngr(){
     basePrice:base, total:base, qty:divisor,
     unit:finalUnit, unitPrice,
     levels,
-    freight:freight||undefined, waste:waste||undefined,
-    servingUnit:servingUnit||undefined,
+    freight:freight||0, waste:waste||0,
+    servingUnit:servingUnit||null,
     pinned:existing?.pinned||false,
     priceHistory:existing?.priceHistory||[],
     updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
@@ -3834,8 +3834,8 @@ function saveCompound(){
     const c={
       id:editCompoundId||Date.now().toString(),
       name,outputQty,outputUnit,yield:yieldPct,
-      sop:sop||undefined,
-      servingUnit:servingUnit||undefined,
+      sop:sop||'',
+      servingUnit:servingUnit||null,
       ingredients:validIngr,
       costPerOutputUnit,
       updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
