@@ -310,13 +310,28 @@ body{
 .btn-dashed:hover{border-color:var(--red);color:var(--red);background:var(--red-p)}
 
 /* ── INGREDIENT ROW ── */
-.ingr-head{
-  display:grid;grid-template-columns:90px 3fr 80px 85px 68px 72px 32px;
-  gap:8px;padding:0 10px;margin-bottom:6px
-}
+/* ── Size Toggle Pills ── */
+.size-toggle-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.25rem}
+.size-toggle{display:flex;align-items:center;gap:0;border-radius:14px;overflow:hidden;border:2px solid var(--border2);background:var(--surf2);transition:all .18s;cursor:pointer;user-select:none}
+.size-toggle.on{border-color:var(--red);background:var(--red-p)}
+.size-toggle-check{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .18s}
+.size-toggle.on .size-toggle-check{background:var(--red);color:#fff}
+.size-toggle-body{padding:0 12px 0 8px;display:none;flex-direction:column}
+.size-toggle.on .size-toggle-body{display:flex}
+.size-toggle-label{font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.04em;margin-bottom:2px}
+.size-toggle-input{width:80px;padding:3px 8px;font-size:14px;font-weight:700;font-family:'Prompt',sans-serif;color:var(--txt);background:#fff;border:1.5px solid var(--border2);border-radius:8px;outline:none;text-align:center;transition:border-color .15s}
+.size-toggle-input:focus{border-color:var(--red)}
+/* ── Ingr Tab Bar ── */
+.ingr-tab-bar{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap}
+.ingr-tab-btn{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surf2);font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;color:var(--txt2);cursor:pointer;transition:all .15s}
+.ingr-tab-btn.active{background:var(--red);color:#fff;border-color:var(--red)}
+.ingr-tab-pane{display:none}
+.ingr-tab-pane.active{display:block}
+/* ── Ingr Rows (no size column) ── */
+.ingr-head{display:grid;grid-template-columns:90px 3fr 85px 68px 72px 32px;gap:8px;padding:0 10px;margin-bottom:6px}
 .ingr-head span{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.05em;text-transform:uppercase}
 .ingr-row{
-  display:grid;grid-template-columns:90px 3fr 80px 85px 68px 72px 32px;
+  display:grid;grid-template-columns:90px 3fr 85px 68px 72px 32px;
   gap:8px;align-items:center;
   background:var(--surf2);border-radius:var(--r);padding:8px 10px;
   margin-bottom:5px;border:1.5px solid transparent;
@@ -843,8 +858,8 @@ body{
     gap:6px;padding:10px;
   }
   .ingr-row .ir-sel-wrap{grid-column:1/-1}
-  .ingr-row #mist-*{grid-column:span 1}
   .ingr-row .ir-badge{font-size:11px}
+  .ingr-head{display:none}
 
   /* Compound ingredient rows */
   .ci-head{display:none}
@@ -1861,8 +1876,9 @@ body{
   </div>
 
   <div style="padding:1.5rem">
+    <!-- ── ข้อมูลทั่วไป ── -->
     <div class="section-label">ข้อมูลทั่วไป</div>
-    <div class="g2" style="margin-bottom:1rem">
+    <div class="g2" style="margin-bottom:1.1rem">
       <div><label class="flabel">ชื่อเมนู</label><input class="finput" id="m-name" placeholder="เช่น ซันเดย์ช็อกโกแลต"></div>
       <div><label class="flabel">หมวดหมู่เมนู</label>
         <div style="display:flex;align-items:center;gap:8px">
@@ -1874,22 +1890,46 @@ body{
       </div>
     </div>
 
-    <div class="section-label">ราคาขาย</div>
-    <div class="g3" style="margin-bottom:1.25rem">
-      <div><label class="flabel">🥤 แก้ว U (฿)</label><input class="finput" type="number" id="m-ps" placeholder="0" min="0"></div>
-      <div><label class="flabel">🥤 แก้ว M (฿)</label><input class="finput" type="number" id="m-pm" placeholder="0" min="0"></div>
-      <div><label class="flabel">🥤 แก้ว L (฿)</label><input class="finput" type="number" id="m-pl" placeholder="0" min="0"></div>
+    <!-- ── ราคาขาย: Toggle + inline price ── -->
+    <div class="section-label" style="margin-bottom:.6rem">ขนาดแก้วและราคาขาย <span style="font-size:11px;color:var(--txt3);font-weight:400">กดเพื่อเปิด/ปิดขนาด</span></div>
+    <div class="size-toggle-row" id="size-toggle-row">
+      <!-- U -->
+      <div class="size-toggle" id="stog-U" onclick="toggleSize('U')">
+        <div class="size-toggle-check" id="stog-U-check">U</div>
+        <div class="size-toggle-body">
+          <div class="size-toggle-label">แก้ว U (฿)</div>
+          <input class="size-toggle-input" id="m-ps" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+        </div>
+      </div>
+      <!-- M -->
+      <div class="size-toggle" id="stog-M" onclick="toggleSize('M')">
+        <div class="size-toggle-check" id="stog-M-check">M</div>
+        <div class="size-toggle-body">
+          <div class="size-toggle-label">แก้ว M (฿)</div>
+          <input class="size-toggle-input" id="m-pm" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+        </div>
+      </div>
+      <!-- L -->
+      <div class="size-toggle" id="stog-L" onclick="toggleSize('L')">
+        <div class="size-toggle-check" id="stog-L-check">L</div>
+        <div class="size-toggle-body">
+          <div class="size-toggle-label">แก้ว L (฿)</div>
+          <input class="size-toggle-input" id="m-pl" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+        </div>
+      </div>
     </div>
 
-    <div class="section-label" style="margin-bottom:.75rem">วัตถุดิบ / สูตร</div>
-    <div class="ingr-head">
-      <span>แหล่ง</span><span>รายการ</span>
-      <span>แก้ว</span><span>ปริมาณ</span>
-      <span>หน่วย</span><span>฿/หน่วย</span><span></span>
+    <!-- ── วัตถุดิบ / สูตร (Tab per size) ── -->
+    <div class="section-label" style="margin-top:1.1rem;margin-bottom:.6rem">วัตถุดิบ / สูตร</div>
+    <div id="ingr-no-size" style="padding:.65rem 1rem;background:var(--surf2);border-radius:10px;font-size:13px;color:var(--txt3);text-align:center;display:block">
+      ← กดเปิดขนาดแก้วก่อน เพื่อกรอกวัตถุดิบ
     </div>
-    <div id="m-ingr-container"></div>
-    <button class="btn-dashed" onclick="addMenuIngrRow()">＋ เพิ่มวัตถุดิบ</button>
-    <div class="note-box">⚡ เลือก <strong>ทุก Size</strong> → ใส่ปริมาณ U และ M (L = M×1.25 อัตโนมัติ) &nbsp;|&nbsp; เลือก <strong>แก้ว U/M/L</strong> → ใส่ปริมาณเดียว</div>
+    <div id="ingr-tabs-wrap" style="display:none">
+      <div class="ingr-tab-bar" id="ingr-tab-bar"></div>
+      <div id="ingr-tab-panes">
+        <!-- panes injected by JS -->
+      </div>
+    </div>
 
     <div id="m-preview" style="display:none;margin-top:1.25rem">
       <div class="section-label">สรุปต้นทุน</div>
@@ -2945,11 +2985,105 @@ function closeViewMenu(){
   document.getElementById('view-modal').classList.add('hidden');
 }
 
+/* ══ SIZE TOGGLE STATE ══ */
+const SIZE_LIST=['U','M','L'];
+let activeSizes=new Set(); // which sizes are toggled ON
+let activeIngrTab='M';     // which tab is currently shown
+
+function toggleSize(sz){
+  if(activeSizes.has(sz)){
+    activeSizes.delete(sz);
+    document.getElementById('stog-'+sz)?.classList.remove('on');
+  } else {
+    activeSizes.add(sz);
+    document.getElementById('stog-'+sz)?.classList.add('on');
+  }
+  rebuildIngrTabs();
+}
+
+function setSizesOn(szArr){
+  activeSizes=new Set(szArr);
+  SIZE_LIST.forEach(s=>{
+    const el=document.getElementById('stog-'+s);
+    if(el) el.classList.toggle('on', activeSizes.has(s));
+  });
+  rebuildIngrTabs();
+}
+
+function onSizeTogglePrice(){ refreshPreview(); }
+
+function rebuildIngrTabs(){
+  const noSize=document.getElementById('ingr-no-size');
+  const tabsWrap=document.getElementById('ingr-tabs-wrap');
+  const bar=document.getElementById('ingr-tab-bar');
+  const panesEl=document.getElementById('ingr-tab-panes');
+
+  const active=[...activeSizes].filter(s=>SIZE_LIST.includes(s))
+    .sort((a,b)=>SIZE_LIST.indexOf(a)-SIZE_LIST.indexOf(b));
+
+  if(!active.length){
+    noSize.style.display='block';
+    tabsWrap.style.display='none';
+    return;
+  }
+  noSize.style.display='none';
+  tabsWrap.style.display='block';
+
+  // Preserve existing pane containers (don't wipe existing rows)
+  const existingPanes={};
+  panesEl.querySelectorAll('.ingr-tab-pane').forEach(p=>{
+    existingPanes[p.dataset.sz]=p;
+  });
+
+  // Ensure a pane exists for each active size (create if missing)
+  active.forEach(sz=>{
+    if(!existingPanes[sz]){
+      const pane=document.createElement('div');
+      pane.className='ingr-tab-pane';
+      pane.dataset.sz=sz;
+      pane.innerHTML=`
+        <div class="ingr-head"><span>แหล่ง</span><span>รายการ</span><span>ปริมาณ</span><span>หน่วย</span><span>฿/หน่วย</span><span></span></div>
+        <div id="ingr-pane-${sz}"></div>
+        <button class="btn-dashed" style="width:100%;margin-top:6px" onclick="addMenuIngrRow(null,'${sz}')">＋ เพิ่มวัตถุดิบ ${sz}</button>`;
+      panesEl.appendChild(pane);
+    }
+  });
+
+  // Remove panes for inactive sizes (but save their data first)
+  Object.entries(existingPanes).forEach(([sz,pane])=>{
+    if(!activeSizes.has(sz)) pane.remove();
+  });
+
+  // Rebuild tab bar
+  if(!activeSizes.has(activeIngrTab)) activeIngrTab=active[0];
+  bar.innerHTML=active.map(sz=>
+    `<button class="ingr-tab-btn${activeIngrTab===sz?' active':''}" onclick="switchIngrTab('${sz}')">${sz==='U'?'แก้ว U':sz==='M'?'แก้ว M':'แก้ว L'}</button>`
+  ).join('');
+
+  // Show/hide panes
+  panesEl.querySelectorAll('.ingr-tab-pane').forEach(p=>{
+    p.classList.toggle('active', p.dataset.sz===activeIngrTab);
+  });
+}
+
+function switchIngrTab(sz){
+  activeIngrTab=sz;
+  document.querySelectorAll('.ingr-tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.includes(sz));
+  });
+  document.querySelectorAll('.ingr-tab-pane').forEach(p=>{
+    p.classList.toggle('active', p.dataset.sz===sz);
+  });
+}
+
 function openAddMenu(id=null){
-  editMenuId=id;mIngrCount=0;
-  document.getElementById('m-ingr-container').innerHTML='';
+  editMenuId=id; mIngrCount=0;
+  // Reset tabs
+  const panesEl=document.getElementById('ingr-tab-panes');
+  if(panesEl) panesEl.innerHTML='';
   document.getElementById('m-preview').style.display='none';
   document.getElementById('modal-title').textContent=id?'แก้ไขเมนู':'เพิ่มเมนูใหม่';
+
   if(id){
     const m=menus.find(x=>x.id===id);if(!m)return;
     document.getElementById('m-name').value=m.name;
@@ -2958,12 +3092,44 @@ function openAddMenu(id=null){
     document.getElementById('m-ps').value=m.priceS||'';
     document.getElementById('m-pm').value=m.priceM||'';
     document.getElementById('m-pl').value=m.priceL||'';
-    m.ingredients.forEach(ing=>addMenuIngrRow(ing));
+
+    // Determine which sizes are active
+    const onSizes=[];
+    if(m.priceS>0) onSizes.push('U');
+    if(m.priceM>0) onSizes.push('M');
+    if(m.priceL>0) onSizes.push('L');
+    // Also check if any ingredient targets a size explicitly
+    (m.ingredients||[]).forEach(ing=>{
+      const st=ing.sizeTarget||'all';
+      if(st==='U'&&!onSizes.includes('U')) onSizes.push('U');
+      if(st==='M'&&!onSizes.includes('M')) onSizes.push('M');
+      if(st==='L'&&!onSizes.includes('L')) onSizes.push('L');
+    });
+    if(!onSizes.length) onSizes.push('M');
+    activeIngrTab=onSizes[0];
+    setSizesOn(onSizes);
+
+    // Populate ingredients into their size tabs
+    (m.ingredients||[]).forEach(ing=>{
+      const st=ing.sizeTarget||'all';
+      // "all" ingredients → add to each active size tab, scaling qty
+      if(st==='all'){
+        onSizes.forEach(sz=>{
+          const qtyForSize=sz==='U'?(ing.qtyS||0):sz==='M'?(ing.qtyM||0):(ing.qtyM||0)*1.25;
+          if(qtyForSize>0||onSizes.length===1){
+            addMenuIngrRow({...ing, qty:qtyForSize, sizeTarget:sz}, sz);
+          }
+        });
+      } else if(activeSizes.has(st)){
+        addMenuIngrRow(ing, st);
+      }
+    });
   } else {
     ['m-name','m-ps','m-pm','m-pl'].forEach(x=>document.getElementById(x).value='');
     document.getElementById('m-cat').value='ไอศกรีม';
     const emoEl2=document.getElementById('m-cat-emoji');if(emoEl2)emoEl2.textContent=menuEmoji('ไอศกรีม');
-    addMenuIngrRow();
+    activeIngrTab='M';
+    setSizesOn(['M']);
   }
   document.getElementById('modal-bg').style.display='block';
 }
@@ -3008,22 +3174,26 @@ function closeModal(){document.getElementById('modal-bg').style.display='none';e
 
 const IST=['background:#fff;border:1px solid var(--border2);border-radius:8px;padding:6px 7px;font-size:13px;font-family:\'Sarabun\',sans-serif;color:var(--txt);outline:none;min-width:0;width:100%'].join('');
 
-function addMenuIngrRow(ing=null){
+// sz = which size tab this row belongs to (U/M/L)
+function addMenuIngrRow(ing=null, sz=null){
+  // sz defaults to activeIngrTab
+  const rowSz=sz||activeIngrTab||'M';
+  const container=document.getElementById('ingr-pane-'+rowSz);
+  if(!container)return;
+
   mIngrCount++;const id=mIngrCount;
   const div=document.createElement('div');
-  div.className='ingr-row';div.id='mir-'+id;
-  const st=ing?(ing.sizeTarget||'all'):'all';
+  div.className='ingr-row';
+  div.id='mir-'+id;
+  div.dataset.sz=rowSz; // track which tab owns this row
 
   // Determine source type from saved ingredient
   let initSrc='library';
   if(ing&&ing.sourceType==='compound') initSrc='compound';
   else if(ing&&ing.cat==='สูตรผสม') initSrc='compound';
 
-  const sizeOpts=`
-    <option value="all"${st==='all'?' selected':''}>ทุก Size</option>
-    <option value="U"${st==='U'?' selected':''}>แก้ว U</option>
-    <option value="M"${st==='M'?' selected':''}>แก้ว M</option>
-    <option value="L"${st==='L'?' selected':''}>แก้ว L</option>`;
+  // qty: prefer ing.qty, fallback ing.qtyM/qtyS
+  const initQty=ing ? (ing.qty || (rowSz==='U'?(ing.qtyS||0):(ing.qtyM||0)) || '') : '';
 
   div.innerHTML=`
     <select id="msrc-${id}" onchange="onMenuSrcChange(${id})" style="${IST};font-size:11px">
@@ -3031,15 +3201,13 @@ function addMenuIngrRow(ing=null){
       <option value="compound"${initSrc==='compound'?' selected':''}>🧪 สูตร</option>
     </select>
     <div id="msel-${id}" class="ir-sel-wrap"></div>
-    <select id="mist-${id}" onchange="onSizeChange(${id})" style="${IST};font-size:12px">${sizeOpts}</select>
-    <div id="miqw-${id}" style="display:flex;gap:4px"></div>
+    <input id="miqx-${id}" type="number" placeholder="ปริมาณ" value="${initQty}" min="0" step="0.01" style="${IST}" oninput="refreshPreview()">
     <div id="miu-${id}" class="ir-badge">—</div>
     <div id="mipu-${id}" class="ir-badge">—</div>
     <button class="btn-del" onclick="document.getElementById('mir-${id}').remove();refreshPreview()">✕</button>
   `;
-  document.getElementById('m-ingr-container').appendChild(div);
+  container.appendChild(div);
   onMenuSrcChange(id, ing);
-  onSizeChange(id, ing);
 }
 
 function onMenuSrcChange(id, ing=null){
@@ -3110,31 +3278,11 @@ function onMenuItemSelect(id){
   refreshPreview();
 }
 
-function onSizeChange(id, ing=null){
-  const st=document.getElementById('mist-'+id)?.value||'all';
-  const wrap=document.getElementById('miqw-'+id);
-  if(!wrap)return;
-  if(st==='all'){
-    const qs=ing?(ing.qtyS||''):'';
-    const qm=ing?(ing.qtyM||''):'';
-    wrap.innerHTML=`
-      <input id="miqs-${id}" type="number" placeholder="U" value="${qs}" min="0" step="0.1" style="${IST};flex:1" oninput="updateIngrCost(${id})">
-      <input id="miqm-${id}" type="number" placeholder="M" value="${qm}" min="0" step="0.1" style="${IST};flex:1" oninput="updateIngrCost(${id})">
-    `;
-  } else {
-    const qv=ing?(st==='U'?(ing.qtyS||ing.qty||''):st==='M'?(ing.qtyM||ing.qty||''):(ing.qty||'')):'';
-    wrap.innerHTML=`<input id="miqx-${id}" type="number" placeholder="ปริมาณ" value="${qv}" min="0" step="0.1" style="${IST}" oninput="updateIngrCost(${id})">`;
-  }
-  refreshPreview();
-}
-
-function updateIngrCost(id){refreshPreview()}
-
 function getMenuIngredients(){
   return Array.from(document.querySelectorAll('[id^="mir-"]')).map(row=>{
     const id=row.id.split('-')[1];
+    const sz=row.dataset.sz||'M';          // size tab this row belongs to
     const src=document.getElementById('msrc-'+id)?.value||'library';
-    const st=document.getElementById('mist-'+id)?.value||'all';
     const uEl=document.getElementById('miu-'+id);
     const unit=uEl?.dataset?.unit||uEl?.textContent||'';
     const pricePerUnit=parseFloat(uEl?.dataset?.price||0);
@@ -3151,15 +3299,10 @@ function getMenuIngredients(){
       if(li)name=li.name;
     }
     if(!name)return null;
-    const base={cat,name,unit,pricePerUnit,sizeTarget:st,sourceType:src,sourceId:srcId};
-    if(st==='all'){
-      base.qtyS=parseFloat(document.getElementById('miqs-'+id)?.value)||0;
-      base.qtyM=parseFloat(document.getElementById('miqm-'+id)?.value)||0;
-    } else {
-      base.qty=parseFloat(document.getElementById('miqx-'+id)?.value)||0;
-      if(st==='U')base.qtyS=base.qty;
-      if(st==='M')base.qtyM=base.qty;
-    }
+    const qty=parseFloat(document.getElementById('miqx-'+id)?.value)||0;
+    const base={cat,name,unit,pricePerUnit,sizeTarget:sz,sourceType:src,sourceId:srcId,qty};
+    if(sz==='U') base.qtyS=qty;
+    if(sz==='M') base.qtyM=qty;
     return base;
   }).filter(r=>r);
 }
