@@ -2285,8 +2285,8 @@ function loadSettingsPage(){
       else if(role==='editor'){rb.textContent='✏️ Editor';rb.style.background='#EFF6FF';rb.style.color='#1E40AF';rb.style.borderColor='#BFDBFE';}
       else{rb.textContent='👁️ Viewer';rb.style.background='#F5F3FF';rb.style.color='#6D28D9';rb.style.borderColor='#DDD6FE';}
     }
-    const emoji=document.getElementById('st-avatar-emoji');
-    if(emoji){emoji.textContent=s.name?s.name[0].toUpperCase():'?';}
+    const circle=document.getElementById('st-avatar-circle');
+    if(circle){applyAvatarEl(circle,s);}
   }
 
   // ── Data counts ──
