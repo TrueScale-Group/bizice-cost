@@ -1349,6 +1349,17 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+/* ── NotifBell (Level 3) ── */
+.cm-bell-wrap{position:relative;flex-shrink:0}
+.cm-bell-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;font-size:18px;line-height:1;position:relative;display:flex;align-items:center}
+.cm-bell-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;background:#e31e24;color:#fff;font-size:9px;font-weight:800;border-radius:8px;border:2px solid #fff;padding:0 3px;display:flex;align-items:center;justify-content:center;line-height:1}
+.cm-notif-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:300;width:300px;max-width:calc(100vw - 24px);background:#fff;border:1px solid var(--border,#e5e5ea);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden}
+.cm-notif-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border,#e5e5ea);font-family:'Prompt',sans-serif;font-weight:700;font-size:14px}
+.cm-notif-head button{background:none;border:none;color:#e31e24;font-weight:600;font-size:12px;cursor:pointer}
+.cm-notif-list{max-height:340px;overflow-y:auto}
+.cm-notif-empty{padding:28px 14px;text-align:center;color:#999;font-size:13px}
+.cm-notif-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f5f5f7;cursor:pointer}
+.cm-notif-item.unread{background:#fff6f6}
 </style>
 </head>
 <body>
@@ -1377,9 +1388,16 @@ body{
     </div>
   </div>
 
-  <!-- Right: Online + Refresh -->
+  <!-- Right: Online + Bell + Refresh -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto">
     <span class="conn-online">Online</span>
+    <div class="cm-bell-wrap" id="cm-bell-wrap">
+      <button class="cm-bell-btn" onclick="cmToggleBell()" title="แจ้งเตือน">🔔<span class="cm-bell-badge" id="cm-bell-badge" style="display:none">0</span></button>
+      <div class="cm-notif-panel" id="cm-notif-panel" style="display:none">
+        <div class="cm-notif-head"><span>การแจ้งเตือน</span><button id="cm-notif-readall" onclick="cmMarkAllRead()" style="display:none">อ่านทั้งหมด</button></div>
+        <div class="cm-notif-list" id="cm-notif-list"></div>
+      </div>
+    </div>
     <button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล"
       style="background:none;border:none;cursor:pointer;padding:4px 6px;
              border-radius:8px;color:var(--txt3);font-size:18px;line-height:1;
@@ -4585,6 +4603,26 @@ if('serviceWorker' in navigator){
 function goHome(){
   window.top.location.href='https://truescale-group.github.io/mixue-ice-sakon/';
 }
+
+// ══ NOTIFICATION BELL (Level 3) — Cost Manager ══
+let _cmNotifs=[];
+const _cmPhone=()=>(window._bizSession?.phone||'');
+function _cmUnread(n){return !(n.read_by||[]).includes(_cmPhone());}
+function _cmTimeAgo(ts){const ms=ts?.toMillis?.()||(ts?.seconds?ts.seconds*1000:0);if(!ms)return'';const m=Math.floor((Date.now()-ms)/60000);if(m<1)return'เมื่อกี้';if(m<60)return m+' นาทีก่อน';const h=Math.floor(m/60);if(h<24)return h+' ชม.ก่อน';return Math.floor(h/24)+' วันก่อน';}
+function _cmRender(){
+  const badge=document.getElementById('cm-bell-badge'),list=document.getElementById('cm-notif-list'),readall=document.getElementById('cm-notif-readall');
+  const unread=_cmNotifs.filter(_cmUnread).length;
+  if(badge){if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='flex';}else badge.style.display='none';}
+  if(readall)readall.style.display=unread>0?'block':'none';
+  if(!list)return;
+  if(!_cmNotifs.length){list.innerHTML='<div class="cm-notif-empty">ไม่มีการแจ้งเตือน</div>';return;}
+  list.innerHTML=_cmNotifs.map(n=>{const u=_cmUnread(n);return `<div class="cm-notif-item${u?' unread':''}" onclick="cmMarkRead('${n.id}')"><span style="font-size:20px;flex-shrink:0">🧮</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px;color:#1c1c1e">${n.title||'Cost Manager'}</div><div style="font-size:12.5px;color:#444;margin-top:1px;line-height:1.4">${n.body||n.message||''}</div><div style="font-size:11px;color:#999;margin-top:3px">${_cmTimeAgo(n.createdAt)}</div></div>${u?'<span style="width:8px;height:8px;border-radius:50%;background:#e31e24;flex-shrink:0;margin-top:5px"></span>':''}</div>`;}).join('');
+}
+function cmToggleBell(){const p=document.getElementById('cm-notif-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';}
+function cmMarkRead(id){if(!_cmPhone())return;db.collection('income_notifications').doc(id).update({read_by:firebase.firestore.FieldValue.arrayUnion(_cmPhone())}).catch(()=>{});}
+function cmMarkAllRead(){const ph=_cmPhone();if(!ph)return;const b=db.batch();_cmNotifs.filter(_cmUnread).forEach(n=>b.update(db.collection('income_notifications').doc(n.id),{read_by:firebase.firestore.FieldValue.arrayUnion(ph)}));b.commit().catch(()=>{});}
+document.addEventListener('mousedown',e=>{const w=document.getElementById('cm-bell-wrap'),p=document.getElementById('cm-notif-panel');if(w&&p&&p.style.display==='block'&&!w.contains(e.target))p.style.display='none';});
+db.collection('income_notifications').where('app','==','food-cost').onSnapshot(snap=>{_cmNotifs=[];snap.forEach(d=>_cmNotifs.push({id:d.id,...d.data()}));_cmNotifs.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));_cmNotifs=_cmNotifs.slice(0,50);_cmRender();},()=>{});
 </script>
 </body>
 </html>
