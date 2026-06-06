@@ -1421,7 +1421,7 @@ body{
         <div class="cm-notif-list" id="cm-notif-list"></div>
       </div>
     </div>
-    <button id="topbar-refresh-btn" onclick="softRefresh()" title="รีเฟรชข้อมูล"
+    <button id="topbar-refresh-btn" onclick="hardRefresh()" title="รีเฟรชแอป"
       style="background:none;border:none;cursor:pointer;padding:4px 6px;
              border-radius:8px;color:var(--txt3);font-size:18px;line-height:1;
              display:flex;align-items:center;transition:color .2s">🔄</button>
@@ -4450,7 +4450,24 @@ function importJSON(event){
 })();
 </script>
 <script>
-// ── Soft Refresh (ปุ่ม 🔄 + Auto) ──────────────────────────────────────────
+// ── Hard Refresh (ปุ่ม 🔄) — ล้าง SW cache + reload ──────────────────────
+async function hardRefresh(){
+  const btn = document.getElementById('topbar-refresh-btn');
+  if(btn){ btn.classList.add('spinning'); btn.disabled = true; }
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  }catch(e){}
+  location.reload(true);
+}
+
+// ── Soft Refresh (Auto ทุก 5 นาที + Pull-to-refresh) ──────────────────────
 let _softRefreshing = false;
 async function softRefresh(){
   if(_softRefreshing) return;
