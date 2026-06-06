@@ -1411,13 +1411,9 @@ body{
     </div>
   </div>
 
-  <!-- Right: User mini profile + Bell + Refresh -->
-  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto">
-    <!-- Mini user profile from Hub session -->
-    <div style="display:flex;align-items:center;gap:5px">
-      <div id="mtb-avatar" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#E31E24,#9B0000);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(227,30,36,.2)">?</div>
-      <div id="mtb-uname" style="font-size:12px;font-weight:600;color:var(--txt);white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis;line-height:1"></div>
-    </div>
+  <!-- Right: Online + Bell + Refresh -->
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto">
+    <span class="conn-online" id="topbar-conn">Online</span>
     <div class="cm-bell-wrap" id="cm-bell-wrap">
       <button class="cm-bell-btn" onclick="cmToggleBell()" title="แจ้งเตือน">🔔<span class="cm-bell-badge" id="cm-bell-badge" style="display:none">0</span></button>
       <div class="cm-notif-panel" id="cm-notif-panel" style="display:none">
@@ -1733,24 +1729,6 @@ body{
       <!-- ══ LEFT COL ══ -->
       <div style="display:flex;flex-direction:column;gap:1.1rem">
 
-        <!-- 👤 Account -->
-        <div class="card">
-          <div class="st-section">Account</div>
-          <div style="display:flex;align-items:center;gap:14px;padding:.25rem 0 1rem">
-            <div id="st-avatar-circle" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#E31E24,#9B0000);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;box-shadow:0 3px 10px rgba(227,30,36,.25)">
-              <span id="st-avatar-emoji">?</span>
-            </div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:18px;font-weight:700;color:var(--txt);line-height:1.2" id="st-name">—</div>
-              <div style="font-size:12.5px;color:var(--txt3);margin-top:3px" id="st-phone">—</div>
-              <div id="st-empid-row" style="display:none;font-size:11px;color:var(--txt3);margin-top:2px">รหัส: <span id="st-empid" style="font-weight:600;color:var(--txt2)">—</span></div>
-            </div>
-            <div id="st-role-badge" style="padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;background:#FEF9C3;color:#92400E;border:1.5px solid #FDE68A;flex-shrink:0">—</div>
-          </div>
-          <div class="st-divider"></div>
-          <button onclick="goHome()" style="width:100%;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;color:#B01519;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">🏠 กลับหน้าหลัก</button>
-        </div>
-
         <!-- 🎯 Food Cost Benchmark -->
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
@@ -1861,7 +1839,7 @@ body{
           <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:var(--surf2);border-radius:var(--r);font-size:12px;color:var(--txt3)">
             <span style="font-weight:600">BizICE Cost Manager</span>
             <div style="text-align:right">
-              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">v3.5.2 · อัพเดท 6 มิ.ย. 2569</span>
+              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">v3.5.3 · อัพเดท 6 มิ.ย. 2569</span>
             </div>
           </div>
         </div>
@@ -2322,28 +2300,6 @@ function loadSettingsPage(){
     }
   }
 
-  // ── User Info from Hub session (100%) ──
-  const s=_sp;  // reuse session already loaded above
-  if(s){
-    const nm=document.getElementById('st-name');if(nm)nm.textContent=s.name||'—';
-    const ph=document.getElementById('st-phone');if(ph)ph.textContent=s.phone||'—';
-    // empId (รหัสพนักงาน)
-    const eiRow=document.getElementById('st-empid-row');
-    const eiEl=document.getElementById('st-empid');
-    if(eiRow&&eiEl){
-      if(s.empId){eiEl.textContent=s.empId;eiRow.style.display='block';}
-      else{eiRow.style.display='none';}
-    }
-    const rb=document.getElementById('st-role-badge');
-    if(rb){
-      const role=(s.role||'viewer').toLowerCase();
-      if(role==='owner'){rb.textContent='👑 Owner';rb.style.background='#FEF9C3';rb.style.color='#92400E';rb.style.borderColor='#FDE68A';}
-      else if(role==='editor'){rb.textContent='✏️ Editor';rb.style.background='#EFF6FF';rb.style.color='#1E40AF';rb.style.borderColor='#BFDBFE';}
-      else{rb.textContent='👁️ Viewer';rb.style.background='#F5F3FF';rb.style.color='#6D28D9';rb.style.borderColor='#DDD6FE';}
-    }
-    const circle=document.getElementById('st-avatar-circle');
-    if(circle){applyAvatarEl(circle,s);}
-  }
 
   // ── Data counts ──
   const mc=document.getElementById('st-count-menus');if(mc)mc.textContent=(typeof menus!=='undefined'?menus.length:0);
@@ -2412,12 +2368,6 @@ function applyAvatarEl(el, s){
 function initSidebar(){
   const s=JSON.parse(localStorage.getItem('bizice_session')||'null');
   if(!s)return;
-
-  // ── Mobile top bar: mini user profile from Hub ──
-  const mtbAv=document.getElementById('mtb-avatar');
-  if(mtbAv) applyAvatarEl(mtbAv,s);
-  const mtbUn=document.getElementById('mtb-uname');
-  if(mtbUn) mtbUn.textContent=s.name?s.name.split(' ')[0]:'';  // first name only (fits small space)
 
   // ── Desktop sidebar ──
   const nm=document.getElementById('sb-name');if(nm)nm.textContent=s.name||'—';
