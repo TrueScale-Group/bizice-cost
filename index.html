@@ -18,6 +18,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
 document.addEventListener('touchmove', function(e){ if(e.touches&&e.touches.length>1) e.preventDefault(); }, {passive:false});
 window.addEventListener('wheel', function(e){ if(e.ctrlKey) e.preventDefault(); }, {passive:false});
 window.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&['+','-','=','0'].indexOf(e.key)!==-1) e.preventDefault(); });
+
 </script>
 <script>
 // ─── SESSION GUARD ───
@@ -81,7 +82,7 @@ html,body{overscroll-behavior:none;overscroll-behavior-y:contain;-webkit-text-si
 #update-banner .ub-btn:active{background:rgba(255,255,255,.35)}
 #update-banner .ub-close{font-size:16px;opacity:.7;cursor:pointer;padding:0 2px}
 
-html{min-width:320px;overflow-x:auto}
+html{min-width:360px;overflow-x:auto}
 html,body{height:100%;overflow:hidden}
 body{
   font-family:'Sarabun',sans-serif;
@@ -115,23 +116,24 @@ body{
   background:#22C55E;flex-shrink:0;
   box-shadow:0 0 0 2px rgba(34,197,94,.25)}
 
-/* Mobile top bar (back btn + user mini) */
+/* Mobile top bar (Daily Income style) */
 .mobile-top-bar{
   display:none;
   position:fixed;top:0;left:0;right:0;z-index:190;
-  background:rgba(242,242,247,0.96);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
   padding:.55rem .85rem;
   padding-top:calc(.55rem + env(safe-area-inset-top));
   align-items:center;justify-content:space-between;gap:8px;
+  box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.05);
 }
-@media(max-width:900px){
+@media(max-width:1023px){
   .mobile-top-bar{display:flex}
   .scroll-area{padding-top:58px}
 }
 
-@media(max-width:900px){
+@media(max-width:1023px){
   .scroll-area{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
 }
 .mub-avatar{
@@ -523,16 +525,15 @@ body{
 }
 .metric:hover{border-color:rgba(0,0,0,0.14)}
 .metric.hi{
-  background:#DBEAFE;
-  border:1.5px solid #93C5FD;
-  box-shadow:none;
+  background:linear-gradient(135deg,#E31E24,#B01519);
+  border:1.5px solid rgba(227,30,36,0.3);
+  box-shadow:0 4px 16px rgba(227,30,36,0.25);
 }
-.metric.hi .metric-lbl{color:#1E40AF;opacity:.75}
-.metric.hi .metric-val{color:#1E3A8A}
-.metric.hi .metric-sub{color:#1E40AF;opacity:.8}
 .metric.hi::after{display:none}
 .metric-lbl{font-size:11px;color:var(--txt3);margin-bottom:5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-.metric.hi .metric-lbl{color:rgba(255,255,255,.7)}
+.metric.hi .metric-lbl{color:rgba(255,255,255,.75);opacity:1}
+.metric.hi .metric-val{color:#fff}
+.metric.hi .metric-sub{color:rgba(255,255,255,.65)}
 .metric-val{font-size:26px;font-weight:700;font-family:'Prompt',sans-serif;letter-spacing:-.6px;line-height:1}
 .metric.hi .metric-val{color:#fff}
 .metric-sub{font-size:11px;color:var(--txt3);margin-top:4px}
@@ -808,9 +809,9 @@ body{
 .ci-head span{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em}
 
 /* ══════════════════════════════════════
-   RESPONSIVE — Tablet (≤900px)
+   RESPONSIVE — Tablet (≤1023px)
 ══════════════════════════════════════ */
-@media(max-width:900px){
+@media(max-width:1023px){
   .main{padding:1rem}
   .metrics{grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
   .menu-grid{grid-template-columns:1fr}
@@ -822,9 +823,9 @@ body{
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE — Mobile (≤640px)
+   RESPONSIVE — Mobile & Tablet (≤1023px)
 ══════════════════════════════════════ */
-@media(max-width:900px){
+@media(max-width:1023px){
   html,body{overflow-y:auto;overflow-x:hidden}
   .scroll-area{overflow:visible;flex:none}
 
@@ -924,25 +925,14 @@ body{
   }
   .backup-bar .btn{flex:1;justify-content:center;font-size:12px;padding:8px}
 
-  /* iOS-style bottom tab bar on mobile */
+  /* Hide old topbar tab row on mobile — replaced by .bottom-nav */
   .topbar{
-    position:fixed;bottom:0;top:auto;left:0;right:0;
-    flex-direction:column;border-bottom:none;
-    border-top:1px solid var(--border);
+    position:sticky;top:0;bottom:auto;
+    flex-direction:row;border-bottom:1px solid var(--border);border-top:none;
     padding:0;min-height:auto;
-    padding-bottom:env(safe-area-inset-bottom);
   }
-  .topbar>.back-btn,.topbar>.brand{display:none}
-  .topbar-right{
-    width:100%;margin-left:0;padding:.4rem .5rem .2rem;
-  }
-  .tabs{width:100%;border-radius:0;background:transparent;padding:0;gap:0}
-  .tab{flex:1;flex-direction:column;gap:1px;padding:8px 4px 6px;border-radius:0;font-size:10px;border-top:2px solid transparent;transition:color .15s,border-color .15s}
-  .tab.active{background:none;box-shadow:none;color:var(--red);border-top-color:var(--red);font-weight:700}
-  .tab:hover:not(.active){background:rgba(227,30,36,.04)}
-  .tab-icon{font-size:22px;line-height:1}
-  .tab .tab-text{display:block!important;font-size:10px;font-weight:500}
-  .scroll-area{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+  .topbar-right{display:none!important}
+  .topbar>.back-btn,.topbar>.brand{display:flex}
 }
 
 /* Mobile add buttons — hide header btn, show full-width btn below */
@@ -1010,6 +1000,72 @@ body{
 .lib-purchase-box:hover .lib-breakdown-tip.tip-below,
 .lib-purchase-box.tip-open .lib-breakdown-tip.tip-below{
   transform:translateX(-50%) translateY(0);
+}
+
+/* ══════════════════════════════════════
+   BOTTOM NAV (Mobile — Daily Income style)
+══════════════════════════════════════ */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(255,255,255,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  align-items:center;
+  padding:.3rem 0;padding-bottom:calc(.3rem + env(safe-area-inset-bottom));
+  box-shadow:0 -1px 0 rgba(0,0,0,.06),0 -4px 16px rgba(0,0,0,.05);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:.25rem .25rem;cursor:pointer;transition:transform .15s;
+  border:none;background:none;font-family:'Sarabun',sans-serif;
+}
+.nav-item:active{transform:scale(.88)}
+.nav-pill{
+  display:flex;align-items:center;justify-content:center;
+  width:46px;height:30px;border-radius:15px;
+  transition:background .2s ease,transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-item.active .nav-pill{background:rgba(227,30,36,.10);transform:scale(1.05)}
+.nav-item .nav-icon{font-size:21px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.nav-item.active .nav-icon{transform:scale(1.12)}
+.nav-label{
+  font-size:9.5px;font-weight:500;color:var(--txt3);letter-spacing:.01em;
+  transition:color .2s ease,font-weight .2s ease;
+}
+.nav-item.active .nav-label{color:#E31E24;font-weight:700}
+
+/* ── Center FAB ── */
+.nav-item.is-fab{position:relative}
+.nav-fab{
+  position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(196,181,253,0.65);
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid #fff;
+  box-shadow:0 4px 14px rgba(139,92,246,.35),0 2px 6px rgba(139,92,246,.20);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease;
+  z-index:5;animation:fabPulse 2.4s ease-in-out infinite;
+}
+.nav-fab .fab-icon{font-size:24px;line-height:1;animation:fabBounce 2.4s ease-in-out infinite}
+.nav-fab:active{transform:translateX(-50%) scale(.90)}
+.nav-item.is-fab .nav-label{margin-top:36px;font-weight:800;color:var(--red)}
+
+@keyframes fabPulse{
+  0%,100%{box-shadow:0 4px 14px rgba(139,92,246,.35),0 0 0 0 rgba(139,92,246,.45)}
+  60%{box-shadow:0 4px 14px rgba(139,92,246,.35),0 0 0 12px rgba(139,92,246,0)}
+}
+@keyframes fabBounce{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  30%{transform:translateY(-3px) rotate(-8deg)}
+  60%{transform:translateY(-1px) rotate(5deg)}
+}
+
+@media(max-width:1023px){
+  .bottom-nav{display:flex}
+  .scroll-area{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+}
+@media(min-width:1024px){
+  .bottom-nav{display:none!important}
 }
 
 /* ── V3.5 — Duel Compare + Settings Polish ── */
@@ -1240,6 +1296,16 @@ body{
 }
 .sb-uname{font-size:13px;font-weight:700;color:var(--txt);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-urole{font-size:11px;color:var(--txt3);margin-top:1px}
+.sb-refresh-btn{
+  flex-shrink:0;width:34px;height:34px;border-radius:50%;
+  background:var(--surf2);border:1px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;line-height:1;color:var(--txt2);
+  transition:background .15s,transform .15s;
+}
+.sb-refresh-btn:hover{background:#FEF2F2;border-color:#FECACA}
+.sb-refresh-btn:active{transform:scale(.9)}
+.sb-refresh-btn.spinning{animation:topbar-spin .7s linear infinite;pointer-events:none}
 /* scroll body in sidebar */
 .sb-scroll{flex:1;overflow-y:auto;padding:.75rem .7rem}
 /* home button — Inventory style */
@@ -1424,7 +1490,7 @@ body{
   <!-- Right: Online + Bell + Refresh -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto">
     <span class="conn-online" id="topbar-conn">Online</span>
-    <div class="cm-bell-wrap" id="cm-bell-wrap">
+    <div class="cm-bell-wrap" id="cm-bell-wrap" style="display:none">
       <button class="cm-bell-btn" onclick="cmToggleBell()" title="แจ้งเตือน">🔔<span class="cm-bell-badge" id="cm-bell-badge" style="display:none">0</span></button>
       <div class="cm-notif-panel" id="cm-notif-panel" style="display:none">
         <div class="cm-notif-head"><span>การแจ้งเตือน</span><button id="cm-notif-readall" onclick="cmMarkAllRead()" style="display:none">อ่านทั้งหมด</button></div>
@@ -1467,6 +1533,7 @@ body{
         <div class="sb-uname" id="sb-name">—</div>
         <div class="sb-urole" id="sb-role">—</div>
       </div>
+      <button class="sb-refresh-btn" id="sb-refresh-btn" onclick="hardRefresh()" title="Hard Refresh — ล้างแคชและโหลดใหม่">🔄</button>
     </div>
   </div>
 </div>
@@ -1795,7 +1862,7 @@ body{
           <div class="st-section">Data & Reports</div>
 
           <!-- Export CSV — all roles -->
-          <div class="st-row" onclick="exportCSV()" style="cursor:pointer">
+          <div class="st-row" onclick="exportCSV()" style="cursor:pointer;margin:0">
             <div class="st-row-icon" style="background:#D1FAE5">📊</div>
             <div class="st-row-info">
               <div class="st-row-title">Export CSV</div>
@@ -1803,30 +1870,6 @@ body{
             </div>
             <span class="st-badge" style="background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0">All</span>
           </div>
-
-          <div class="st-divider" style="margin:.25rem 0"></div>
-          <div style="font-size:11px;color:var(--txt3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.3rem 0 .1rem">Backup & Restore</div>
-
-          <!-- Backup JSON — editor only -->
-          <div class="st-row st-editor-row" onclick="exportJSON()" style="cursor:pointer">
-            <div class="st-row-icon" style="background:#DBEAFE">💾</div>
-            <div class="st-row-info">
-              <div class="st-row-title">Backup JSON</div>
-              <div class="st-row-sub">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ .json</div>
-            </div>
-            <span class="st-badge" style="background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE">Editor</span>
-          </div>
-
-          <!-- Restore JSON — editor only -->
-          <label class="st-row st-editor-row" style="cursor:pointer;margin:0">
-            <div class="st-row-icon" style="background:#EDE9FE">📂</div>
-            <div class="st-row-info">
-              <div class="st-row-title">Restore JSON</div>
-              <div class="st-row-sub">นำเข้าข้อมูลจากไฟล์ Backup</div>
-            </div>
-            <span class="st-badge" style="background:#EDE9FE;color:#5B21B6;border:1px solid #DDD6FE">Editor</span>
-            <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
-          </label>
         </div>
 
         <!-- ℹ️ Database Summary -->
@@ -1849,19 +1892,9 @@ body{
           <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:var(--surf2);border-radius:var(--r);font-size:12px;color:var(--txt3)">
             <span style="font-weight:600">BizICE Cost Manager</span>
             <div style="text-align:right">
-              <span style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">v3.5.10 · อัพเดท 20 มิ.ย. 2569</span>
+              <span id="app-version-badge" style="background:#fff;padding:2px 8px;border-radius:8px;border:1px solid var(--border);font-weight:600;display:block">v3.5.19 · อัพเดท 20 มิ.ย. 2569</span>
             </div>
           </div>
-        </div>
-
-        <!-- ☁️ Manual Sync -->
-        <div class="card">
-          <div class="st-section" style="margin-bottom:.6rem">☁️ ซิงก์ข้อมูล</div>
-          <div class="sync-row" style="margin-bottom:.55rem">
-            <button onclick="manualSync()" style="display:flex;align-items:center;gap:8px;padding:.65rem 1.1rem;background:linear-gradient(135deg,#1D4ED8,#1e40af);color:#fff;border:none;border-radius:var(--rl);cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;box-shadow:0 2px 8px rgba(29,78,216,.25);transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">☁️ Sync ข้อมูลตอนนี้</button>
-            <span class="sync-status" id="sync-status-lbl">ยังไม่ได้ซิงก์</span>
-          </div>
-          <div style="font-size:11.5px;color:var(--txt3)">กด Sync เพื่อบังคับบันทึกข้อมูลทั้งหมดขึ้น Firebase ทันที</div>
         </div>
 
         <!-- ⚠️ Danger Zone — Owner only -->
@@ -1884,6 +1917,30 @@ body{
   </div>
 
 </div>
+</div>
+
+<!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+<div class="bottom-nav" id="bottom-nav">
+  <button class="nav-item active" data-nav="menu" onclick="goTab('menu')">
+    <span class="nav-pill"><span class="nav-icon">🍦</span></span>
+    <span class="nav-label">เมนู</span>
+  </button>
+  <button class="nav-item" data-nav="library" onclick="goTab('library')">
+    <span class="nav-pill"><span class="nav-icon">📦</span></span>
+    <span class="nav-label">คลัง</span>
+  </button>
+  <button class="nav-item is-fab" data-nav="compound" onclick="goTab('compound')">
+    <span class="nav-fab" id="nav-center-fab"><span class="fab-icon">🧪</span></span>
+    <span class="nav-label">สูตรผสม</span>
+  </button>
+  <button class="nav-item" data-nav="compare" onclick="goTab('compare')">
+    <span class="nav-pill"><span class="nav-icon">📊</span></span>
+    <span class="nav-label">เปรียบ</span>
+  </button>
+  <button class="nav-item" data-nav="settings" onclick="goTab('settings')">
+    <span class="nav-pill"><span class="nav-icon">⚙️</span></span>
+    <span class="nav-label">ตั้งค่า</span>
+  </button>
 </div>
 
 <!-- ═══════════════ MODAL — MENU ═══════════════ -->
@@ -2190,6 +2247,35 @@ function updateLibPlaceholder(){
   if(inp)inp.placeholder=LIB_SUGGESTIONS[cat]||'ชื่อวัตถุดิบ';
 }
 
+// ─── APP VERSION ───
+const APP_VERSION = 'v3.5.19';
+const APP_DATE    = '20 มิ.ย. 2569';
+
+// ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
+function fmtDate(d){
+  if(!d) return '—';
+  // Already in DD.MM.YYYY format
+  if(/^\d{2}\.\d{2}\.\d{4}$/.test(String(d))) return d;
+  // Try parse ISO or native Date
+  const dt = d instanceof Date ? d : new Date(d);
+  if(!isNaN(dt.getTime())){
+    return String(dt.getDate()).padStart(2,'0')+'.'+String(dt.getMonth()+1).padStart(2,'0')+'.'+dt.getFullYear();
+  }
+  // Fallback: Thai locale "D/M/YYYY+543" → strip and reformat
+  const m = String(d).match(/(\d+)\/(\d+)\/(\d+)/);
+  if(m){
+    const dd=String(m[1]).padStart(2,'0'), mo=String(m[2]).padStart(2,'0');
+    const yr = parseInt(m[3]) > 2500 ? parseInt(m[3])-543 : parseInt(m[3]);
+    return dd+'.'+mo+'.'+yr;
+  }
+  return d;
+}
+function fmtDateNow(){ return fmtDate(new Date()); }
+document.addEventListener('DOMContentLoaded', function(){
+  const badge = document.getElementById('app-version-badge');
+  if(badge) badge.textContent = APP_VERSION + ' · อัพเดท ' + APP_DATE;
+});
+
 // ─── FIREBASE ───
 const firebaseConfig={
   apiKey:"AIzaSyDRs60WURPcNArQXl5RRuwqJcLjtN3CMe4",
@@ -2356,10 +2442,12 @@ function goTab(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   const idx=TAB_NAMES.indexOf(name);
   if(idx>=0)document.querySelectorAll('.tab')[idx].classList.add('active');
   document.querySelectorAll(`.snav-btn[data-tab="${name}"]`).forEach(b=>b.classList.add('active'));
+  document.querySelectorAll(`.nav-item[data-nav="${name}"]`).forEach(b=>b.classList.add('active'));
   if(name==='menu'){renderMenus();renderMenuMetrics()}
   if(name==='library'){renderLibrary()}
   if(name==='compound')renderCompounds();
@@ -2602,7 +2690,7 @@ function saveIngr(){
     servingUnit:servingUnit||null,
     pinned:existing?.pinned||false,
     priceHistory:existing?.priceHistory||[],
-    updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
+    updatedAt:fmtDateNow(),updatedBy:getUpdatedBy()
   };
   if(editIngrId){const i=library.findIndex(x=>x.id===editIngrId);if(i>=0)library[i]=item}
   else library.push(item);
@@ -2959,7 +3047,7 @@ function openViewMenu(id){
   const m = menus.find(x => x.id === id); if(!m) return;
   const emo = menuEmoji(m.cat);
   document.getElementById('view-title').textContent = emo + ' ' + m.name;
-  document.getElementById('view-meta').textContent = m.cat + ' · ' + m.ingredients.length + ' วัตถุดิบ · อัพเดต ' + m.updatedAt;
+  document.getElementById('view-meta').textContent = m.cat + ' · ' + m.ingredients.length + ' วัตถุดิบ · อัพเดต ' + fmtDate(m.updatedAt);
 
   const sizes = [['U','S',m.priceS],['M','M',m.priceM],['L','L',m.priceL]].filter(([,,p])=>p>0);
   const maxPct = Math.max(...sizes.map(([sz,,p])=>{ const c=calcCost(m.ingredients,sz); return p>0?c/p*100:0; }), 0.1);
@@ -3412,7 +3500,7 @@ function saveMenu(){
     priceM:parseFloat(document.getElementById('m-pm').value)||0,
     priceL:parseFloat(document.getElementById('m-pl').value)||0,
     ingredients:ingr,
-    updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
+    updatedAt:fmtDateNow(),updatedBy:getUpdatedBy()
   };
   if(editMenuId){const i=menus.findIndex(x=>x.id===editMenuId);if(i>=0)menus[i]=menu}
   else menus.push(menu);
@@ -3519,7 +3607,7 @@ function renderMenus(){
               <div class="mc-name">${m.name}</div>
               <div class="mc-meta">
                 <span style="background:var(--surf2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500">${m.cat}</span>
-                <span style="margin-left:6px">${m.ingredients.length} วัตถุดิบ · ${m.updatedAt}</span>
+                <span style="margin-left:6px">${m.ingredients.length} วัตถุดิบ · ${fmtDate(m.updatedAt)}</span>
               </div>
             </div>
           </div>
@@ -3923,7 +4011,7 @@ function saveCompound(){
       servingUnit:servingUnit||null,
       ingredients:validIngr,
       costPerOutputUnit,
-      updatedAt:new Date().toLocaleDateString('th-TH'),updatedBy:getUpdatedBy()
+      updatedAt:fmtDateNow(),updatedBy:getUpdatedBy()
     };
     if(editCompoundId){
       const i=compounds.findIndex(x=>x.id===editCompoundId);
@@ -4009,7 +4097,7 @@ function renderCompounds(){
           <div class="compound-name">${c.name}</div>
           ${yieldPill}
         </div>
-        <div class="compound-meta">ได้จริง ${fmtNum(effectiveQty,0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${c.updatedAt}</div>
+        <div class="compound-meta">ได้จริง ${fmtNum(effectiveQty,0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${fmtDate(c.updatedAt)}</div>
       </div>
       <div class="compound-ingr-list">${ingrHtml}</div>
       <!-- Dual Cost Display -->
@@ -4128,7 +4216,7 @@ function savePriceAdj(){
   item.total=newPrice;
   item.basePrice=newPrice;
   if(item.qty&&item.qty>0)item.unitPrice=newPrice/item.qty;
-  item.updatedAt=new Date().toLocaleDateString('th-TH');
+  item.updatedAt=fmtDateNow();
   item.updatedBy=record.updatedBy;
   // cascade recalc
   save();
@@ -4139,29 +4227,9 @@ function savePriceAdj(){
 }
 
 // ─────────────────────────────────────────
-// V3.5 — DUEL MODE + MANUAL SYNC
+// V3.5 — DUEL MODE
+// (Manual Sync ถูกลบแล้ว — save()/saveCompounds() ซิงก์ขึ้น Firebase อัตโนมัติทุกครั้ง)
 // ─────────────────────────────────────────
-let lastSyncTime=null;
-
-function manualSync(){
-  const btn=event.currentTarget;
-  const lbl=document.getElementById('sync-status-lbl');
-  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังซิงก์...';}
-  db.collection('mixue_data').doc(DOC).set({menus,library,compounds},{merge:true})
-    .then(()=>{
-      lastSyncTime=new Date();
-      const ts=lastSyncTime.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      if(lbl)lbl.textContent='ซิงก์ล่าสุดเมื่อ: '+ts;
-      if(btn){btn.disabled=false;btn.textContent='☁️ Sync ข้อมูลตอนนี้';}
-      toast('ซิงก์สำเร็จแล้วค่า! ☁️');
-    })
-    .catch(()=>{
-      if(lbl)lbl.textContent='ซิงก์ไม่สำเร็จ ลองใหม่';
-      if(btn){btn.disabled=false;btn.textContent='☁️ Sync ข้อมูลตอนนี้';}
-      toast('ซิงก์ไม่สำเร็จ ❌','⚠');
-    });
-}
-
 function startDuel(){
   const selA=document.getElementById('duel-a');
   const selB=document.getElementById('duel-b');
@@ -4409,56 +4477,6 @@ function exportCSV(){
   toast('Export CSV สำเร็จแล้วค่า!');
 }
 
-// ─────────────────────────────────────────
-// BACKUP / RESTORE
-// ─────────────────────────────────────────
-function exportJSON(){
-  const data={
-    version:1,
-    exportedAt:new Date().toISOString(),
-    menus,library,compounds
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const d=new Date();
-  const ts=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  a.href=url;a.download=`mixue_backup_${ts}.json`;a.click();
-  URL.revokeObjectURL(url);
-  toast(`Backup สำเร็จ! (${menus.length} เมนู · ${library.length} วัตถุดิบ · ${compounds.length} สูตรผสม)`,'💾');
-}
-
-function importJSON(event){
-  const file=event.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const data=JSON.parse(e.target.result);
-      // validate
-      if(!data.menus&&!data.library&&!data.compounds){
-        toast('ไฟล์ไม่ถูกต้อง — ใช้ไฟล์ Backup จากแอปนี้เท่านั้น','❌');return;
-      }
-      const mCount=data.menus?.length||0;
-      const lCount=data.library?.length||0;
-      const cCount=data.compounds?.length||0;
-      if(!confirm(`นำเข้าข้อมูล:\n• ${mCount} เมนู\n• ${lCount} วัตถุดิบ\n• ${cCount} สูตรผสม\n\nข้อมูลปัจจุบันจะถูกแทนที่ทั้งหมด ยืนยันไหม?`)){
-        event.target.value='';return;
-      }
-      if(data.menus)menus=data.menus;
-      if(data.library)library=data.library;
-      if(data.compounds)compounds=data.compounds;
-      save();saveCompounds();// save() already syncs to Firebase
-      renderMenus();renderMenuMetrics();
-      toast(`Restore สำเร็จ! (${mCount} เมนู · ${lCount} วัตถุดิบ · ${cCount} สูตรผสม)`,'📂');
-    }catch{
-      toast('อ่านไฟล์ไม่ได้ — ไฟล์อาจเสียหาย','❌');
-    }
-    event.target.value='';
-  };
-  reader.readAsText(file);
-}
-
 // ─── INIT ───
 (async()=>{
   // show loading spinners
@@ -4476,8 +4494,8 @@ function importJSON(event){
 <script>
 // ── Hard Refresh (ปุ่ม 🔄) — ล้าง SW cache + reload ──────────────────────
 async function hardRefresh(){
-  const btn = document.getElementById('topbar-refresh-btn');
-  if(btn){ btn.classList.add('spinning'); btn.disabled = true; }
+  const btns = ['topbar-refresh-btn','sb-refresh-btn'].map(id=>document.getElementById(id)).filter(Boolean);
+  btns.forEach(b=>{ b.classList.add('spinning'); b.disabled = true; });
   try{
     if('serviceWorker' in navigator){
       const regs = await navigator.serviceWorker.getRegistrations();
@@ -4599,10 +4617,17 @@ if('serviceWorker' in navigator){
         const nw = reg.installing;
         if(!nw) return;
         nw.addEventListener('statechange', () => {
-          if(nw.state === 'installed' && navigator.serviceWorker.controller){
+          if(nw.state === 'activated'){
+            // SW ใหม่ activate แล้ว — reload อัตโนมัติเพื่อโหลด HTML/CSS ใหม่
+            window.location.reload();
+          } else if(nw.state === 'installed' && navigator.serviceWorker.controller){
             document.getElementById('update-banner')?.classList.add('show');
           }
         });
+      });
+      // ถ้าผู้ใช้ปิด banner แล้ว controller เปลี่ยน (SW ใหม่ take control) — reload
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
       });
     })
     .catch(()=>{});
