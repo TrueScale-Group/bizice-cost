@@ -56,6 +56,8 @@ window.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&['+',
 *{box-sizing:border-box;margin:0;padding:0}
 /* ── Native App Feel ── */
 *,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+/* a11y: focus ring เฉพาะตอน keyboard (ไม่ขึ้นตอนแตะนิ้ว) */
+:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:6px}
 input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}
 html{touch-action:manipulation;-ms-touch-action:manipulation}
 html,body{overscroll-behavior:none;overscroll-behavior-y:contain;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -64,7 +66,7 @@ html,body{overscroll-behavior:none;overscroll-behavior-y:contain;-webkit-text-si
   --gold:#F5C518;
   --bg:#F4F5F7;--surf:#FFFFFF;--surf2:#F2F2F5;--surf3:#E8E8ED;
   --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
-  --txt:#1A1A1A;--txt2:#555;--txt3:#9A9A9A;
+  --txt:#1A1A1A;--txt2:#555;--txt3:#767676;
   --green:#15803D;--green-bg:#F0FDF4;--green-b:#BBF7D0;
   --orange:#C2410C;--orange-bg:#FFF7ED;--orange-b:#FED7AA;
   --blue:#1D4ED8;--blue-bg:#EFF6FF;
@@ -605,6 +607,7 @@ input,select,textarea{font-size:16px}
 /* FILTER BAR */
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
 .fchip{
+  display:inline-flex;align-items:center;min-height:36px;
   padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;
   border:1px solid var(--border2);background:var(--surf);color:var(--txt2);
   cursor:pointer;transition:all .18s ease;
@@ -623,7 +626,8 @@ input,select,textarea{font-size:16px}
 }
 .ios-chip-bar::-webkit-scrollbar{display:none}
 .ios-chip{
-  flex-shrink:0;padding:7px 16px;border-radius:20px;
+  flex-shrink:0;display:inline-flex;align-items:center;min-height:36px;
+  padding:7px 16px;border-radius:20px;
   font-size:13px;font-weight:600;font-family:'Sarabun',sans-serif;
   border:none;cursor:pointer;transition:all .18s ease;
   background:#E9E9EB;color:#3C3C43;
@@ -1208,7 +1212,10 @@ input,select,textarea{font-size:16px}
 .lib-pin-btn{
   background:none;border:none;cursor:pointer;font-size:17px;
   padding:3px 5px;border-radius:6px;transition:transform .15s;line-height:1;
+  min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;
 }
+/* a11y: modal close ✕ ให้ได้ขนาดแตะ ~40px (เฉพาะใน header ที่มีที่ว่าง) */
+.modal-header .btn-del{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
 .lib-pin-btn:hover{transform:scale(1.25)}
 .lib-pin-btn.pinned{filter:drop-shadow(0 0 3px #F5C518)}
 /* Dependency button */
@@ -1920,9 +1927,9 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.6.1</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.7.0</span>
         <span>·</span>
-        <span id="app-date-badge">อัพเดท 20 มิ.ย. 2569</span>
+        <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
     </div>
   </div>
@@ -2259,8 +2266,8 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.6.1';
-const APP_DATE    = '20 มิ.ย. 2569';
+const APP_VERSION = 'v3.7.0';
+const APP_DATE    = '21 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
 function fmtDate(d){
@@ -2348,12 +2355,14 @@ function saveCompounds(){
 
 // ─── TOAST ───
 let toastTimer=null;
+// escape HTML — กัน stored-XSS/breakage จากชื่อ/หมายเหตุที่ผู้ใช้กรอก (ใช้ก่อนใส่ innerHTML/attribute)
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(msg,icon='✓'){
   const t=document.getElementById('toast');
   if(toastTimer)clearTimeout(toastTimer);
   t.classList.remove('show','hide','warn');
   void t.offsetWidth;
-  t.innerHTML=`<span style="font-size:15px">${icon}</span><span>${msg}</span>`;
+  t.innerHTML=`<span style="font-size:15px">${icon}</span><span>${esc(msg)}</span>`;
   if(icon==='⚠️')t.classList.add('warn');
   t.classList.add('show');
   toastTimer=setTimeout(()=>{
@@ -2466,7 +2475,23 @@ function goTab(name){
   if(name==='compound')renderCompounds();
   if(name==='compare')renderCompare();
   setStatusBarColor(TAB_STATUS_COLORS[name]||'#E31E24');
+  enhanceTapA11y();
 }
+
+// ── a11y: ทำให้ปุ่มที่เป็น div/span (onclick) ใช้คีย์บอร์ดได้ (Enter/Space) ──
+function enhanceTapA11y(){
+  document.querySelectorAll('.ios-row,.size-toggle,.adv-toggle,.fchip,.ios-chip,.lib-hc-toggle').forEach(el=>{
+    if(!el.hasAttribute('tabindex')){ el.setAttribute('tabindex','0'); el.setAttribute('role','button'); }
+  });
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ') return;
+  const t=e.target;
+  if(t.getAttribute&&t.getAttribute('role')==='button'&&!t.matches('button,a,input,select,textarea')){
+    e.preventDefault(); t.click();
+  }
+});
+document.addEventListener('DOMContentLoaded',enhanceTapA11y);
 
 // ── Haptic Feedback ──────────────────────────────────────────────────────────
 function hapticTap(){ if(navigator.vibrate) navigator.vibrate(10); }
@@ -2736,8 +2761,16 @@ function saveIngr(){
   toast('บันทึกวัตถุดิบแล้วค่ะ!');
 }
 function deleteIngr(id){
-  if(!confirm('ลบวัตถุดิบนี้?'))return;
-  library=library.filter(x=>x.id!==id);save();renderLibrary();toast('ลบแล้วค่ะ','🗑');
+  const u=libUsage(id);
+  let msg='ลบวัตถุดิบนี้?';
+  if(u.total>0){
+    const parts=[]; if(u.m)parts.push(`${u.m} เมนู`); if(u.c)parts.push(`${u.c} สูตรผสม`);
+    msg=`⚠️ วัตถุดิบนี้ถูกใช้ใน ${parts.join(' และ ')}\nลบแล้วต้นทุนของรายการเหล่านั้นจะคำนวณผิด\n\nยืนยันลบ?`;
+  }
+  if(!confirm(msg))return;
+  library=library.filter(x=>x.id!==id);
+  save();recalcAllCosts(true);renderLibrary();
+  toast('ลบแล้วค่ะ','🗑');
 }
 
 function renderLibrary(){
@@ -2795,7 +2828,7 @@ function renderLibrary(){
           ${i.waste?`<div><span>Waste Buffer</span><span>${i.waste}%</span></div>`:''}
         </div>
       </div>`:'';
-    const serveChip=i.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${i.servingUnit.name} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span></div>`:'';
+    const serveChip=i.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${esc(i.servingUnit.name)} = ${fmtPrice(i.servingUnit.costPerServe)} ฿</span></div>`:'';
     // Format purchase summary clearly
     const baseLabel=i.levels&&i.levels.length>0?i.levels[0].name:i.unit;
     // Build breakdown tooltip from levels
@@ -2807,7 +2840,7 @@ function renderLibrary(){
         tipRows+=`<div class="tip-row">
           <span class="tip-unit">1 ${from}</span>
           <span class="tip-arrow">→</span>
-          <span class="tip-unit">${fmtNum(to.qty,0)} ${to.name}</span>
+          <span class="tip-unit">${fmtNum(to.qty,0)} ${esc(to.name)}</span>
         </div>`;
       }
     }
@@ -2823,7 +2856,7 @@ function renderLibrary(){
       <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
         <button class="lib-pin-btn ${i.pinned?'pinned':''}" onclick="togglePin('${i.id}')" title="${i.pinned?'ถอดปักหมุด':'ปักหมุด'}" style="margin-top:1px;flex-shrink:0">${i.pinned?'⭐':'☆'}</button>
         <div style="flex:1;min-width:0">
-          <div class="lib-name" style="margin:0;font-size:14.5px">${i.name}</div>
+          <div class="lib-name" style="margin:0;font-size:14.5px">${esc(i.name)}</div>
           <span class="cat-badge cat-${i.cat}" style="margin-top:3px;display:inline-block">${CAT_EMOJI[i.cat]} ${i.cat}</span>
         </div>
       </div>
@@ -2914,8 +2947,10 @@ function openDep(id){
   const item=library.find(x=>x.id===id);
   if(!item)return;
   document.getElementById('dep-subtitle').textContent=item.name;
-  const usedMenus=menus.filter(m=>m.ingredients&&m.ingredients.some(ing=>ing.libId===id));
-  const usedComps=compounds.filter(c=>c.ingredients&&c.ingredients.some(ing=>ing.libId===id));
+  // เมนูเก็บ sourceId, compound เก็บทั้ง libId+sourceId — เช็คทั้งคู่ (เฉพาะ library source)
+  const usesLib=ing=>(ing.sourceType==null||ing.sourceType==='library')&&(ing.sourceId===id||ing.libId===id);
+  const usedMenus=menus.filter(m=>m.ingredients&&m.ingredients.some(usesLib));
+  const usedComps=compounds.filter(c=>c.ingredients&&c.ingredients.some(usesLib));
   const cont=document.getElementById('dep-list-content');
   if(!usedMenus.length&&!usedComps.length){
     cont.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--txt3)">
@@ -2928,8 +2963,8 @@ function openDep(id){
       ...usedMenus.map(m=>`<div class="dep-list-item">
         <span style="font-size:18px">${menuEmoji(m.cat||'')}</span>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:14px">${m.name}</div>
-          <div style="font-size:11.5px;color:var(--txt3)">${m.cat||'—'}</div>
+          <div style="font-weight:700;font-size:14px">${esc(m.name)}</div>
+          <div style="font-size:11.5px;color:var(--txt3)">${esc(m.cat||'—')}</div>
         </div>
         <span class="dep-badge dep-badge-menu">เมนู</span>
       </div>`),
@@ -2937,8 +2972,8 @@ function openDep(id){
       ...usedComps.map(c=>`<div class="dep-list-item">
         <span style="font-size:18px">🧪</span>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:14px">${c.name}</div>
-          <div style="font-size:11.5px;color:var(--txt3)">${c.unit||'—'}</div>
+          <div style="font-weight:700;font-size:14px">${esc(c.name)}</div>
+          <div style="font-size:11.5px;color:var(--txt3)">${esc(c.unit||'—')}</div>
         </div>
         <span class="dep-badge dep-badge-comp">สูตรผสม</span>
       </div>`)
@@ -2971,7 +3006,7 @@ function renderBdLevels(){
   const c=document.getElementById('bd-levels-container');
   c.innerHTML=bd.levels.map((lv,i)=>`
     <div class="bd-row">
-      <input type="text" placeholder="ชื่อหน่วย (เช่น กล่อง)" value="${lv.name}"
+      <input type="text" placeholder="ชื่อหน่วย (เช่น กล่อง)" value="${esc(lv.name)}"
         oninput="bd.levels[${i}].name=this.value;calcBd()">
       <input type="number" placeholder="จำนวน" value="${lv.qty||''}" min="1" step="1"
         oninput="bd.levels[${i}].qty=parseFloat(this.value)||0;calcBd()">
@@ -2987,7 +3022,7 @@ function renderBdExtras(){
     ? '<div style="font-size:13px;color:var(--txt3);padding:6px 0">ยังไม่มีค่าใช้จ่ายเพิ่มเติม</div>'
     : bd.extras.map((ex,i)=>`
       <div class="bd-row">
-        <input type="text" placeholder="ชื่อค่าใช้จ่าย (เช่น ค่าขนส่ง)" value="${ex.name}"
+        <input type="text" placeholder="ชื่อค่าใช้จ่าย (เช่น ค่าขนส่ง)" value="${esc(ex.name)}"
           oninput="bd.extras[${i}].name=this.value;calcBd()">
         <input type="number" placeholder="฿" value="${ex.cost||''}" min="0" step="0.01"
           oninput="bd.extras[${i}].cost=parseFloat(this.value)||0;calcBd()">
@@ -3114,7 +3149,7 @@ function openViewMenu(id){
       const lineCost = q * (i.pricePerUnit||0);
       if(lineCost === 0) return '';
       return `<div class="view-ingr-row">
-        <span class="view-ingr-name">${i.name} <span style="color:var(--txt3);font-size:11px">${q.toFixed(2)} ${i.unit||''}</span></span>
+        <span class="view-ingr-name">${esc(i.name)} <span style="color:var(--txt3);font-size:11px">${q.toFixed(2)} ${esc(i.unit||'')}</span></span>
         <span class="view-ingr-cost">${lineCost.toFixed(2)} ฿</span>
       </div>`;
     }).join('');
@@ -3373,7 +3408,7 @@ function onMenuSrcChange(id, ing=null){
   if(src==='compound'){
     const initId=ing?.sourceId||'';
     const opts=compounds.length
-      ? compounds.map(c=>`<option value="${c.id}"${c.id===initId?' selected':''}>${c.name}</option>`).join('')
+      ? compounds.map(c=>`<option value="${c.id}"${c.id===initId?' selected':''}>${esc(c.name)}</option>`).join('')
       : `<option value="">— ยังไม่มีสูตรผสม —</option>`;
     wrap.innerHTML=`<select id="mcp-${id}" onchange="onMenuItemSelect(${id})" class="dyn-input">${opts}</select>`;
   } else {
@@ -3387,7 +3422,7 @@ function onMenuSrcChange(id, ing=null){
     const catOpts=CATS.map(c=>`<option value="${c}"${c===initCat?' selected':''}>${CAT_EMOJI[c]} ${c}</option>`).join('');
     const libItems=library.filter(x=>x.cat===initCat);
     const itemOpts=libItems.length
-      ? libItems.map(x=>`<option value="${x.id}"${x.id===initLibId?' selected':''}>${x.name}</option>`).join('')
+      ? libItems.map(x=>`<option value="${x.id}"${x.id===initLibId?' selected':''}>${esc(x.name)}</option>`).join('')
       : `<option value="">— ยังไม่มี —</option>`;
     wrap.innerHTML=`
       <select id="mlc-${id}" onchange="onMenuCatChange(${id})" class="dyn-input" style="font-size:11px;flex:0 0 auto;width:100px">${catOpts}</select>
@@ -3402,7 +3437,7 @@ function onMenuCatChange(id){
   const sel=document.getElementById('mli-'+id);
   if(!sel)return;
   sel.innerHTML=items.length
-    ? items.map(x=>`<option value="${x.id}">${x.name}</option>`).join('')
+    ? items.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')
     : `<option value="">— ยังไม่มี —</option>`;
   onMenuItemSelect(id);
 }
@@ -3638,7 +3673,7 @@ function renderMenus(){
           <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">
             <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:var(--sh-red)">${emo}</div>
             <div style="min-width:0">
-              <div class="mc-name">${m.name}</div>
+              <div class="mc-name">${esc(m.name)}</div>
               <div class="mc-meta">
                 <span style="background:var(--surf2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500">${m.cat}</span>
                 <span style="margin-left:6px">${m.ingredients.length} วัตถุดิบ · ${fmtDate(m.updatedAt)}</span>
@@ -3664,7 +3699,7 @@ function renderMenus(){
       </div>
       <div class="mc-foot">
         <div style="font-size:11px;color:var(--txt3);flex:1;min-width:0;overflow:hidden">
-          ${m.ingredients.slice(0,3).map(i=>`<span style="background:var(--surf3);border-radius:5px;padding:1px 7px;font-size:10px;margin-right:3px">${i.name}</span>`).join('')}
+          ${m.ingredients.slice(0,3).map(i=>`<span style="background:var(--surf3);border-radius:5px;padding:1px 7px;font-size:10px;margin-right:3px">${esc(i.name)}</span>`).join('')}
           ${m.ingredients.length>3?`<span style="font-size:10px;color:var(--txt3)">+${m.ingredients.length-3}</span>`:''}
         </div>
         <div class="mc-actions">
@@ -3746,7 +3781,7 @@ function renderTrafficLight(data){
           <div style="font-size:10px;color:${color};opacity:.8;font-weight:600">${label}</div>
         </div>
       </div>
-      ${list.slice(0,3).map(d=>`<div style="font-size:10px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· ${d.name} <span style="color:${color};font-weight:600">${d.pct.toFixed(1)}%</span></div>`).join('')}
+      ${list.slice(0,3).map(d=>`<div style="font-size:10px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· ${esc(d.name)} <span style="color:${color};font-weight:600">${d.pct.toFixed(1)}%</span></div>`).join('')}
       ${list.length>3?`<div style="font-size:11px;color:${color};font-weight:700;margin-top:4px">+${list.length-3} เพิ่มเติม →</div>`:''}
     </div>`;
   grid.innerHTML=
@@ -3788,7 +3823,7 @@ function openTlPopup(key){
       <div style="overflow-y:auto;padding:.75rem 1rem;flex:1">
         ${list.sort((a,b)=>b.pct-a.pct).map(d=>`
           <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem .75rem;margin-bottom:.4rem;background:#fafafa;border-radius:10px;border:1px solid #f0f0f0">
-            <div style="font-size:14px;font-weight:600;color:#1a1a1a">${d.name}</div>
+            <div style="font-size:14px;font-weight:600;color:#1a1a1a">${esc(d.name)}</div>
             <div style="display:flex;align-items:center;gap:10px">
               <div style="font-size:14px;font-weight:700;color:${color}">${d.pct.toFixed(1)}%</div>
               <div style="font-size:11px;color:#888;white-space:nowrap">GP ${(100-d.pct).toFixed(1)}%</div>
@@ -3809,13 +3844,15 @@ function closeTlPopup(){
 // ─────────────────────────────────────────
 function calcCompound(c){
   const totalIngredientCost=c.ingredients.reduce((s,ing)=>s+(ing.qty*(ing.unitPrice||0)),0);
-  const costPerOutputUnit=c.outputQty>0?totalIngredientCost/c.outputQty:0;
+  // หาร effectiveQty (outputQty × yield/100) ให้ตรงกับ saveCompound — กัน yield หายตอน recalc
+  const effectiveQty=(c.outputQty||0)*((c.yield||100)/100);
+  const costPerOutputUnit=effectiveQty>0?totalIngredientCost/effectiveQty:0;
   return{costPerOutputUnit,totalIngredientCost};
 }
 
 // ══ LIVE-LINK CHAIN ══
 // เมื่อราคาวัตถุดิบในคลังเปลี่ยน → อัปเดต compounds → อัปเดต menus → re-render
-function recalcAllCosts(){
+function recalcAllCosts(silent){
   // Step 1: อัปเดต unitPrice ใน compound ingredients จาก library
   compounds.forEach(c=>{
     c.ingredients.forEach(ing=>{
@@ -3843,7 +3880,18 @@ function recalcAllCosts(){
   saveCompounds();save();
   // Re-render ทุก view ที่เปิดอยู่
   renderMenus();renderMenuMetrics();renderCompounds();
-  toast('อัปเดตต้นทุนทั้งหมดแล้ว 🔄','✅');
+  if(!silent) toast('อัปเดตต้นทุนทั้งหมดแล้ว 🔄','✅');
+}
+// นับการใช้งานวัตถุดิบ/สูตรผสม (สำหรับเตือนก่อนลบ)
+function libUsage(id){
+  const usesLib=ing=>(ing.sourceType==null||ing.sourceType==='library')&&(ing.sourceId===id||ing.libId===id);
+  const m=menus.filter(x=>x.ingredients&&x.ingredients.some(usesLib)).length;
+  const c=compounds.filter(x=>x.ingredients&&x.ingredients.some(usesLib)).length;
+  return {m,c,total:m+c};
+}
+function compoundUsage(id){
+  const m=menus.filter(x=>x.ingredients&&x.ingredients.some(ing=>ing.sourceType==='compound'&&ing.sourceId===id)).length;
+  return {m,total:m};
 }
 
 function openAddCompound(id=null){
@@ -3906,7 +3954,7 @@ function addCpIngrRow(ing=null){
   const catOpts=CATS.map(c=>`<option value="${c}"${c===initCat?' selected':''}>${CAT_EMOJI[c]} ${c}</option>`).join('');
   const libItems=library.filter(x=>x.cat===initCat);
   const itemOpts=libItems.length
-    ? libItems.map(x=>`<option value="${x.id}"${x.id===initLibId?' selected':''}>${x.name}</option>`).join('')
+    ? libItems.map(x=>`<option value="${x.id}"${x.id===initLibId?' selected':''}>${esc(x.name)}</option>`).join('')
     : `<option value="">— ยังไม่มีรายการ —</option>`;
 
   div.innerHTML=`
@@ -3935,7 +3983,7 @@ function onCpCatChange(id){
   const sel=document.getElementById('cpi-'+id);
   if(!sel)return;
   sel.innerHTML=items.length
-    ? items.map(x=>`<option value="${x.id}">${x.name}</option>`).join('')
+    ? items.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')
     : `<option value="">— ยังไม่มีรายการ —</option>`;
   onCpItemSelect(id);
 }
@@ -4076,8 +4124,13 @@ function calcEod(compoundId, cpu){
 }
 
 function deleteCompound(id){
-  if(!confirm('ลบสูตรผสมนี้?'))return;
-  compounds=compounds.filter(x=>x.id!==id);saveCompounds();renderCompounds();toast('ลบแล้วค่ะ','🗑');
+  const u=compoundUsage(id);
+  let msg='ลบสูตรผสมนี้?';
+  if(u.total>0) msg=`⚠️ สูตรผสมนี้ถูกใช้ใน ${u.m} เมนู\nลบแล้วต้นทุนของเมนูเหล่านั้นจะคำนวณผิด\n\nยืนยันลบ?`;
+  if(!confirm(msg))return;
+  compounds=compounds.filter(x=>x.id!==id);
+  saveCompounds();recalcAllCosts(true);renderCompounds();
+  toast('ลบแล้วค่ะ','🗑');
 }
 
 function renderCompounds(){
@@ -4119,16 +4172,16 @@ function renderCompounds(){
       :`<span class="yield-pill">✅ Yield 100%</span>`;
     const ingrHtml=c.ingredients.map(ing=>`
       <div class="compound-ingr-item">
-        <span>${ing.name}</span>
+        <span>${esc(ing.name)}</span>
         <span style="color:var(--txt3);font-size:12px">${fmtNum(ing.qty,0)} ${ing.unit} × ${fmtPrice(ing.unitPrice)} ฿ = <strong style="color:var(--txt2)">${fmtNum(ing.qty*ing.unitPrice,4)} ฿</strong></span>
       </div>`).join('');
-    const sopHtml=c.sop?`<div class="sop-badge">📋 ${c.sop}</div>`:'';
-    const serveHtml=c.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${c.servingUnit.name} = ${fmtPrice(c.servingUnit.costPerServe)} ฿</span></div>`:'';
+    const sopHtml=c.sop?`<div class="sop-badge">📋 ${esc(c.sop)}</div>`:'';
+    const serveHtml=c.servingUnit?`<div style="margin-top:5px"><span class="lib-serve-chip">🥄 1${esc(c.servingUnit.name)} = ${fmtPrice(c.servingUnit.costPerServe)} ฿</span></div>`:'';
     const eodId='eod-'+c.id;
     return `<div class="compound-card">
       <div class="compound-card-top">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div class="compound-name">${c.name}</div>
+          <div class="compound-name">${esc(c.name)}</div>
           ${yieldPill}
         </div>
         <div class="compound-meta">ได้จริง ${fmtNum(effectiveQty,0)} ${c.outputUnit} · ${c.ingredients.length} วัตถุดิบ · ${fmtDate(c.updatedAt)}</div>
@@ -4221,7 +4274,7 @@ function renderPriceTimeline(item){
       <div class="ph-tl-card">
         <div class="ph-tl-price">฿${(h.price||0).toLocaleString()}</div>
         <div class="ph-tl-meta">${h.updatedBy||'—'} · ${h.supplier||'—'} · ${dateStr}</div>
-        ${h.reason?`<div class="ph-tl-reason">"${h.reason}"</div>`:''}
+        ${h.reason?`<div class="ph-tl-reason">"${esc(h.reason)}"</div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -4246,10 +4299,13 @@ function savePriceAdj(){
   };
   if(!item.priceHistory)item.priceHistory=[];
   item.priceHistory.push(record);
-  // update price fields
+  // update price fields — ใช้สูตรเดียวกับ saveIngr: (base+freight)×(1+waste/100)/divisor
   item.total=newPrice;
   item.basePrice=newPrice;
-  if(item.qty&&item.qty>0)item.unitPrice=newPrice/item.qty;
+  if(item.qty&&item.qty>0){
+    const effectiveBase=(newPrice+(item.freight||0))*(1+(item.waste||0)/100);
+    item.unitPrice=effectiveBase/item.qty;
+  }
   item.updatedAt=fmtDateNow();
   item.updatedBy=record.updatedBy;
   // cascade recalc
@@ -4338,7 +4394,7 @@ function renderDuel(){
       ${isBestPct&&!isBestGP?'<div class="duel-winner-badge" style="background:linear-gradient(90deg,#15803D,#16a34a)">🟢 ต้นทุนต่ำสุด</div>':''}
       ${isBestGP&&isBestPct?'<div class="duel-winner-badge" style="background:linear-gradient(90deg,#6D28D9,#7C3AED);margin-top:3px">🟢 ต้นทุนต่ำสุด</div>':''}
       <div style="padding:.85rem">
-        <div class="duel-name">${m.name}</div>
+        <div class="duel-name">${esc(m.name)}</div>
         <div class="duel-cat">${m.cat} · แก้ว ${sz}</div>
         <div class="duel-stat-row"><span class="duel-stat-label">ราคาขาย</span><span class="duel-stat-val">${fmtNum(price,2)} ฿</span></div>
         <div class="duel-stat-row"><span class="duel-stat-label">ต้นทุน</span><span class="duel-stat-val">${fmtNum(cost,2)} ฿</span></div>
@@ -4392,8 +4448,8 @@ function renderDuel(){
     ${allKeys.size>0?`<div class="duel-breakdown">
       <div class="duel-breakdown-header">
         <span style="flex:1">วัตถุดิบ</span>
-        <span style="width:80px;text-align:right">${mA.name}</span>
-        <span style="width:80px;text-align:right">${mB.name}</span>
+        <span style="width:80px;text-align:right">${esc(mA.name)}</span>
+        <span style="width:80px;text-align:right">${esc(mB.name)}</span>
       </div>
       ${bRows}
     </div>`:''}`;
@@ -4451,7 +4507,7 @@ function renderCompare(){
     <div class="cmp-stat" style="background:var(--green-bg);border:1px solid var(--green-b)">
       <div class="cmp-stat-lbl" style="color:var(--green)">ดีที่สุด</div>
       <div class="cmp-stat-val" style="color:var(--green)">${best.pct.toFixed(1)}%</div>
-      <div class="cmp-stat-sub">${best.name}</div>
+      <div class="cmp-stat-sub">${esc(best.name)}</div>
     </div>
     <div class="cmp-stat" style="background:var(--blue-bg);border:1px solid #BFDBFE">
       <div class="cmp-stat-lbl" style="color:var(--blue)">เฉลี่ย</div>
@@ -4461,7 +4517,7 @@ function renderCompare(){
     <div class="cmp-stat" style="background:var(--red-p);border:1px solid var(--red-p2)">
       <div class="cmp-stat-lbl" style="color:var(--red)">แพงสุด</div>
       <div class="cmp-stat-val" style="color:var(--red)">${worst.pct.toFixed(1)}%</div>
-      <div class="cmp-stat-sub">${worst.name}</div>
+      <div class="cmp-stat-sub">${esc(worst.name)}</div>
     </div>
   </div>
   <div class="cmp-list">`;
@@ -4475,7 +4531,7 @@ function renderCompare(){
       <div class="cmp-rank ${rankClass}">${rankContent}</div>
       <div class="cmp-body">
         <div class="cmp-top">
-          <span class="cmp-name">${d.name}</span>
+          <span class="cmp-name">${esc(d.name)}</span>
           <span class="cmp-size-badge">แก้ว ${d.label}</span>
           <span class="badge ${gpCls(d.pct)}" style="flex-shrink:0">${gpLbl(d.pct)}</span>
         </div>
@@ -4645,23 +4701,25 @@ setInterval(() => {
 })();
 
 if('serviceWorker' in navigator){
+  // reload ทางเดียว (controllerchange) + guard กัน reload ซ้ำ/วน
+  let _swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(_swRefreshing) return;
+    _swRefreshing = true;
+    window.location.reload();
+  });
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if(!nw) return;
         nw.addEventListener('statechange', () => {
-          if(nw.state === 'activated'){
-            // SW ใหม่ activate แล้ว — reload อัตโนมัติเพื่อโหลด HTML/CSS ใหม่
-            window.location.reload();
-          } else if(nw.state === 'installed' && navigator.serviceWorker.controller){
+          // มี SW ใหม่ติดตั้งเสร็จขณะที่ยังมีตัวเก่าคุมอยู่ → โชว์ banner ให้ผู้ใช้รู้
+          // (การ reload จริงเกิดที่ controllerchange เมื่อ SW ใหม่ claim — ไม่ reload ซ้อน)
+          if(nw.state === 'installed' && navigator.serviceWorker.controller){
             document.getElementById('update-banner')?.classList.add('show');
           }
         });
-      });
-      // ถ้าผู้ใช้ปิด banner แล้ว controller เปลี่ยน (SW ใหม่ take control) — reload
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
       });
     })
     .catch(()=>{});
