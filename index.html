@@ -276,6 +276,15 @@ body{
 .ios-ver-name{font-size:11.5px;color:var(--txt3);font-weight:600}
 .ios-ver-meta{font-size:11px;color:var(--txt3);display:flex;align-items:center;gap:6px}
 .ios-ver-pill{background:var(--surf2);border:1px solid var(--border2);border-radius:20px;padding:1px 9px;font-weight:700;font-size:10.5px;color:var(--txt2)}
+/* iOS inline threshold rows (label left · compact value right) */
+.ios-fc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.6rem .1rem;border-top:1px solid var(--border)}
+.ios-fc-label{font-size:13px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:7px}
+.ios-fc-field{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.ios-fc-field input{width:62px;text-align:center;border:1px solid var(--border2);border-radius:9px;padding:6px 6px;font-size:15px;font-weight:700;font-family:'Prompt',sans-serif;color:var(--txt);background:var(--surf2);outline:none;transition:border-color .15s,background .15s;-moz-appearance:textfield}
+.ios-fc-field input::-webkit-outer-spin-button,.ios-fc-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ios-fc-field input:focus{border-color:var(--red);background:#fff}
+.ios-fc-field input:disabled{opacity:.55;cursor:not-allowed}
+.ios-fc-field .pct{font-size:13px;color:var(--txt3);font-weight:700}
 
 /* ── CARDS ── */
 .card{
@@ -1832,21 +1841,21 @@ body{
             <div style="font-size:9.5px;color:#991B1B;opacity:.7">High Risk</div>
           </div>
         </div>
-        <!-- Inputs -->
-        <div id="st-fc-inputs" class="g2" style="gap:.75rem">
-          <div>
-            <label class="form-label">🟢 Good threshold</label>
-            <div style="display:flex;align-items:center;gap:6px">
-              <input class="input" id="st-green" type="number" min="1" max="99" value="25" oninput="saveSettings()" style="flex:1">
-              <span style="color:var(--txt3);font-weight:600;font-size:15px">%</span>
-            </div>
+        <!-- Inputs — iOS inline rows -->
+        <div id="st-fc-inputs">
+          <div class="ios-fc-row">
+            <span class="ios-fc-label">🟢 Good threshold</span>
+            <span class="ios-fc-field">
+              <input id="st-green" type="number" min="1" max="99" value="25" oninput="saveSettings()">
+              <span class="pct">%</span>
+            </span>
           </div>
-          <div>
-            <label class="form-label">🟡 Acceptable threshold</label>
-            <div style="display:flex;align-items:center;gap:6px">
-              <input class="input" id="st-yellow" type="number" min="1" max="99" value="35" oninput="saveSettings()" style="flex:1">
-              <span style="color:var(--txt3);font-weight:600;font-size:15px">%</span>
-            </div>
+          <div class="ios-fc-row">
+            <span class="ios-fc-label">🟡 Acceptable threshold</span>
+            <span class="ios-fc-field">
+              <input id="st-yellow" type="number" min="1" max="99" value="35" oninput="saveSettings()">
+              <span class="pct">%</span>
+            </span>
           </div>
         </div>
       </div>
@@ -1913,7 +1922,7 @@ body{
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.5.23</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.5.24</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 20 มิ.ย. 2569</span>
       </div>
@@ -2252,7 +2261,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.5.23';
+const APP_VERSION = 'v3.5.24';
 const APP_DATE    = '20 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───

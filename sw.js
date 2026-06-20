@@ -1,4 +1,4 @@
-const CACHE = 'bizice-cost-v22';
+const CACHE = 'bizice-cost-v23';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
