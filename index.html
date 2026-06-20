@@ -253,26 +253,27 @@ body{
 .st-lock-overlay{display:none;position:absolute;inset:0;background:rgba(242,240,237,0.88);border-radius:var(--rl);align-items:center;justify-content:center;flex-direction:column;gap:6px;backdrop-filter:blur(3px);z-index:2}
 .st-lock-overlay.active{display:flex}
 
-/* ── iOS-style Settings (Inventory style) ── */
-.ios-group{margin-bottom:1.4rem}
-.ios-sec-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;padding:0 .25rem;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
+/* ── iOS-style Settings (Inventory style) — compact ── */
+#tab-settings{max-width:840px;margin:0 auto}
+.ios-group{margin-bottom:.9rem}
+.ios-sec-label{font-size:10.5px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;padding:0 .25rem;margin-bottom:.35rem;display:flex;align-items:center;gap:6px}
 .ios-card{background:var(--surf);border-radius:var(--rl);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
-.ios-card.pad{padding:1rem 1.1rem}
+.ios-card.pad{padding:.75rem .85rem}
 /* row — Inventory .setting-row style: plain emoji icon, compact */
-.ios-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:.7rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;background:var(--surf)}
+.ios-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:.6rem .85rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;background:var(--surf)}
 .ios-row:last-child{border-bottom:none}
 .ios-row:active{background:var(--surf2)}
 .ios-row-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.ios-row-icon{font-size:17px;flex-shrink:0;line-height:1}
+.ios-row-icon{font-size:16px;flex-shrink:0;line-height:1}
 .ios-row-body{min-width:0}
-.ios-row-title{font-size:13.5px;font-weight:600;color:var(--txt);line-height:1.25}
-.ios-row-sub{font-size:11.5px;color:var(--txt3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ios-row-title{font-size:13px;font-weight:600;color:var(--txt);line-height:1.2}
+.ios-row-sub{font-size:11px;color:var(--txt3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ios-row-right{flex-shrink:0;display:flex;align-items:center;gap:7px}
-.ios-arrow{color:var(--txt3);font-size:17px;flex-shrink:0;font-weight:400;line-height:1}
+.ios-arrow{color:var(--txt3);font-size:16px;flex-shrink:0;font-weight:400;line-height:1}
 .ios-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
 /* iOS version footer */
-.ios-ver-footer{padding:1.6rem 1rem 1rem;display:flex;flex-direction:column;align-items:center;gap:5px}
-.ios-ver-name{font-size:12px;color:var(--txt3);font-weight:600}
+.ios-ver-footer{padding:1.1rem 1rem .75rem;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ios-ver-name{font-size:11.5px;color:var(--txt3);font-weight:600}
 .ios-ver-meta{font-size:11px;color:var(--txt3);display:flex;align-items:center;gap:6px}
 .ios-ver-pill{background:var(--surf2);border:1px solid var(--border2);border-radius:20px;padding:1px 9px;font-weight:700;font-size:10.5px;color:var(--txt2)}
 
@@ -1814,21 +1815,21 @@ body{
       <div class="ios-sec-label">เกณฑ์ต้นทุน · Food Cost</div>
       <div class="ios-card pad">
         <!-- Traffic light preview -->
-        <div style="display:flex;gap:6px;margin-bottom:1rem">
-          <div style="flex:1;padding:.7rem .5rem;background:#D1FAE5;border-radius:10px;text-align:center;border:1.5px solid #A7F3D0">
-            <div style="font-size:18px">🟢</div>
-            <div style="font-size:13px;font-weight:700;color:#065F46;margin-top:2px">&lt;<span id="st-green-lbl">25</span>%</div>
-            <div style="font-size:10px;color:#065F46;opacity:.7">Good</div>
+        <div style="display:flex;gap:6px;margin-bottom:.7rem">
+          <div style="flex:1;padding:.45rem .4rem;background:#D1FAE5;border-radius:9px;text-align:center;border:1px solid #A7F3D0">
+            <div style="font-size:14px">🟢</div>
+            <div style="font-size:12.5px;font-weight:700;color:#065F46;margin-top:1px">&lt;<span id="st-green-lbl">25</span>%</div>
+            <div style="font-size:9.5px;color:#065F46;opacity:.7">Good</div>
           </div>
-          <div style="flex:1;padding:.7rem .5rem;background:#FEF9C3;border-radius:10px;text-align:center;border:1.5px solid #FDE68A">
-            <div style="font-size:18px">🟡</div>
-            <div style="font-size:13px;font-weight:700;color:#92400E;margin-top:2px">&lt;<span id="st-yellow-lbl">35</span>%</div>
-            <div style="font-size:10px;color:#92400E;opacity:.7">Acceptable</div>
+          <div style="flex:1;padding:.45rem .4rem;background:#FEF9C3;border-radius:9px;text-align:center;border:1px solid #FDE68A">
+            <div style="font-size:14px">🟡</div>
+            <div style="font-size:12.5px;font-weight:700;color:#92400E;margin-top:1px">&lt;<span id="st-yellow-lbl">35</span>%</div>
+            <div style="font-size:9.5px;color:#92400E;opacity:.7">Acceptable</div>
           </div>
-          <div style="flex:1;padding:.7rem .5rem;background:#FEE2E2;border-radius:10px;text-align:center;border:1.5px solid #FECACA">
-            <div style="font-size:18px">🔴</div>
-            <div style="font-size:13px;font-weight:700;color:#991B1B;margin-top:2px">≥<span id="st-red-preview">35</span>%</div>
-            <div style="font-size:10px;color:#991B1B;opacity:.7">High Risk</div>
+          <div style="flex:1;padding:.45rem .4rem;background:#FEE2E2;border-radius:9px;text-align:center;border:1px solid #FECACA">
+            <div style="font-size:14px">🔴</div>
+            <div style="font-size:12.5px;font-weight:700;color:#991B1B;margin-top:1px">≥<span id="st-red-preview">35</span>%</div>
+            <div style="font-size:9.5px;color:#991B1B;opacity:.7">High Risk</div>
           </div>
         </div>
         <!-- Inputs -->
@@ -1872,18 +1873,18 @@ body{
     <div class="ios-group">
       <div class="ios-sec-label">ฐานข้อมูล</div>
       <div class="ios-card pad">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem">
-          <div style="background:var(--surf2);border-radius:12px;padding:.9rem .5rem;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:#E31E24;line-height:1" id="st-count-menus">0</div>
-            <div style="font-size:10.5px;color:var(--txt3);margin-top:4px;font-weight:500">Menus</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem">
+          <div style="background:var(--surf2);border-radius:10px;padding:.55rem .4rem;text-align:center">
+            <div style="font-size:19px;font-weight:800;color:#E31E24;line-height:1" id="st-count-menus">0</div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:3px;font-weight:500">Menus</div>
           </div>
-          <div style="background:var(--surf2);border-radius:12px;padding:.9rem .5rem;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:#7C3AED;line-height:1" id="st-count-lib">0</div>
-            <div style="font-size:10.5px;color:var(--txt3);margin-top:4px;font-weight:500">Ingredients</div>
+          <div style="background:var(--surf2);border-radius:10px;padding:.55rem .4rem;text-align:center">
+            <div style="font-size:19px;font-weight:800;color:#7C3AED;line-height:1" id="st-count-lib">0</div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:3px;font-weight:500">Ingredients</div>
           </div>
-          <div style="background:var(--surf2);border-radius:12px;padding:.9rem .5rem;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:#0891B2;line-height:1" id="st-count-cmp">0</div>
-            <div style="font-size:10.5px;color:var(--txt3);margin-top:4px;font-weight:500">Compounds</div>
+          <div style="background:var(--surf2);border-radius:10px;padding:.55rem .4rem;text-align:center">
+            <div style="font-size:19px;font-weight:800;color:#0891B2;line-height:1" id="st-count-cmp">0</div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:3px;font-weight:500">Compounds</div>
           </div>
         </div>
       </div>
@@ -1912,7 +1913,7 @@ body{
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.5.22</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.5.23</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 20 มิ.ย. 2569</span>
       </div>
@@ -2251,7 +2252,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.5.22';
+const APP_VERSION = 'v3.5.23';
 const APP_DATE    = '20 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
