@@ -1,4 +1,4 @@
-const CACHE = 'bizice-cost-v24';
+const CACHE = 'bizice-cost-v25';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-cost-192.png', './icon-cost-180.png'];
 
 self.addEventListener('install', e => {
