@@ -1,0 +1,52 @@
+rules_version = '2';
+// ─────────────────────────────────────────────────────────────────────────────
+// Firestore Security Rules — Mixue Cost Manager  (เฉพาะ collection `mixue_data`)
+//
+// ⚠️ สำคัญ: ความปลอดภัยของแอพพึ่ง rules นี้เป็นด่านเดียว
+//    apiKey เปิดเผยใน index.html (public บน GitHub Pages) — ใครก็ query DB ได้
+//    ถ้า rules เป็น `allow read, write: if true;` = ใครก็ลบ/แก้ข้อมูลทั้งร้านได้
+//
+// แอพนี้ "ไม่ได้ใช้ Firebase Auth" (role มาจาก Hub ผ่าน URL/localStorage = ปลอมได้)
+//
+// ⚠️ ก่อน publish: project นี้อาจใช้ร่วมกับแอพอื่น (income_notifications, Inv_*, ฯลฯ)
+//    อย่าใส่ default-deny ทับ collection อื่น — ปรับเฉพาะ mixue_data ตามด้านล่าง
+//    แล้ว "เก็บ rules เดิมของ collection อื่นไว้"
+// ─────────────────────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── mixue_data: ข้อมูลต้นทุน (menus/library/compounds) ──
+    match /mixue_data/{docId} {
+
+      allow read: if true;                 // ทุกคนอ่านได้ (ดูต้นทุน)
+
+      // ── แนะนำ: write ต้อง sign-in ก่อน (ดู "วิธีเพิ่ม auth" ด้านล่าง) ──
+      allow write: if request.auth != null && validCostDoc();
+
+      // ── ทางเลือกชั่วคราว (ยังไม่พร้อมเพิ่ม auth) — อ่อนกว่า แต่กันข้อมูลขยะ ──
+      //    คอมเมนต์บรรทัด allow write ด้านบน แล้วใช้บรรทัดนี้แทน:
+      // allow write: if validCostDoc();
+    }
+
+    function validCostDoc() {
+      let d = request.resource.data;
+      // เขียนได้เฉพาะเมื่อ 3 ฟิลด์หลักเป็น list และไม่ใหญ่เกินจริง (กัน payload ขยะ)
+      return (!('menus'    in d) || (d.menus    is list && d.menus.size()    < 5000))
+          && (!('library'  in d) || (d.library  is list && d.library.size()  < 5000))
+          && (!('compounds' in d) || (d.compounds is list && d.compounds.size() < 5000));
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// วิธีเพิ่ม Anonymous Auth ในแอพ (เพื่อให้ allow write: if request.auth != null ทำงาน)
+//   1) Firebase Console > Authentication > Sign-in method > เปิด "Anonymous"
+//   2) ใน index.html เพิ่ม SDK ใน <head> (ใต้ firestore-compat):
+//        <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+//   3) ก่อนเรียก load() ครั้งแรก (ในบล็อก INIT) ใส่:
+//        try { await firebase.auth().signInAnonymously(); } catch(e){ console.warn('anon auth', e); }
+//   4) ทดสอบ: เปิดแอพ → แก้/บันทึกข้อมูลได้ปกติ; ลองเปิด DevTools console พิมพ์
+//        firebase.firestore().collection('mixue_data').doc('mixue-cost-manager').set({menus:[]})
+//        โดยไม่ได้ sign-in → ต้องถูกปฏิเสธ (permission-denied)
+// ═════════════════════════════════════════════════════════════════════════════

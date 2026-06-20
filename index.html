@@ -527,7 +527,7 @@ input,select,textarea{font-size:16px}
 /* Summary stats strip — compact on xs screens */
 .cmp-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.1rem}
 .cmp-stat{border-radius:var(--rl);padding:10px 10px;text-align:center}
-.cmp-stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.cmp-stat-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
 .cmp-stat-val{font-size:17px;font-weight:800;font-family:'Prompt',sans-serif;line-height:1}
 .cmp-stat-sub{font-size:10px;margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -1052,7 +1052,7 @@ input,select,textarea{font-size:16px}
 .nav-item .nav-icon{font-size:21px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
 .nav-item.active .nav-icon{transform:scale(1.12)}
 .nav-label{
-  font-size:9.5px;font-weight:500;color:var(--txt3);letter-spacing:.01em;
+  font-size:10.5px;font-weight:500;color:var(--txt3);letter-spacing:.01em;
   transition:color .2s ease,font-weight .2s ease;
 }
 .nav-item.active .nav-label{color:#E31E24;font-weight:700}
@@ -1081,6 +1081,11 @@ input,select,textarea{font-size:16px}
   0%,100%{transform:translateY(0) rotate(0deg)}
   30%{transform:translateY(-3px) rotate(-8deg)}
   60%{transform:translateY(-1px) rotate(5deg)}
+}
+/* a11y: เคารพ prefers-reduced-motion — ปิด animation วนไม่หยุด (FAB ฯลฯ) */
+@media(prefers-reduced-motion:reduce){
+  .nav-fab,.fab-icon{animation:none!important}
+  *,*::before,*::after{animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
 @media(max-width:899px){
@@ -1927,7 +1932,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.7.0</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.8.0</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2266,7 +2271,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.7.0';
+const APP_VERSION = 'v3.8.0';
 const APP_DATE    = '21 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -2338,20 +2343,25 @@ async function load(){
   }
 }
 
+// debounced Firestore write — localStorage sync ทันที, Firestore เขียนรวบ 700ms (ลด write/race)
+let _fsTimer=null, _fsPending=false;
+function _flushFirestore(){
+  if(!_fsPending) return;
+  _fsPending=false; clearTimeout(_fsTimer); _fsTimer=null;
+  db.collection('mixue_data').doc(DOC).set({menus,library,compounds},{ merge:true })
+    .catch(e=>console.warn('Firebase save error',e));
+}
 function save(){
-  // localStorage backup
   try{localStorage.setItem(SK_M,JSON.stringify(menus))}catch{}
   try{localStorage.setItem(SK_L,JSON.stringify(library))}catch{}
-  // Firestore
-  db.collection('mixue_data').doc(DOC).set({menus,library,compounds},{ merge:true })
-    .catch(e=>console.warn('Firebase save error',e));
-}
-
-function saveCompounds(){
   try{localStorage.setItem(SK_C,JSON.stringify(compounds))}catch{}
-  db.collection('mixue_data').doc(DOC).set({menus,library,compounds},{ merge:true })
-    .catch(e=>console.warn('Firebase save error',e));
+  _fsPending=true; clearTimeout(_fsTimer); _fsTimer=setTimeout(_flushFirestore,700);
 }
+// saveCompounds เขียน doc เดียวกันทั้งก้อน → รวมเป็น save() ตัวเดียว (เลิก double-write)
+function saveCompounds(){ save(); }
+// flush ทันทีก่อนปิด/สลับแอป กันข้อมูล debounce ค้างไม่ขึ้น cloud
+document.addEventListener('visibilitychange',()=>{ if(document.hidden)_flushFirestore(); });
+window.addEventListener('pagehide',_flushFirestore);
 
 // ─── TOAST ───
 let toastTimer=null;
@@ -2507,16 +2517,21 @@ document.addEventListener('pointerdown', function(e){
     if(el.classList.contains('hidden')) return false;
     return getComputedStyle(el).display !== 'none';
   }
-  let armed = false;
+  let armed = false;     // มี history entry สำหรับ popup ค้างอยู่ไหม
+  let viaBack = false;   // กำลังปิดเพราะกด back (อย่า history.back ซ้ำ)
   function arm(){ if(!armed){ history.pushState({biz:'popup'}, ''); armed = true; } }
   // จับการเปิด/ปิด modal (style/class เปลี่ยน)
-  const obs = new MutationObserver(() => { if(overlays.some(isOpen)) arm(); else armed = false; });
+  const obs = new MutationObserver(() => {
+    if(overlays.some(isOpen)){ arm(); return; }
+    if(armed){ armed=false; if(!viaBack) history.back(); }  // ปิดด้วยปุ่ม X → consume entry กัน history ค้าง
+    viaBack=false;
+  });
   overlays.forEach(el => obs.observe(el, { attributes:true, attributeFilter:['style','class'] }));
   // กด back: ปิด popup บนสุดแทน navigate ออก
   window.addEventListener('popstate', () => {
     const open = overlays.filter(isOpen);
     if(!open.length) return;          // ไม่มี popup → ปล่อยออกตามปกติ
-    armed = false;
+    viaBack=true; armed=false;        // entry ถูก browser pop ไปแล้ว
     open[open.length-1].click();      // trigger backdrop close (รวม guardClose เตือน unsaved)
     setTimeout(() => { if(overlays.some(isOpen)) arm(); }, 0);  // ยังเปิดอยู่ (เช่น แถบเตือน) → re-arm
   });
@@ -2721,10 +2736,17 @@ function removeLiLevel(idx){
 function saveIngr(){
   const name=document.getElementById('li-name').value.trim();
   if(!name){toast('กรุณาใส่ชื่อวัตถุดิบ','⚠');return}
+  // เตือนชื่อซ้ำ (ยกเว้นตัวที่กำลังแก้)
+  if(library.some(x=>x.id!==editIngrId&&(x.name||'').trim().toLowerCase()===name.toLowerCase())){
+    if(!confirm(`มีวัตถุดิบชื่อ "${name}" อยู่แล้ว\nบันทึกซ้ำหรือไม่?`))return;
+  }
   const base=parseFloat(document.getElementById('li-base').value)||0;
   const baseUnit=document.getElementById('li-base-unit').value.trim();
   if(!base){toast('กรุณาใส่ราคาซื้อ','⚠');return}
   if(!baseUnit){toast('กรุณาใส่ชื่อหน่วยที่ซื้อ','⚠');return}
+  // หน่วยย่อยต้อง > 0 (กันใส่ 0/ติดลบ แล้วถูกแทนด้วย 1 เงียบๆ → divisor ผิด)
+  const badLvl=liLevels.some((_,idx)=>{const v=document.getElementById('lil-qty-'+idx)?.value;return v!==''&&v!=null&&parseFloat(v)<=0;});
+  if(badLvl){toast('จำนวนหน่วยย่อยต้องมากกว่า 0','⚠');return}
   let divisor=1;
   liLevels.forEach((_,idx)=>{divisor*=(parseFloat(document.getElementById('lil-qty-'+idx)?.value)||1)});
   const lastIdx=liLevels.length-1;
@@ -2815,6 +2837,7 @@ function renderLibrary(){
       <span class="empty-icon">📦</span>
       <div class="empty-title">ยังไม่มีวัตถุดิบค่ะ</div>
       <div class="empty-sub">กด "+ เพิ่มวัตถุดิบ" เพื่อเริ่มบันทึก</div>
+      <button class="btn btn-red" onclick="openAddIngr()">＋ เพิ่มวัตถุดิบแรก</button>
     </div>`;return;
   }
   list.innerHTML=data.map(i=>{
@@ -3560,6 +3583,9 @@ function previewMenu(){
 function saveMenu(){
   const name=document.getElementById('m-name').value.trim();
   if(!name){toast('กรุณาใส่ชื่อเมนู','⚠');return}
+  if(menus.some(x=>x.id!==editMenuId&&(x.name||'').trim().toLowerCase()===name.toLowerCase())){
+    if(!confirm(`มีเมนูชื่อ "${name}" อยู่แล้ว\nบันทึกซ้ำหรือไม่?`))return;
+  }
   const ingr=getMenuIngredients();
   if(!ingr.length){toast('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 อย่าง','⚠');return}
   const menu={
@@ -3591,8 +3617,8 @@ const MENU_FIXED_CATS=[
 
 function getBestPct(m){
   const sizes=[['L',m.priceL],['M',m.priceM],['U',m.priceS]].filter(([,p])=>p>0);
-  if(!sizes.length)return 0;
-  const pcts=sizes.map(([sz,p])=>p>0?calcCost(m.ingredients,sz)/p*100:0);
+  if(!sizes.length)return null;  // ยังไม่ตั้งราคา — ไม่ใช่ 0% (กันแสดงเขียวหลอกตา)
+  const pcts=sizes.map(([sz,p])=>calcCost(m.ingredients,sz)/p*100);
   return Math.max(...pcts);
 }
 
@@ -3632,8 +3658,8 @@ function renderMenus(){
   let data=[...menus];
   if(activeMenuCat!=='all')data=data.filter(x=>x.cat&&x.cat.includes(activeMenuCat));
   // sort
-  if(activeMenuSort==='pct_asc')data.sort((a,b)=>getBestPct(a)-getBestPct(b));
-  else if(activeMenuSort==='pct_desc')data.sort((a,b)=>getBestPct(b)-getBestPct(a));
+  if(activeMenuSort==='pct_asc')data.sort((a,b)=>(getBestPct(a)??Infinity)-(getBestPct(b)??Infinity));
+  else if(activeMenuSort==='pct_desc')data.sort((a,b)=>(getBestPct(b)??-Infinity)-(getBestPct(a)??-Infinity));
   else if(activeMenuSort==='name_az')data.sort((a,b)=>a.name.localeCompare(b.name,'th'));
 
   if(!data.length){
@@ -3649,7 +3675,7 @@ function renderMenus(){
     const sizes=[['U',m.priceS],['M',m.priceM],['L',m.priceL]].filter(([,p])=>p>0);
     const maxPct=Math.max(...sizes.map(([sz,p])=>p>0?calcCost(m.ingredients,sz)/p*100:0),0.1);
     const bestPct=getBestPct(m);
-    const {dot,bg,color}=tlBadge(bestPct);
+    const {dot,bg,color}=bestPct==null?{dot:'⚪',bg:'#F2F2F7',color:'#8E8E93'}:tlBadge(bestPct);
     const emo=menuEmoji(m.cat);
 
     // accordion ingredients
@@ -3680,7 +3706,7 @@ function renderMenus(){
               </div>
             </div>
           </div>
-          <div class="tl-badge" style="background:${bg};color:${color};margin-left:8px" title="${bestPct.toFixed(1)}% Food Cost">${dot}</div>
+          <div class="tl-badge" style="background:${bg};color:${color};margin-left:8px" title="${bestPct==null?'ยังไม่ตั้งราคา':bestPct.toFixed(1)+'% Food Cost'}">${dot}</div>
         </div>
       </div>
       <div class="mc-sizes">
@@ -4069,6 +4095,9 @@ function saveCompound(){
   try{
     const name=(document.getElementById('cp-name')?.value||'').trim();
     if(!name){toast('กรุณาใส่ชื่อสูตรผสม','⚠');return}
+    if(compounds.some(x=>x.id!==editCompoundId&&(x.name||'').trim().toLowerCase()===name.toLowerCase())){
+      if(!confirm(`มีสูตรผสมชื่อ "${name}" อยู่แล้ว\nบันทึกซ้ำหรือไม่?`))return;
+    }
     const outputQty=parseFloat(document.getElementById('cp-output-qty')?.value)||0;
     if(!outputQty){toast('กรุณาใส่ปริมาณที่ได้ (เช่น 1000)','⚠');return}
     const ingr=getCpIngredients();
@@ -4467,7 +4496,7 @@ function renderCompare(){
     });
   });
   if(!allData.length){
-    el.innerHTML='<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">ยังไม่มีข้อมูลค่ะ</div><div class="empty-sub">เพิ่มเมนูในแท็บ "เมนู" ก่อนนะคะ</div></div>';
+    el.innerHTML='<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">ยังไม่มีข้อมูลค่ะ</div><div class="empty-sub">เพิ่มเมนูก่อนเพื่อเปรียบเทียบต้นทุน</div><button class="btn btn-red" onclick="goTab(\'menu\')">＋ ไปเพิ่มเมนู</button></div>';
     return;
   }
   // Sort bar
@@ -4603,6 +4632,10 @@ async function hardRefresh(){
 let _softRefreshing = false;
 async function softRefresh(){
   if(_softRefreshing) return;
+  // อย่า refresh ทับตอนผู้ใช้กำลังแก้ใน modal (กัน state ที่กรอกค้างหาย)
+  const _anyOpen=[...document.querySelectorAll('.modal-overlay,.view-overlay')]
+    .some(el=>!el.classList.contains('hidden')&&getComputedStyle(el).display!=='none');
+  if(_anyOpen) return;
   _softRefreshing = true;
   const btn = document.getElementById('topbar-refresh-btn');
   const btn2 = document.getElementById('mtb-refresh-btn');

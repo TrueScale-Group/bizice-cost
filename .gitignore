@@ -1,2 +1,6 @@
 .claude/
 node_modules/
+# master icon ความละเอียดสูง (5.88MB) — เก็บ local แต่ไม่ deploy (ใช้ icon-cost-192/180/512 แทน)
+icon-cost.png
+Cost manager Icon.png
+CMV2.md
