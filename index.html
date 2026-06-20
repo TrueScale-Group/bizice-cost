@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Cost Manager">
 <meta name="theme-color" id="meta-theme-color" content="#E31E24">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://truescale-group.github.io/mixue-ice-sakon/icon-192.png">
+<link rel="apple-touch-icon" href="./icon-cost-180.png">
 <script>
 // ─── BLOCK ZOOM — iOS gesture + desktop Ctrl+scroll/keyboard ───
 document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
@@ -47,6 +47,8 @@ window.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&['+',
 })();
 </script><meta name="screen-orientation" content="portrait">
 <title>Mixue Cost Manager 🧋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -280,7 +282,7 @@ body{
 .ios-fc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.6rem .1rem;border-top:1px solid var(--border)}
 .ios-fc-label{font-size:13px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:7px}
 .ios-fc-field{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.ios-fc-field input{width:62px;text-align:center;border:1px solid var(--border2);border-radius:9px;padding:6px 6px;font-size:15px;font-weight:700;font-family:'Prompt',sans-serif;color:var(--txt);background:var(--surf2);outline:none;transition:border-color .15s,background .15s;-moz-appearance:textfield}
+.ios-fc-field input{width:66px;text-align:center;border:1px solid var(--border2);border-radius:9px;padding:6px 6px;font-size:16px;font-weight:700;font-family:'Prompt',sans-serif;color:var(--txt);background:var(--surf2);outline:none;transition:border-color .15s,background .15s;-moz-appearance:textfield}
 .ios-fc-field input::-webkit-outer-spin-button,.ios-fc-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .ios-fc-field input:focus{border-color:var(--red);background:#fff}
 .ios-fc-field input:disabled{opacity:.55;cursor:not-allowed}
@@ -307,10 +309,12 @@ body{
 }
 
 /* ── FORM ── */
+/* iOS: ป้องกัน auto-zoom ตอนแตะ input/select (ฟอนต์ต้อง ≥16px) */
+input,select,textarea{font-size:16px}
 .fg{margin-bottom:0}
 .flabel{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:5px;letter-spacing:.02em}
 .finput,.fselect{
-  width:100%;padding:9px 12px;font-size:14px;font-family:'Sarabun',sans-serif;
+  width:100%;padding:9px 12px;font-size:16px;font-family:'Sarabun',sans-serif;
   background:var(--surf2);border:1.5px solid transparent;
   border-radius:var(--r);color:var(--txt);transition:all .18s;outline:none
 }
@@ -728,6 +732,10 @@ body{
   from{opacity:0;transform:translateY(16px) scale(.97)}
   to{opacity:1;transform:translateY(0) scale(1)}
 }
+@keyframes sheetUp{
+  from{transform:translateY(100%)}
+  to{transform:translateY(0)}
+}
 .modal-box{
   background:var(--surf);border-radius:var(--rxl);
   max-width:820px;margin:0 auto;
@@ -738,14 +746,14 @@ body{
   padding:1.25rem 1.5rem;
   border-bottom:1px solid var(--border);
   display:flex;justify-content:space-between;align-items:center;
-  background:linear-gradient(to right,#fff 65%,var(--red-p));
+  background:var(--surf);
 }
 .modal-title{font-family:'Prompt',sans-serif;font-size:17px;font-weight:600;letter-spacing:-.2px}
 .modal-sub{font-size:12px;color:var(--txt3);margin-top:2px}
 .modal-footer{
   padding:1rem 1.5rem;border-top:1px solid var(--border);
   display:flex;justify-content:flex-end;gap:8px;
-  background:var(--surf2);
+  background:var(--surf);
 }
 
 /* Compare rank colors */
@@ -928,16 +936,23 @@ body{
   .ci-row select:first-child{grid-column:1/-1}
 
 
-  /* Modal → full screen */
-  .modal-overlay{padding:.5rem 0;align-items:flex-end}
+  /* Modal → bottom sheet (iOS native feel) */
+  .modal-overlay{padding:0;align-items:flex-end}
   .modal-box{
     border-radius:var(--rxl) var(--rxl) 0 0;
-    max-height:92vh;overflow-y:auto;
-    animation:none;
+    width:100%;max-width:none;
+    max-height:88dvh;overflow-y:auto;
+    padding-top:10px;
+    animation:sheetUp .32s cubic-bezier(.32,1.28,.6,1) both;
   }
-  .modal-header{padding:1rem}
+  /* grab handle — แท่งเทากึ่งกลางบนสุด */
+  .modal-box::before{
+    content:'';display:block;width:38px;height:4px;border-radius:3px;
+    background:var(--border2);margin:0 auto 6px;flex-shrink:0;
+  }
+  .modal-header{padding:.4rem 1rem 1rem}
   .modal-box>div[style*="padding:1.5rem"]{padding:1rem!important}
-  .modal-footer{padding:.85rem 1rem}
+  .modal-footer{padding:.85rem 1rem;padding-bottom:calc(.85rem + env(safe-area-inset-bottom))}
 
 
   /* Tabs mobile: handled above */
@@ -1461,7 +1476,7 @@ body{
   .tabs .tab{padding:9px 18px;font-size:14px}
   .card,.panel{padding:1.1rem 1.25rem}
   .btn-sm{padding:7px 13px;font-size:13px}
-  .finput{font-size:15px;padding:9px 12px}
+  .finput{font-size:16px;padding:9px 12px}
 }
 .guard-x-bounce{animation:guardXBounce 0.45s ease!important}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1506,7 +1521,7 @@ body{
     <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;
                 box-shadow:0 2px 8px rgba(0,0,0,.12);flex-shrink:0;
                 border:2px solid rgba(227,30,36,0.18)">
-      <img src="./icon-cost.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
+      <img src="./icon-cost-192.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
     </div>
     <div style="font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;
                 color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -1535,7 +1550,7 @@ body{
 <div class="sidebar" id="sidebar">
   <div class="sb-brand">
     <div class="brand-icon" style="width:38px;height:38px;border-radius:11px;overflow:hidden;box-shadow:var(--sh-red);flex-shrink:0">
-      <img src="./icon-cost.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
+      <img src="./icon-cost-192.png" style="width:100%;height:100%;object-fit:cover" alt="Cost Manager">
     </div>
     <div style="min-width:0">
       <div class="brand-name" style="font-size:14px;letter-spacing:-.2px">Cost Manager</div>
@@ -1922,7 +1937,7 @@ body{
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.5.24</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.6.0</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 20 มิ.ย. 2569</span>
       </div>
@@ -2261,7 +2276,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.5.24';
+const APP_VERSION = 'v3.6.0';
 const APP_DATE    = '20 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───

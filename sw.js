@@ -1,5 +1,5 @@
-const CACHE = 'bizice-cost-v23';
-const ASSETS = ['./', './index.html', './manifest.json'];
+const CACHE = 'bizice-cost-v24';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-cost-192.png', './icon-cost-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
