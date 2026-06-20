@@ -254,20 +254,21 @@ body{
 .st-lock-overlay.active{display:flex}
 
 /* ── iOS-style Settings (Inventory style) ── */
-#tab-settings{max-width:560px;margin:0 auto}
 .ios-group{margin-bottom:1.4rem}
-.ios-sec-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;padding:0 .35rem;margin-bottom:.5rem}
+.ios-sec-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;padding:0 .25rem;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
 .ios-card{background:var(--surf);border-radius:var(--rl);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
 .ios-card.pad{padding:1rem 1.1rem}
-.ios-row{display:flex;align-items:center;gap:11px;padding:.8rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;background:var(--surf)}
+/* row — Inventory .setting-row style: plain emoji icon, compact */
+.ios-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:.7rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;background:var(--surf)}
 .ios-row:last-child{border-bottom:none}
 .ios-row:active{background:var(--surf2)}
-.ios-row-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.ios-row-body{flex:1;min-width:0}
-.ios-row-title{font-size:14px;font-weight:600;color:var(--txt);line-height:1.25}
+.ios-row-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.ios-row-icon{font-size:17px;flex-shrink:0;line-height:1}
+.ios-row-body{min-width:0}
+.ios-row-title{font-size:13.5px;font-weight:600;color:var(--txt);line-height:1.25}
 .ios-row-sub{font-size:11.5px;color:var(--txt3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ios-row-right{flex-shrink:0;display:flex;align-items:center;gap:7px}
-.ios-arrow{color:var(--txt3);font-size:19px;flex-shrink:0;font-weight:400;line-height:1}
+.ios-arrow{color:var(--txt3);font-size:17px;flex-shrink:0;font-weight:400;line-height:1}
 .ios-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
 /* iOS version footer */
 .ios-ver-footer{padding:1.6rem 1rem 1rem;display:flex;flex-direction:column;align-items:center;gap:5px}
@@ -1313,14 +1314,14 @@ body{
 .sb-uname{font-size:13px;font-weight:700;color:var(--txt);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-urole{font-size:11px;color:var(--txt3);margin-top:1px}
 .sb-refresh-btn{
-  flex-shrink:0;width:34px;height:34px;border-radius:50%;
-  background:var(--surf2);border:1px solid var(--border);cursor:pointer;
+  flex-shrink:0;width:32px;height:32px;border-radius:50%;
+  background:var(--bg);border:1px solid var(--border);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;line-height:1;color:var(--txt2);
-  transition:background .15s,transform .15s;
+  font-size:15px;line-height:1;color:var(--txt2);
+  transition:background .15s,transform .3s;
 }
-.sb-refresh-btn:hover{background:#FEF2F2;border-color:#FECACA}
-.sb-refresh-btn:active{transform:scale(.9)}
+.sb-refresh-btn:hover{background:var(--surf)}
+.sb-refresh-btn:active{transform:rotate(180deg)}
 .sb-refresh-btn.spinning{animation:topbar-spin .7s linear infinite;pointer-events:none}
 /* scroll body in sidebar */
 .sb-scroll{flex:1;overflow-y:auto;padding:.75rem .7rem}
@@ -1855,15 +1856,14 @@ body{
       <div class="ios-sec-label">ข้อมูล &amp; รายงาน</div>
       <div class="ios-card">
         <div class="ios-row" onclick="exportCSV()">
-          <div class="ios-row-icon" style="background:#D1FAE5">📊</div>
-          <div class="ios-row-body">
-            <div class="ios-row-title">Export CSV</div>
-            <div class="ios-row-sub">ส่งออกเมนูทั้งหมด → Excel / Sheets</div>
+          <div class="ios-row-left">
+            <span class="ios-row-icon">📊</span>
+            <div class="ios-row-body">
+              <div class="ios-row-title">Export CSV</div>
+              <div class="ios-row-sub">ส่งออกเมนูทั้งหมด → Excel / Sheets</div>
+            </div>
           </div>
-          <div class="ios-row-right">
-            <span class="ios-badge" style="background:#D1FAE5;color:#065F46">All</span>
-            <span class="ios-arrow">›</span>
-          </div>
+          <span class="ios-arrow">›</span>
         </div>
       </div>
     </div>
@@ -1891,13 +1891,17 @@ body{
 
     <!-- ── Danger Zone — Owner only ── -->
     <div class="ios-group st-editor-only" id="danger-zone-card" style="display:none">
-      <div class="ios-sec-label" style="color:#DC2626">Danger Zone</div>
+      <div class="ios-sec-label" style="color:#DC2626">Danger Zone
+        <span style="background:#FEF3C7;color:#92400E;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:20px;letter-spacing:.02em">👑 OWNER</span>
+      </div>
       <div class="ios-card">
         <div class="ios-row" onclick="clearAllData()">
-          <div class="ios-row-icon" style="background:#FEE2E2">🗑️</div>
-          <div class="ios-row-body">
-            <div class="ios-row-title" style="color:#DC2626">Clear All Data</div>
-            <div class="ios-row-sub">ลบเมนู คลัง และสูตรผสมทั้งหมด</div>
+          <div class="ios-row-left">
+            <span class="ios-row-icon">🗑️</span>
+            <div class="ios-row-body">
+              <div class="ios-row-title" style="color:#DC2626">Clear All Data</div>
+              <div class="ios-row-sub">ลบเมนู คลัง และสูตรผสมทั้งหมด</div>
+            </div>
           </div>
           <span class="ios-arrow" style="color:#DC2626">›</span>
         </div>
@@ -1908,7 +1912,7 @@ body{
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.5.21</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.5.22</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 20 มิ.ย. 2569</span>
       </div>
@@ -2247,7 +2251,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.5.21';
+const APP_VERSION = 'v3.5.22';
 const APP_DATE    = '20 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
