@@ -456,19 +456,20 @@ input,select,textarea{font-size:16px}
 .view-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surf);z-index:2}
 .view-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
 .view-body{padding:1.25rem 1.5rem 2rem}
-.view-size-block{background:var(--surf2);border-radius:20px;padding:1.15rem 1.15rem 1rem;margin-bottom:.85rem}
-.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
-.view-size-tag{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--txt)}
-.view-size-price{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--red)}
+.view-size-block{background:var(--surf2);border-radius:20px;padding:1.2rem 1.25rem 1.05rem;margin-bottom:.85rem}
+.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.view-size-tag{font-family:'Prompt',sans-serif;font-size:15.5px;font-weight:700;color:var(--txt);letter-spacing:-.2px}
+.view-size-price{font-family:'Prompt',sans-serif;font-size:15.5px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;letter-spacing:-.2px}
 /* iOS grouped section header ต่อหมวด */
-.view-cat-group{margin-top:.55rem}
-.view-cat-group:first-of-type{margin-top:.2rem}
-.view-cat-label{font-size:11.5px;font-weight:800;color:var(--txt3);letter-spacing:.2px;padding:0 0 3px 1px;margin-top:.35rem;display:flex;align-items:center;gap:5px}
-.view-ingr-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.view-cat-group{margin-top:.6rem}
+.view-cat-group:first-of-type{margin-top:.25rem}
+.view-cat-label{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.3px;padding:0 0 4px 1px;margin-top:.4rem;display:flex;align-items:center;gap:5px}
+.view-ingr-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;line-height:1.45;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.045)}
 .view-cat-group .view-ingr-row:last-child{border-bottom:none}
-.view-ingr-name{color:var(--txt2);font-weight:500}
-.view-ingr-cost{color:var(--txt);font-weight:700;font-family:'Prompt',sans-serif;white-space:nowrap;margin-left:8px}
-.view-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding-top:.7rem;border-top:1.5px solid var(--border2)}
+.view-ingr-name{color:var(--txt);font-weight:500;letter-spacing:.1px}
+.view-ingr-name .vi-qty{color:var(--txt3);font-size:11.5px;font-weight:400;letter-spacing:0;font-variant-numeric:tabular-nums}
+.view-ingr-cost{color:var(--txt);font-weight:600;font-family:'Prompt',sans-serif;font-size:13.5px;white-space:nowrap;margin-left:8px;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.view-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:.8rem;padding-top:.75rem;border-top:1.5px solid var(--border2)}
 .view-gp-bar{height:8px;border-radius:4px;background:var(--border);margin:.5rem 0;overflow:hidden}
 .view-gp-fill{height:100%;border-radius:4px;transition:width .4s ease}
 .view-edit-btn{width:100%;margin-top:1rem;padding:.7rem;border:none;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
@@ -480,8 +481,8 @@ input,select,textarea{font-size:16px}
   .view-title{font-size:18px}
   .view-body{padding:1.1rem 1.5rem 1.6rem}
   .view-sizes-grid{display:flex;flex-direction:column;gap:.75rem}
-  .view-size-block{margin-bottom:0;padding:.85rem}
-  .view-ingr-row{font-size:13px;padding:4px 0}
+  .view-size-block{margin-bottom:0;padding:1.05rem 1.1rem}
+  .view-ingr-row{font-size:13.5px;padding:6px 0}
   .view-edit-btn{margin-top:1rem;padding:.7rem}
 }
 @media(min-width:900px){
@@ -1947,7 +1948,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.8.7</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.8.8</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2295,7 +2296,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.8.7';
+const APP_VERSION = 'v3.8.8';
 const APP_DATE    = '23 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -3218,7 +3219,7 @@ function openViewMenu(id){
     const ingrRows = cats.map(cat => {
       const rows = groups[cat].sort((a,b) => a.mi - b.mi).map(x =>
         `<div class="view-ingr-row">
-          <span class="view-ingr-name">${esc(x.i.name)} <span style="color:var(--txt3);font-size:11px">${x.q.toFixed(2)} ${esc(x.i.unit||'')}</span></span>
+          <span class="view-ingr-name">${esc(x.i.name)} <span class="vi-qty">${x.q.toFixed(2)} ${esc(x.i.unit||'')}</span></span>
           <span class="view-ingr-cost">${x.lineCost.toFixed(2)} ฿</span>
         </div>`).join('');
       return `<div class="view-cat-group"><div class="view-cat-label" style="color:${CAT_COLOR[cat]||'#6B7280'}">${CAT_EMOJI[cat]||'🔖'} ${esc(cat)}</div>${rows}</div>`;
@@ -3231,13 +3232,13 @@ function openViewMenu(id){
       </div>
       ${ingrRows}
       <div class="view-total-row">
-        <span style="font-size:13px;font-weight:700;color:var(--txt2)">ต้นทุนรวม</span>
-        <span style="font-family:'Prompt',sans-serif;font-weight:800;font-size:15px;color:${col}">${cost.toFixed(2)} ฿</span>
+        <span style="font-size:13px;font-weight:700;color:var(--txt2);letter-spacing:.1px">ต้นทุนรวม</span>
+        <span style="font-family:'Prompt',sans-serif;font-weight:800;font-size:15.5px;color:${col};font-variant-numeric:tabular-nums;letter-spacing:-.2px">${cost.toFixed(2)} ฿</span>
       </div>
       <div class="view-gp-bar"><div class="view-gp-fill" style="width:${barW}%;background:${col}"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700">
-        <span style="color:${col}">Cost ratio ${pct.toFixed(1)}%</span>
-        <span style="color:#15803D">GP ${gp.toFixed(1)}%</span>
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">
+        <span style="color:${col};letter-spacing:.1px">Cost ratio ${pct.toFixed(1)}%</span>
+        <span style="color:#15803D;letter-spacing:.1px">GP ${gp.toFixed(1)}%</span>
       </div>
     </div>`;
   }).join('') + '</div>' + `<button class="view-edit-btn" onclick="closeViewMenu();openAddMenu('${m.id}')">✏️ แก้ไขเมนูนี้</button>`;
