@@ -449,6 +449,10 @@ input,select,textarea{font-size:16px}
 .view-overlay{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
 .view-overlay.hidden{display:none}
 .view-box{background:var(--surf);border-radius:28px 28px 0 0;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view-box::-webkit-scrollbar{width:7px}
+.view-box::-webkit-scrollbar-track{background:transparent;margin:16px 0}
+.view-box::-webkit-scrollbar-thumb{background:rgba(0,0,0,.16);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+.view-box::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.3);background-clip:padding-box}
 .view-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surf);z-index:2}
 .view-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
 .view-body{padding:1.25rem 1.5rem 2rem}
@@ -1941,7 +1945,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.8.4</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.8.5</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2280,7 +2284,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.8.4';
+const APP_VERSION = 'v3.8.5';
 const APP_DATE    = '23 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
