@@ -448,26 +448,30 @@ input,select,textarea{font-size:16px}
 /* ── MENU VIEW MODAL ── */
 .view-overlay{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
 .view-overlay.hidden{display:none}
-.view-box{background:var(--surf);border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view-box{background:var(--surf);border-radius:28px 28px 0 0;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .view-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surf);z-index:2}
 .view-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
 .view-body{padding:1.25rem 1.5rem 2rem}
-.view-size-block{background:var(--surf2);border-radius:12px;padding:1rem;margin-bottom:.85rem}
-.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.view-size-block{background:var(--surf2);border-radius:20px;padding:1.15rem 1.15rem 1rem;margin-bottom:.85rem}
+.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
 .view-size-tag{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--txt)}
 .view-size-price{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--red)}
-.view-ingr-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--border)}
-.view-ingr-row:last-child{border-bottom:none}
+/* iOS grouped section header ต่อหมวด */
+.view-cat-group{margin-top:.55rem}
+.view-cat-group:first-of-type{margin-top:.2rem}
+.view-cat-label{font-size:10.5px;font-weight:700;color:var(--txt3);letter-spacing:.4px;padding:0 0 3px 2px;margin-top:.35rem}
+.view-ingr-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.view-cat-group .view-ingr-row:last-child{border-bottom:none}
 .view-ingr-name{color:var(--txt2);font-weight:500}
 .view-ingr-cost{color:var(--txt);font-weight:700;font-family:'Prompt',sans-serif;white-space:nowrap;margin-left:8px}
-.view-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:.65rem;padding-top:.65rem;border-top:2px solid var(--border)}
+.view-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding-top:.7rem;border-top:1.5px solid var(--border2)}
 .view-gp-bar{height:8px;border-radius:4px;background:var(--border);margin:.5rem 0;overflow:hidden}
 .view-gp-fill{height:100%;border-radius:4px;transition:width .4s ease}
 .view-edit-btn{width:100%;margin-top:1rem;padding:.7rem;border:none;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 /* Tablet/Desktop: compact centered floating card (กรอบมน กึ่งกลาง เล็กลง) */
 @media(min-width:640px){
   .view-overlay{align-items:center;padding:1.5rem}
-  .view-box{border-radius:22px;width:100%;max-width:440px;max-height:86dvh;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+  .view-box{border-radius:26px;width:100%;max-width:440px;max-height:86dvh;box-shadow:0 24px 70px rgba(0,0,0,.26)}
   .view-header{padding:1.1rem 1.5rem .9rem}
   .view-title{font-size:18px}
   .view-body{padding:1.1rem 1.5rem 1.6rem}
@@ -1466,7 +1470,7 @@ input,select,textarea{font-size:16px}
   .modal-box{border-radius:20px;max-width:660px;max-height:88dvh}
   .modal-header{padding:1.1rem 1.25rem}
   .view-overlay{align-items:center;padding:1.5rem}
-  .view-box{border-radius:22px;max-width:440px;max-height:86dvh}
+  .view-box{border-radius:26px;max-width:440px;max-height:86dvh}
   .tabs .tab{padding:9px 18px;font-size:14px}
   .card,.panel{padding:1.1rem 1.25rem}
   .btn-sm{padding:7px 13px;font-size:13px}
@@ -1937,7 +1941,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.8.3</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.8.4</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2276,7 +2280,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.8.3';
+const APP_VERSION = 'v3.8.4';
 const APP_DATE    = '23 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -3148,6 +3152,18 @@ function openViewMenu(id){
   document.getElementById('view-title').textContent = emo + ' ' + m.name;
   document.getElementById('view-meta').textContent = m.cat + ' · ' + m.ingredients.length + ' วัตถุดิบ · อัพเดต ' + fmtDate(m.updatedAt);
 
+  // ── จัดหมวดหมู่ + เรียงตาม Master Data (ลำดับใน library/compounds) ──
+  const VIEW_CAT_ORDER = ['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','สูตรผสม','วัตถุดิบ','บรรจุภัณฑ์','อื่นๆ'];
+  const libIdx = new Map(library.map((l,idx)=>[l.id, idx]));
+  const cpIdx  = new Map(compounds.map((c,idx)=>[c.id, idx]));
+  const ingrCat = i => {
+    if(cpIdx.has(i.sourceId)) return 'สูตรผสม';
+    const lib = library.find(l=>l.id===i.sourceId);
+    return (lib&&lib.cat) || i.cat || 'อื่นๆ';
+  };
+  const ingrMaster = i => libIdx.has(i.sourceId) ? libIdx.get(i.sourceId)
+                       : cpIdx.has(i.sourceId) ? 10000+cpIdx.get(i.sourceId) : 99999;
+
   const sizes = [['U','S',m.priceS],['M','M',m.priceM],['L','L',m.priceL]].filter(([,,p])=>p>0);
   const maxPct = Math.max(...sizes.map(([sz,,p])=>{ const c=calcCost(m.ingredients,sz); return p>0?c/p*100:0; }), 0.1);
 
@@ -3158,8 +3174,8 @@ function openViewMenu(id){
     const barW = Math.min((pct / Math.max(maxPct,1)) * 100, 100).toFixed(1);
     const gp   = 100 - pct;
 
-    // Ingredient breakdown for this size
-    const ingrRows = m.ingredients.filter(i => {
+    // Ingredient breakdown for this size — แบ่งหมวดหมู่ + เรียงตาม Master Data
+    const visible = m.ingredients.filter(i => {
       const st = i.sizeTarget || 'all';
       if(st === 'all') return true;
       if(st === 'U') return sz === 'U' || sz === 'S';
@@ -3175,11 +3191,22 @@ function openViewMenu(id){
       else if(st==='M'){ q = sz==='M' ? (i.qty||0) : 0; }  // M only
       else if(st==='L'){ q = sz==='L' ? (i.qty||0) : 0; }
       const lineCost = q * (i.pricePerUnit||0);
-      if(lineCost === 0) return '';
-      return `<div class="view-ingr-row">
-        <span class="view-ingr-name">${esc(i.name)} <span style="color:var(--txt3);font-size:11px">${q.toFixed(2)} ${esc(i.unit||'')}</span></span>
-        <span class="view-ingr-cost">${lineCost.toFixed(2)} ฿</span>
-      </div>`;
+      return { i, q, lineCost, cat: ingrCat(i), mi: ingrMaster(i) };
+    }).filter(x => x.lineCost > 0);
+
+    // group by category
+    const groups = {};
+    visible.forEach(x => { (groups[x.cat] = groups[x.cat] || []).push(x); });
+    const cats = [...VIEW_CAT_ORDER.filter(c => groups[c]),
+                  ...Object.keys(groups).filter(c => !VIEW_CAT_ORDER.includes(c))];
+
+    const ingrRows = cats.map(cat => {
+      const rows = groups[cat].sort((a,b) => a.mi - b.mi).map(x =>
+        `<div class="view-ingr-row">
+          <span class="view-ingr-name">${esc(x.i.name)} <span style="color:var(--txt3);font-size:11px">${x.q.toFixed(2)} ${esc(x.i.unit||'')}</span></span>
+          <span class="view-ingr-cost">${x.lineCost.toFixed(2)} ฿</span>
+        </div>`).join('');
+      return `<div class="view-cat-group"><div class="view-cat-label">${esc(cat)}</div>${rows}</div>`;
     }).join('');
 
     return `<div class="view-size-block">
