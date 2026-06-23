@@ -464,22 +464,21 @@ input,select,textarea{font-size:16px}
 .view-gp-bar{height:8px;border-radius:4px;background:var(--border);margin:.5rem 0;overflow:hidden}
 .view-gp-fill{height:100%;border-radius:4px;transition:width .4s ease}
 .view-edit-btn{width:100%;margin-top:1rem;padding:.7rem;border:none;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-d));color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
-/* Tablet: centered floating card */
+/* Tablet/Desktop: compact centered floating card (กรอบมน กึ่งกลาง เล็กลง) */
 @media(min-width:640px){
   .view-overlay{align-items:center;padding:1.5rem}
-  .view-box{border-radius:20px;max-width:600px;max-height:88dvh;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+  .view-box{border-radius:22px;width:100%;max-width:440px;max-height:86dvh;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+  .view-header{padding:1.1rem 1.5rem .9rem}
+  .view-title{font-size:18px}
+  .view-body{padding:1.1rem 1.5rem 1.6rem}
+  .view-sizes-grid{display:flex;flex-direction:column;gap:.75rem}
+  .view-size-block{margin-bottom:0;padding:.85rem}
+  .view-ingr-row{font-size:13px;padding:4px 0}
+  .view-edit-btn{margin-top:1rem;padding:.7rem}
 }
-/* Desktop: wider dialog + 2-column size grid */
 @media(min-width:900px){
   .view-overlay{padding:2rem}
-  .view-box{max-width:840px;max-height:85dvh}
-  .view-header{padding:1.5rem 2rem 1.1rem}
-  .view-title{font-size:22px}
-  .view-body{padding:1.5rem 2rem 2.5rem}
-  .view-sizes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1rem}
-  .view-size-block{margin-bottom:0}
-  .view-ingr-row{font-size:14px;padding:5px 0}
-  .view-edit-btn{max-width:320px;margin:1.25rem auto 0;display:block;padding:.85rem}
+  .view-box{max-width:460px;max-height:84dvh}
 }
 
 /* ── INGREDIENT LIBRARY ── */
@@ -667,12 +666,15 @@ input,select,textarea{font-size:16px}
   background:var(--surf2);border-radius:0 0 18px 18px;
 }
 .accordion-body.open{display:block}
-.acc-ingr-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:4px 0;border-bottom:1px dashed var(--border);
-  font-size:12.5px;
+.acc-ingr-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
 }
-.acc-ingr-row:last-child{border-bottom:none}
+.acc-ingr-cell{
+  background:var(--surf);border:1px solid var(--border);border-radius:8px;
+  padding:6px 5px;font-size:11px;color:var(--txt2);
+  text-align:center;line-height:1.2;word-break:break-word;
+  display:flex;align-items:center;justify-content:center;min-height:34px;
+}
 
 /* SEARCH */
 .search-wrap{position:relative;flex:1;max-width:280px}
@@ -1464,7 +1466,7 @@ input,select,textarea{font-size:16px}
   .modal-box{border-radius:20px;max-width:660px;max-height:88dvh}
   .modal-header{padding:1.1rem 1.25rem}
   .view-overlay{align-items:center;padding:1.5rem}
-  .view-box{border-radius:20px;max-width:720px;max-height:88dvh}
+  .view-box{border-radius:22px;max-width:440px;max-height:86dvh}
   .tabs .tab{padding:9px 18px;font-size:14px}
   .card,.panel{padding:1.1rem 1.25rem}
   .btn-sm{padding:7px 13px;font-size:13px}
@@ -1935,7 +1937,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.8.2</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.8.3</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2274,7 +2276,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.8.2';
+const APP_VERSION = 'v3.8.3';
 const APP_DATE    = '23 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -3681,19 +3683,9 @@ function renderMenus(){
     const {dot,bg,color}=bestPct==null?{dot:'⚪',bg:'#F2F2F7',color:'#8E8E93'}:tlBadge(bestPct);
     const emo=menuEmoji(m.cat);
 
-    // accordion ingredients
+    // accordion ingredients (รายชื่อล้วน 3 คอลัมน์ ไม่มีมูลค่า)
     const accRows=m.ingredients.map(i=>{
-      const lib=library.find(l=>l.id===i.sourceId);
-      const cp=compounds.find(c=>c.id===i.sourceId);
-      // calc cost for L or M or first available size
-      const sz=m.priceL>0?'L':m.priceM>0?'M':'U';
-      const unitP=lib?lib.unitPrice:cp?cp.costPerOutputUnit:0;
-      const qty=parseFloat(i.qty)||0;
-      const cost=unitP*qty;
-      return `<div class="acc-ingr-row">
-        <span style="color:var(--txt2)">${i.name||'—'}</span>
-        <span style="font-weight:700;color:var(--txt);font-family:'Prompt',sans-serif">฿${fmtNum(cost,4)}</span>
-      </div>`;
+      return `<div class="acc-ingr-cell">${esc(i.name||'—')}</div>`;
     }).join('');
 
     return `<div class="menu-card menu-card-click" onclick="openViewMenu('${m.id}')" title="แตะเพื่อดูรายละเอียด">
@@ -3737,7 +3729,7 @@ function renderMenus(){
         </div>
       </div>
       <button class="accordion-btn" onclick="event.stopPropagation();toggleAccordion('acc-${m.id}',this)">▼ ดูส่วนผสม</button>
-      <div class="accordion-body" id="acc-${m.id}">${accRows||'<div style="font-size:12px;color:var(--txt3);text-align:center;padding:.5rem">ไม่มีข้อมูลวัตถุดิบ</div>'}</div>
+      <div class="accordion-body" id="acc-${m.id}">${accRows?`<div class="acc-ingr-grid">${accRows}</div>`:'<div style="font-size:12px;color:var(--txt3);text-align:center;padding:.5rem">ไม่มีข้อมูลวัตถุดิบ</div>'}</div>
     </div>`;
   }).join('');
 }
