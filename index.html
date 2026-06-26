@@ -1950,7 +1950,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.9.01</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.02</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2311,7 +2311,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.9.01';
+const APP_VERSION = 'v3.9.02';
 const APP_DATE    = '26 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -2359,6 +2359,7 @@ let menus=[], library=[], compounds=[];
 let editMenuId=null, editIngrId=null, editCompoundId=null, mIngrCount=0, cpIngrCount=0;
 let activeMenuCat='all', activeLibCat='all', activeMenuSort='default';
 let activeLibSort='default', activeCompoundSort='default', activeCompareSort='pct-asc';
+let activeCompoundCat='Main';
 
 // ─── LOAD / SAVE ───
 async function load(){
@@ -2979,6 +2980,8 @@ document.addEventListener('touchstart',function(e){
   }
 },{passive:true});
 function setCpSort(v){activeCompoundSort=v;renderCompounds()}
+function setCpCat(c){activeCompoundCat=c;renderCompounds()}
+const cpCatOf=c=>CP_CATS.includes(c.cat)?c.cat:'Main';
 function setCmpSort(v){activeCompareSort=v;renderCompare()}
 
 // ── V3.3 Helpers ──
@@ -4261,10 +4264,31 @@ function renderCompounds(){
       <option value="cost-asc"${activeCompoundSort==='cost-asc'?' selected':''}>ต้นทุน/หน่วย ต่ำ→สูง</option>
       <option value="cost-desc"${activeCompoundSort==='cost-desc'?' selected':''}>ต้นทุน/หน่วย สูง→ต่ำ</option>
     </select>`;
-  let data=[...compounds];
+  // Category filter chips (Main / Soft serve / Topping — ไม่มี "ทั้งหมด", พร้อมจำนวน)
+  let catBar=document.getElementById('compound-cat-bar');
+  if(!catBar){
+    catBar=document.createElement('div');
+    catBar.id='compound-cat-bar';
+    catBar.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:.85rem';
+    sortBar.insertAdjacentElement('afterend',catBar);
+  }
+  const cpCounts={}; CP_CATS.forEach(k=>cpCounts[k]=0);
+  compounds.forEach(c=>{cpCounts[cpCatOf(c)]++});
+  if(!CP_CATS.includes(activeCompoundCat)) activeCompoundCat='Main';
+  catBar.innerHTML=CP_CATS.map(k=>
+    `<span class="fchip${activeCompoundCat===k?' active':''}" onclick="setCpCat('${k}')">${CP_CAT_EMOJI[k]} ${k} (${cpCounts[k]})</span>`
+  ).join('');
+  let data=compounds.filter(c=>cpCatOf(c)===activeCompoundCat);
   if(activeCompoundSort==='name-az') data.sort((a,b)=>a.name.localeCompare(b.name,'th'));
   else if(activeCompoundSort==='cost-asc') data.sort((a,b)=>(a.costPerOutputUnit||0)-(b.costPerOutputUnit||0));
   else if(activeCompoundSort==='cost-desc') data.sort((a,b)=>(b.costPerOutputUnit||0)-(a.costPerOutputUnit||0));
+  if(!data.length){
+    list.innerHTML=`<div class="empty" style="grid-column:1/-1">
+      <span class="empty-icon">${CP_CAT_EMOJI[activeCompoundCat]||'🧪'}</span>
+      <div class="empty-title">ยังไม่มีสูตรผสมในหมวด "${esc(activeCompoundCat)}"</div>
+      <div class="empty-sub">กด "+ เพิ่มสูตรผสม" แล้วเลือกหมวดนี้</div>
+    </div>`;return;
+  }
   list.innerHTML=data.map(c=>{
     const cpu=c.costPerOutputUnit||0;
     const totalCost=c.ingredients.reduce((s,ing)=>s+ing.qty*ing.unitPrice,0);
