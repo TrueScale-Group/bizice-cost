@@ -698,6 +698,7 @@ input,select,textarea{font-size:16px}
 .cat-ไซรัป{background:#EFF6FF;color:#1E40AF;border-color:#BFDBFE}
 .cat-ท็อปปิ้ง{background:#FFFBEB;color:#92400E;border-color:#FDE68A}
 .cat-วัตถุดิบ{background:#F5F3FF;color:#5B21B6;border-color:#DDD6FE}
+.cat-ขนม{background:#FDF4FF;color:#86198F;border-color:#F5D0FE}
 .cat-บรรจุภัณฑ์{background:#F0F9FF;color:#0C4A6E;border-color:#BAE6FD}
 .cat-อื่นๆ{background:#F8F8F8;color:#374151;border-color:#D1D5DB}
 
@@ -1719,7 +1720,7 @@ input,select,textarea{font-size:16px}
           <label class="flabel">หมวดหมู่</label>
           <select class="fselect" id="li-cat" onchange="updateLibPlaceholder()">
             <option>แยม</option><option>ผลไม้</option><option>ไซรัป</option>
-            <option>ท็อปปิ้ง</option><option>วัตถุดิบ</option><option>บรรจุภัณฑ์</option><option>อื่นๆ</option>
+            <option>ท็อปปิ้ง</option><option>วัตถุดิบ</option><option>ขนม</option><option>บรรจุภัณฑ์</option><option>อื่นๆ</option>
           </select>
         </div>
       </div>
@@ -1949,7 +1950,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.8.9</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.0</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2285,10 +2286,10 @@ const SK_M='mx_menus_v4', SK_L='mx_library_v1', SK_C='mx_compound_v1';
 let bd={base:0, levels:[{name:'กล่อง',qty:12},{name:'กรัม',qty:800}], extras:[]};
 let bdLastResult=null;
 
-const CATS=['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','วัตถุดิบ','บรรจุภัณฑ์','อื่นๆ'];
-const CAT_EMOJI={'แยม':'🍓','ผลไม้':'🍋','ไซรัป':'🍯','ท็อปปิ้ง':'💎','วัตถุดิบ':'🥛','บรรจุภัณฑ์':'🥤','สูตรผสม':'🧪','อื่นๆ':'🔖'};
+const CATS=['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','วัตถุดิบ','ขนม','บรรจุภัณฑ์','อื่นๆ'];
+const CAT_EMOJI={'แยม':'🍓','ผลไม้':'🍋','ไซรัป':'🍯','ท็อปปิ้ง':'💎','วัตถุดิบ':'🥛','ขนม':'🍪','บรรจุภัณฑ์':'🥤','สูตรผสม':'🧪','อื่นๆ':'🔖'};
 // สีหมวดหมู่ (ตัวหนังสือหัวข้อหมวด) — iOS palette
-const CAT_COLOR={'แยม':'#E0245E','ผลไม้':'#EA580C','ไซรัป':'#B45309','ท็อปปิ้ง':'#0891B2','วัตถุดิบ':'#2563EB','บรรจุภัณฑ์':'#0D9488','สูตรผสม':'#7C3AED','อื่นๆ':'#6B7280'};
+const CAT_COLOR={'แยม':'#E0245E','ผลไม้':'#EA580C','ไซรัป':'#B45309','ท็อปปิ้ง':'#0891B2','วัตถุดิบ':'#2563EB','ขนม':'#C026D3','บรรจุภัณฑ์':'#0D9488','สูตรผสม':'#7C3AED','อื่นๆ':'#6B7280'};
 // หมวดย่อยของสูตรผสม (compound)
 const CP_CATS=['Main','Soft serve','Topping'];
 const CP_CAT_EMOJI={'Main':'🥤','Soft serve':'🍦','Topping':'🍬'};
@@ -2302,7 +2303,7 @@ function ingrCatOf(i){
   return (lib&&lib.cat)||i.cat||'อื่นๆ';
 }
 function ingrEmoji(i){return CAT_EMOJI[ingrCatOf(i)]||'🔖'}
-const LIB_SUGGESTIONS={'แยม':'เช่น แยมสตรอว์เบอร์รี, แยมพีช, แยมมะม่วง','ผลไม้':'เช่น ส้ม, มะนาว, สับปะรด','ไซรัป':'เช่น บราวน์ชูก้า, ช้อกโกแลต, เฮเซลนัท','ท็อปปิ้ง':'เช่น คริสตัล, วุ้นมะพร้าว, ไข่มุก, วาฟเฟิล','วัตถุดิบ':'เช่น ไอติมนม, ผงพุดดิ้ง, ชาเขียว, กาแฟ','บรรจุภัณฑ์':'เช่น แก้ว 400, แก้ว 500, ฝาโดม, หลอดใหญ่','อื่นๆ':'เช่น กระดาษใบเสร็จ, สติ๊กเกอร์'};
+const LIB_SUGGESTIONS={'แยม':'เช่น แยมสตรอว์เบอร์รี, แยมพีช, แยมมะม่วง','ผลไม้':'เช่น ส้ม, มะนาว, สับปะรด','ไซรัป':'เช่น บราวน์ชูก้า, ช้อกโกแลต, เฮเซลนัท','ท็อปปิ้ง':'เช่น คริสตัล, วุ้นมะพร้าว, ไข่มุก, วาฟเฟิล','วัตถุดิบ':'เช่น ไอติมนม, ผงพุดดิ้ง, ชาเขียว, กาแฟ','ขนม':'เช่น โคน, เวเฟอร์, คุกกี้, ขนมปัง','บรรจุภัณฑ์':'เช่น แก้ว 400, แก้ว 500, ฝาโดม, หลอดใหญ่','อื่นๆ':'เช่น กระดาษใบเสร็จ, สติ๊กเกอร์'};
 function updateLibPlaceholder(){
   const cat=document.getElementById('li-cat')?.value||'แยม';
   const inp=document.getElementById('li-name');
@@ -2310,7 +2311,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.8.9';
+const APP_VERSION = 'v3.9.0';
 const APP_DATE    = '23 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -3183,7 +3184,7 @@ function openViewMenu(id){
   document.getElementById('view-meta').textContent = m.cat + ' · ' + m.ingredients.length + ' วัตถุดิบ · อัพเดต ' + fmtDate(m.updatedAt);
 
   // ── จัดหมวดหมู่ + เรียงตาม Master Data (ลำดับใน library/compounds) ──
-  const VIEW_CAT_ORDER = ['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','วัตถุดิบ','บรรจุภัณฑ์','อื่นๆ','สูตรผสม'];
+  const VIEW_CAT_ORDER = ['แยม','ผลไม้','ไซรัป','ท็อปปิ้ง','วัตถุดิบ','ขนม','บรรจุภัณฑ์','อื่นๆ','สูตรผสม'];
   const libIdx = new Map(library.map((l,idx)=>[l.id, idx]));
   const cpIdx  = new Map(compounds.map((c,idx)=>[c.id, idx]));
   const ingrCat = i => {
