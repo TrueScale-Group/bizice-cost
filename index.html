@@ -1508,9 +1508,51 @@ input,select,textarea{font-size:16px}
 .cm-notif-empty{padding:28px 14px;text-align:center;color:#999;font-size:13px}
 .cm-notif-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f5f5f7;cursor:pointer}
 .cm-notif-item.unread{background:#fff6f6}
+
+/* ─── BizICE Splash ─── */
+#splash{position:fixed;inset:0;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s ease}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-ice{animation:icePop .6s cubic-bezier(.175,.885,.32,1.275) forwards;opacity:0;margin-bottom:12px}
+@keyframes icePop{0%{transform:rotate(-20deg) scale(.3);opacity:0}60%{transform:rotate(10deg) scale(1.12);opacity:1}80%{transform:rotate(-5deg) scale(.97)}100%{transform:rotate(0) scale(1);opacity:1}}
+.sp-name{font-family:'Prompt',sans-serif;font-size:32px;font-weight:600;color:#fff;letter-spacing:1px;animation:spFade .4s .55s ease both;opacity:0}
+.sp-sub{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.18em;text-transform:uppercase;margin-top:5px;animation:spFade .4s .7s ease both;opacity:0}
+@keyframes spFade{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.sp-dots{display:flex;gap:8px;margin-top:28px;animation:spFade .3s .85s ease both;opacity:0}
+.sp-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.35)}
+.sp-dot:nth-child(1){animation:dotB .7s .85s ease-in-out infinite}
+.sp-dot:nth-child(2){animation:dotB .7s 1.0s ease-in-out infinite}
+.sp-dot:nth-child(3){animation:dotB .7s 1.15s ease-in-out infinite}
+@keyframes dotB{0%,100%{transform:translateY(0);opacity:.35}45%{transform:translateY(-10px);background:#fff;opacity:1}}
 </style>
 </head>
 <body>
+
+<!-- BizICE SPLASH -->
+<div id="splash">
+  <div class="sp-ice">
+    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+      <polygon points="50,98 18,48 82,48" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linejoin="round"/>
+      <line x1="50" y1="98" x2="35" y2="48" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <line x1="50" y1="98" x2="50" y2="48" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <line x1="50" y1="98" x2="65" y2="48" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <line x1="20" y1="60" x2="80" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <line x1="25" y1="72" x2="75" y2="72" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <ellipse cx="50" cy="34" rx="20" ry="16" fill="rgba(255,255,255,0.9)"/>
+      <ellipse cx="38" cy="31" rx="14" ry="12" fill="#fff"/>
+      <ellipse cx="62" cy="31" rx="14" ry="12" fill="rgba(255,210,210,1)"/>
+      <ellipse cx="50" cy="26" rx="13" ry="11" fill="#fff"/>
+      <ellipse cx="38" cy="21" rx="9" ry="8" fill="#fff"/>
+      <ellipse cx="62" cy="21" rx="9" ry="8" fill="rgba(255,195,195,1)"/>
+      <ellipse cx="50" cy="16" rx="8" ry="7" fill="#fff"/>
+      <circle cx="38" cy="13" r="5" fill="#fff"/>
+      <circle cx="62" cy="13" r="5" fill="rgba(255,200,200,1)"/>
+      <circle cx="50" cy="8" r="4" fill="#fff"/>
+    </svg>
+  </div>
+  <div class="sp-name">BizICE</div>
+  <div class="sp-sub">Cost Manager</div>
+  <div class="sp-dots"><div class="sp-dot"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
+</div>
 
 <!-- UPDATE BANNER -->
 <div id="update-banner">
@@ -1952,7 +1994,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.9.03</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.04</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2313,8 +2355,8 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.9.03';
-const APP_DATE    = '26 มิ.ย. 2569';
+const APP_VERSION = 'v3.9.04';
+const APP_DATE    = '27 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
 function fmtDate(d){
@@ -4709,6 +4751,19 @@ function exportCSV(){
   toast('Export CSV สำเร็จแล้วค่า!');
 }
 
+// ─── SPLASH ───
+let _splashHidden=false;
+function hideSplash(){
+  if(_splashHidden) return;
+  _splashHidden=true;
+  const sp=document.getElementById('splash');
+  if(!sp) return;
+  sp.classList.add('hide');
+  setTimeout(()=>{ sp.style.display='none'; },500);
+}
+// safety auto-hide (กัน splash ค้างถาวรถ้าโหลดล้มเหลว)
+setTimeout(hideSplash,8000);
+
 // ─── INIT ───
 (async()=>{
   // show loading spinners
@@ -4721,6 +4776,7 @@ function exportCSV(){
   if(_llEl) _llEl.style.display='none';
   if(_clEl) _clEl.style.display='none';
   renderMenus();renderMenuMetrics();
+  hideSplash();
 })();
 </script>
 <script>
