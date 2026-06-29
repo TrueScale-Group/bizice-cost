@@ -754,6 +754,67 @@ input,select,textarea{font-size:16px}
   background:var(--surf);
 }
 
+/* ── Add-Menu iOS Form ──────────────────── */
+@media(min-width:640px){#add-menu-box{max-width:500px;border-radius:20px}}
+@media(min-width:900px){#add-menu-box{max-width:520px}}
+.mf-body{
+  background:var(--bg);padding:.8rem;
+  display:flex;flex-direction:column;gap:.45rem;
+  overflow-y:auto;max-height:calc(75dvh - 120px);
+  -webkit-overflow-scrolling:touch;
+}
+.mf-body::-webkit-scrollbar{width:4px}
+.mf-body::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:4px}
+.mf-sec-lbl{
+  font-size:10.5px;font-weight:700;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.07em;
+  padding:0 4px;margin-top:.15rem;
+  display:flex;align-items:center;gap:6px;
+}
+.mf-card{
+  background:var(--surf);border-radius:14px;
+  overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.mf-row{padding:.62rem 1rem}
+.mf-row+.mf-row{border-top:1px solid var(--border)}
+.mf-lbl{font-size:11px;font-weight:600;color:var(--txt3);margin-bottom:5px;display:block;letter-spacing:.01em}
+.mf-inp{
+  width:100%;background:transparent;border:none;outline:none;
+  font-size:16px;font-family:'Sarabun',sans-serif;color:var(--txt);padding:0;line-height:1.4;
+}
+.mf-inp::placeholder{color:#C7C7CC}
+/* Category chips */
+.menu-cat-chips{
+  display:flex;gap:5px;overflow-x:auto;
+  scrollbar-width:none;padding:2px 0 4px;
+  -webkit-overflow-scrolling:touch;
+}
+.menu-cat-chips::-webkit-scrollbar{display:none}
+.mcc{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:3px;
+  padding:5px 10px;border-radius:99px;
+  border:1.5px solid var(--border2);background:var(--surf2);
+  font-size:12px;font-weight:500;color:var(--txt2);
+  cursor:pointer;white-space:nowrap;
+  font-family:'Sarabun',sans-serif;transition:all .14s;
+  -webkit-tap-highlight-color:transparent;line-height:1;
+}
+.mcc:active{transform:scale(.95)}
+.mcc.mcc-on{
+  background:var(--red);border-color:var(--red);color:#fff;
+  box-shadow:0 2px 8px rgba(227,30,36,.22);
+}
+/* iOS close button */
+.mh-close{
+  width:30px;height:30px;border-radius:50%;
+  background:#E8E8ED;border:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#8E8E93;flex-shrink:0;
+  transition:background .14s;-webkit-tap-highlight-color:transparent;
+}
+.mh-close:active{background:var(--surf3)}
+/* ── /Add-Menu iOS Form ─── */
+
 /* Compare rank colors */
 .rank-1{color:#D4A017}
 .rank-2{color:#8A8A8A}
@@ -1994,7 +2055,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.9.04</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.06</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2044,82 +2105,99 @@ input,select,textarea{font-size:16px}
 </div>
 
 <div id="modal-bg" class="modal-overlay" onclick="if(event.target===this)guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')">
-<div class="modal-box">
-  <div class="modal-header">
+<div class="modal-box" id="add-menu-box">
+
+  <!-- Header -->
+  <div class="modal-header" style="padding:.9rem 1.1rem .9rem 1.25rem">
     <div>
-      <div class="modal-title" id="modal-title">เพิ่มเมนูใหม่</div>
-      <div class="modal-sub">กรอกสูตรวัตถุดิบและราคาขาย</div>
+      <div class="modal-title" id="modal-title" style="font-size:16px">เพิ่มเมนูใหม่</div>
+      <div class="modal-sub" style="font-size:11px;margin-top:1px">กรอกสูตรและราคาขาย</div>
     </div>
-    <button class="btn-del" onclick="guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')" style="font-size:18px;padding:8px">✕</button>
+    <button class="mh-close" onclick="guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')" aria-label="ปิด">✕</button>
   </div>
 
-  <div style="padding:1.5rem">
-    <!-- ── ข้อมูลทั่วไป ── -->
-    <div class="section-label">ข้อมูลทั่วไป</div>
-    <div class="g2" style="margin-bottom:1.1rem">
-      <div><label class="flabel">ชื่อเมนู</label><input class="finput" id="m-name" placeholder="เช่น ซันเดย์ช็อกโกแลต"></div>
-      <div><label class="flabel">หมวดหมู่เมนู</label>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div id="m-cat-emoji" style="font-size:28px;line-height:1;flex-shrink:0">🍦</div>
-          <select class="fselect" id="m-cat" onchange="document.getElementById('m-cat-emoji').textContent=menuEmoji(this.value)">
-            <option>🍓 ชาผลไม้</option><option>🍦 ไอศกรีม</option><option>🧋 ชานม</option><option>☕ กาแฟ</option><option>🍵 ชาออริจินัล</option>
-          </select>
+  <!-- iOS Grouped Body -->
+  <div class="mf-body">
+
+    <!-- 1. ข้อมูลเมนู -->
+    <div class="mf-sec-lbl">ข้อมูลเมนู</div>
+    <div class="mf-card">
+      <div class="mf-row">
+        <label class="mf-lbl">ชื่อเมนู</label>
+        <input class="mf-inp" id="m-name" placeholder="เช่น ซันเดย์ช็อกโกแลต" autocomplete="off">
+      </div>
+      <div class="mf-row">
+        <label class="mf-lbl">หมวดหมู่</label>
+        <div class="menu-cat-chips" id="menu-cat-chips">
+          <button class="mcc" data-cat="🍓 ชาผลไม้" onclick="setMenuCat('🍓 ชาผลไม้')">🍓 <span>ชาผลไม้</span></button>
+          <button class="mcc mcc-on" data-cat="🍦 ไอศกรีม" onclick="setMenuCat('🍦 ไอศกรีม')">🍦 <span>ไอศกรีม</span></button>
+          <button class="mcc" data-cat="🧋 ชานม" onclick="setMenuCat('🧋 ชานม')">🧋 <span>ชานม</span></button>
+          <button class="mcc" data-cat="☕ กาแฟ" onclick="setMenuCat('☕ กาแฟ')">☕ <span>กาแฟ</span></button>
+          <button class="mcc" data-cat="🍵 ชาออริจินัล" onclick="setMenuCat('🍵 ชาออริจินัล')">🍵 <span>ชาออริจินัล</span></button>
+          <button class="mcc" data-cat="🍪 ขนม" onclick="setMenuCat('🍪 ขนม')">🍪 <span>ขนม</span></button>
+        </div>
+        <input type="hidden" id="m-cat" value="🍦 ไอศกรีม">
+        <div style="display:none" id="m-cat-emoji">🍦</div>
+      </div>
+    </div>
+
+    <!-- 2. ราคาขาย -->
+    <div class="mf-sec-lbl" id="size-section-label">ราคาขาย<span id="size-section-hint" style="font-size:10px;color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0;margin-left:5px">กดปุ่มเพื่อเปิด/ปิด</span><span id="khanom-badge" style="display:none;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#86198F;background:#FDF4FF;border:1px solid #F5D0FE;border-radius:99px;padding:1px 8px;text-transform:none;letter-spacing:0;margin-left:5px">🛒 ซื้อมาขายไป</span></div>
+    <div class="mf-card" style="padding:.8rem 1rem">
+      <div class="size-toggle-row" id="size-toggle-row">
+        <div class="size-toggle" id="stog-U" onclick="toggleSize('U')">
+          <div class="size-toggle-check" id="stog-U-check">U</div>
+          <div class="size-toggle-body">
+            <div class="size-toggle-label">แก้ว U (฿)</div>
+            <input class="size-toggle-input" id="m-ps" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+          </div>
+        </div>
+        <div class="size-toggle" id="stog-M" onclick="toggleSize('M')">
+          <div class="size-toggle-check" id="stog-M-check">M</div>
+          <div class="size-toggle-body">
+            <div class="size-toggle-label">แก้ว M (฿)</div>
+            <input class="size-toggle-input" id="m-pm" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+          </div>
+        </div>
+        <div class="size-toggle" id="stog-L" onclick="toggleSize('L')">
+          <div class="size-toggle-check" id="stog-L-check">L</div>
+          <div class="size-toggle-body">
+            <div class="size-toggle-label">แก้ว L (฿)</div>
+            <input class="size-toggle-input" id="m-pl" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ── ราคาขาย: Toggle + inline price ── -->
-    <div class="section-label" style="margin-bottom:.6rem">ขนาดแก้วและราคาขาย <span style="font-size:11px;color:var(--txt3);font-weight:400">กดเพื่อเปิด/ปิดขนาด</span></div>
-    <div class="size-toggle-row" id="size-toggle-row">
-      <!-- U -->
-      <div class="size-toggle" id="stog-U" onclick="toggleSize('U')">
-        <div class="size-toggle-check" id="stog-U-check">U</div>
-        <div class="size-toggle-body">
-          <div class="size-toggle-label">แก้ว U (฿)</div>
-          <input class="size-toggle-input" id="m-ps" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
-        </div>
+    <!-- 3. วัตถุดิบ / สูตร -->
+    <div class="mf-sec-lbl">วัตถุดิบ / สูตร</div>
+    <div class="mf-card" style="padding:.75rem">
+      <div id="ingr-no-size" style="padding:.55rem .75rem;background:var(--surf2);border-radius:10px;font-size:13px;color:var(--txt3);text-align:center;display:block">
+        ← กดปุ่มขนาดแก้วก่อน เพื่อกรอกวัตถุดิบ
       </div>
-      <!-- M -->
-      <div class="size-toggle" id="stog-M" onclick="toggleSize('M')">
-        <div class="size-toggle-check" id="stog-M-check">M</div>
-        <div class="size-toggle-body">
-          <div class="size-toggle-label">แก้ว M (฿)</div>
-          <input class="size-toggle-input" id="m-pm" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
-        </div>
-      </div>
-      <!-- L -->
-      <div class="size-toggle" id="stog-L" onclick="toggleSize('L')">
-        <div class="size-toggle-check" id="stog-L-check">L</div>
-        <div class="size-toggle-body">
-          <div class="size-toggle-label">แก้ว L (฿)</div>
-          <input class="size-toggle-input" id="m-pl" type="number" placeholder="ราคา" min="0" onclick="event.stopPropagation()" oninput="onSizeTogglePrice()">
-        </div>
+      <div id="ingr-tabs-wrap" style="display:none">
+        <div class="ingr-tab-bar" id="ingr-tab-bar"></div>
+        <div id="ingr-tab-panes"></div>
       </div>
     </div>
 
-    <!-- ── วัตถุดิบ / สูตร (Tab per size) ── -->
-    <div class="section-label" style="margin-top:1.1rem;margin-bottom:.6rem">วัตถุดิบ / สูตร</div>
-    <div id="ingr-no-size" style="padding:.65rem 1rem;background:var(--surf2);border-radius:10px;font-size:13px;color:var(--txt3);text-align:center;display:block">
-      ← กดเปิดขนาดแก้วก่อน เพื่อกรอกวัตถุดิบ
-    </div>
-    <div id="ingr-tabs-wrap" style="display:none">
-      <div class="ingr-tab-bar" id="ingr-tab-bar"></div>
-      <div id="ingr-tab-panes">
-        <!-- panes injected by JS -->
+    <!-- 4. สรุปต้นทุน -->
+    <div id="m-preview" style="display:none">
+      <div class="mf-sec-lbl">สรุปต้นทุน</div>
+      <div class="mf-card" style="padding:.75rem">
+        <table class="ptable" id="m-preview-table"></table>
       </div>
     </div>
 
-    <div id="m-preview" style="display:none;margin-top:1.25rem">
-      <div class="section-label">สรุปต้นทุน</div>
-      <table class="ptable" id="m-preview-table"></table>
-    </div>
-  </div>
+  </div><!-- /mf-body -->
 
-  <div class="modal-footer">
+  <!-- Footer -->
+  <div class="modal-footer" style="padding:.85rem 1.1rem;padding-bottom:calc(.85rem + env(safe-area-inset-bottom));gap:6px">
     <button class="btn btn-ghost" onclick="guardClose(closeModal,!!(document.getElementById('m-name')?.value.trim()||mIngrCount>0),'#modal-bg .modal-box')">ยกเลิก</button>
-    <button class="btn btn-ghost" onclick="previewMenu()">👁 ดูตัวอย่าง</button>
+    <button class="btn btn-ghost" onclick="previewMenu()" style="gap:5px">👁 ดูตัวอย่าง</button>
     <button class="btn btn-red" onclick="saveMenu()">✓ บันทึกเมนู</button>
   </div>
+
 </div>
 </div>
 
@@ -2338,8 +2416,34 @@ const CAT_COLOR={'แยม':'#E0245E','ผลไม้':'#EA580C','ไซรั
 const CP_CATS=['Main','Soft serve','Topping'];
 const CP_CAT_EMOJI={'Main':'🥤','Soft serve':'🍦','Topping':'🍬'};
 const CP_CAT_COLOR={'Main':'#2563EB','Soft serve':'#DB2777','Topping':'#D97706'};
-const MENU_CAT_EMOJI={'ชาผลไม้':'🍓','ไอศกรีม':'🍦','ชานม':'🧋','กาแฟ':'☕','ชาออริจินัล':'🍵'};
+const MENU_CAT_EMOJI={'ชาผลไม้':'🍓','ไอศกรีม':'🍦','ชานม':'🧋','กาแฟ':'☕','ชาออริจินัล':'🍵','ขนม':'🍪'};
 function menuEmoji(cat){return Object.entries(MENU_CAT_EMOJI).find(([k])=>cat&&cat.includes(k))?.[1]||'🍽'}
+function isKhanomCat(){return (document.getElementById('m-cat')?.value||'').includes('ขนม');}
+function setMenuCat(cat){
+  const inp=document.getElementById('m-cat');
+  if(inp) inp.value=cat;
+  const emoDiv=document.getElementById('m-cat-emoji');
+  if(emoDiv) emoDiv.textContent=menuEmoji(cat);
+  const keyMatch=Object.keys(MENU_CAT_EMOJI).find(k=>cat.includes(k))||'';
+  document.querySelectorAll('#menu-cat-chips .mcc').forEach(c=>{
+    c.classList.toggle('mcc-on',!!keyMatch&&c.dataset.cat.includes(keyMatch));
+  });
+  onMenuCatSelect();
+}
+function syncMenuCatChips(){
+  const v=document.getElementById('m-cat')?.value||'';
+  setMenuCat(v);
+}
+function onMenuCatSelect(){
+  const isK=isKhanomCat();
+  const lbl=document.getElementById('size-section-label');
+  const hint=document.getElementById('size-section-hint');
+  const badge=document.getElementById('khanom-badge');
+  if(lbl&&lbl.firstChild) lbl.firstChild.textContent=isK?'ราคาขายต่อชิ้น':'ราคาขาย';
+  if(hint) hint.style.display=isK?'none':'inline';
+  if(badge) badge.style.display=isK?'inline-flex':'none';
+  if(isK){ setSizesOn(['U']); }
+}
 // หมวด + อีโมจิของวัตถุดิบ (ดึงจาก Master Data ผ่าน sourceId)
 function ingrCatOf(i){
   if(typeof compounds!=='undefined' && compounds.find(c=>c.id===i.sourceId)) return 'สูตรผสม';
@@ -2355,8 +2459,8 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.9.04';
-const APP_DATE    = '27 มิ.ย. 2569';
+const APP_VERSION = 'v3.9.06';
+const APP_DATE    = '29 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
 function fmtDate(d){
@@ -3446,6 +3550,7 @@ function openAddMenu(id=null){
     document.getElementById('m-name').value=m.name;
     document.getElementById('m-cat').value=m.cat;
     const emoEl=document.getElementById('m-cat-emoji');if(emoEl)emoEl.textContent=menuEmoji(m.cat);
+    syncMenuCatChips();
     document.getElementById('m-ps').value=m.priceS||'';
     document.getElementById('m-pm').value=m.priceM||'';
     document.getElementById('m-pl').value=m.priceL||'';
@@ -3483,10 +3588,11 @@ function openAddMenu(id=null){
     });
   } else {
     ['m-name','m-ps','m-pm','m-pl'].forEach(x=>document.getElementById(x).value='');
-    document.getElementById('m-cat').value='ไอศกรีม';
+    document.getElementById('m-cat').value='🍦 ไอศกรีม';
     const emoEl2=document.getElementById('m-cat-emoji');if(emoEl2)emoEl2.textContent=menuEmoji('ไอศกรีม');
     activeIngrTab='M';
     setSizesOn(['M']);
+    syncMenuCatChips();
   }
   document.getElementById('modal-bg').style.display='block';
 }
@@ -3577,7 +3683,8 @@ function onMenuSrcChange(id, ing=null){
     wrap.innerHTML=`<select id="mcp-${id}" onchange="onMenuItemSelect(${id})" class="dyn-input">${opts}</select>`;
   } else {
     // library: cat + item
-    let initCat=ing?.cat||CATS[0];
+    const _menuCat=document.getElementById('m-cat')?.value||'';
+    let initCat=ing?.cat||(_menuCat.includes('ขนม')?'ขนม':CATS[0]);
     let initLibId=ing?.sourceId||'';
     if(ing&&!initLibId){
       const found=library.find(x=>x.name===ing.name);
