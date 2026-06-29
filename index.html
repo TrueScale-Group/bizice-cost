@@ -2101,7 +2101,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.9.08</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.09</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2173,8 +2173,8 @@ input,select,textarea{font-size:16px}
         <input class="mf-inp" id="m-name" placeholder="เช่น ซันเดย์ช็อกโกแลต" autocomplete="off">
       </div>
       <div class="mf-row" style="display:flex;align-items:center;gap:10px">
-        <span id="m-cat-emoji" style="font-size:22px;line-height:1;flex-shrink:0">🍦</span>
-        <select class="mf-select" id="m-cat" onchange="document.getElementById('m-cat-emoji').textContent=menuEmoji(this.value);onMenuCatSelect()">
+        <span class="mf-lbl" style="margin-bottom:0;white-space:nowrap;flex-shrink:0">หมวดหมู่</span>
+        <select class="mf-select" id="m-cat" onchange="onMenuCatSelect()">
           <option>🍓 ชาผลไม้</option><option selected>🍦 ไอศกรีม</option><option>🧋 ชานม</option>
           <option>☕ กาแฟ</option><option>🍵 ชาออริจินัล</option><option>🍪 ขนม</option>
         </select>
@@ -2486,15 +2486,9 @@ function isKhanomCat(){return (document.getElementById('m-cat')?.value||'').incl
 function setMenuCat(cat){
   const sel=document.getElementById('m-cat');
   if(sel) sel.value=cat;
-  const emoDiv=document.getElementById('m-cat-emoji');
-  if(emoDiv) emoDiv.textContent=menuEmoji(cat);
   onMenuCatSelect();
 }
 function syncMenuCatChips(){
-  // category is now a <select> — just sync emoji + trigger logic
-  const v=document.getElementById('m-cat')?.value||'';
-  const emoDiv=document.getElementById('m-cat-emoji');
-  if(emoDiv) emoDiv.textContent=menuEmoji(v);
   onMenuCatSelect();
 }
 function onMenuCatSelect(){
@@ -2529,7 +2523,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.9.08';
+const APP_VERSION = 'v3.9.09';
 const APP_DATE    = '29 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
@@ -3607,6 +3601,8 @@ function rebuildIngrTabs(){
   noSize.style.display='none';
   tabsWrap.style.display='block';
 
+  const isK=isKhanomCat();
+
   // Preserve existing pane containers (don't wipe existing rows)
   const existingPanes={};
   panesEl.querySelectorAll('.ingr-tab-pane').forEach(p=>{
@@ -3634,7 +3630,6 @@ function rebuildIngrTabs(){
 
   // Rebuild tab bar
   if(!activeSizes.has(activeIngrTab)) activeIngrTab=active[0];
-  const isK=isKhanomCat();
   bar.innerHTML=active.map(sz=>{
     const lbl=isK?'รายการขนม':(sz==='U'?'แก้ว U':sz==='M'?'แก้ว M':'แก้ว L');
     return `<button class="ingr-tab-btn${activeIngrTab===sz?' active':''}" onclick="switchIngrTab('${sz}')">${lbl}</button>`;
@@ -3668,7 +3663,6 @@ function openAddMenu(id=null){
     const m=menus.find(x=>x.id===id);if(!m)return;
     document.getElementById('m-name').value=m.name;
     document.getElementById('m-cat').value=m.cat;
-    const emoEl=document.getElementById('m-cat-emoji');if(emoEl)emoEl.textContent=menuEmoji(m.cat);
     syncMenuCatChips(); // triggers onMenuCatSelect → shows correct price section
     document.getElementById('m-ps').value=m.priceS||'';
     document.getElementById('m-pm').value=m.priceM||'';
@@ -3712,7 +3706,6 @@ function openAddMenu(id=null){
     ['m-ps','m-pm','m-pl'].forEach(x=>{const el=document.getElementById(x);if(el)el.value='';});
     const kpi=document.getElementById('khanom-pi');if(kpi)kpi.value='';
     document.getElementById('m-cat').value='🍦 ไอศกรีม';
-    const emoEl2=document.getElementById('m-cat-emoji');if(emoEl2)emoEl2.textContent=menuEmoji('ไอศกรีม');
     activeIngrTab='M';
     setSizesOn([]); // เริ่มจาก 0 ขนาด — ผู้ใช้กด เพิ่มเอง
     syncMenuCatChips(); // reset to ไอศกรีม, hide khanom section
