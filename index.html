@@ -456,15 +456,15 @@ input,select,textarea{font-size:16px}
 .view-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surf);z-index:2}
 .view-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
 .view-body{padding:1.25rem 1.5rem 2rem}
-.view-size-block{background:var(--surf2);border-radius:20px;padding:1.2rem 1.25rem 1.05rem;margin-bottom:.85rem}
-.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.view-size-block{background:var(--surf2);border-radius:20px;padding:1rem .85rem .85rem;margin-bottom:.85rem}
+.view-size-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem;padding:0 .15rem}
 .view-size-tag{font-family:'Prompt',sans-serif;font-size:15.5px;font-weight:700;color:var(--txt);letter-spacing:-.2px}
 .view-size-price{font-family:'Prompt',sans-serif;font-size:15.5px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;letter-spacing:-.2px}
-/* iOS grouped section header ต่อหมวด */
-.view-cat-group{margin-top:.6rem}
-.view-cat-group:first-of-type{margin-top:.25rem}
-.view-cat-label{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.3px;padding:0 0 4px 1px;margin-top:.4rem;display:flex;align-items:center;gap:5px}
-.view-ingr-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;line-height:1.45;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.045)}
+/* iOS grouped card per category */
+.view-cat-group{background:var(--surf);border-radius:11px;margin-top:.45rem;overflow:hidden}
+.view-cat-group:first-of-type{margin-top:.35rem}
+.view-cat-label{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.3px;padding:.42rem .9rem .38rem;margin-top:0;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(0,0,0,.07)}
+.view-ingr-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;line-height:1.45;padding:5.5px .9rem;border-bottom:1px solid rgba(0,0,0,.04)}
 .view-cat-group .view-ingr-row:last-child{border-bottom:none}
 .view-ingr-name{color:var(--txt);font-weight:500;letter-spacing:.1px}
 .view-ingr-name .vi-qty{color:var(--txt3);font-size:11.5px;font-weight:400;letter-spacing:0;font-variant-numeric:tabular-nums}
@@ -481,8 +481,8 @@ input,select,textarea{font-size:16px}
   .view-title{font-size:18px}
   .view-body{padding:1.1rem 1.5rem 1.6rem}
   .view-sizes-grid{display:flex;flex-direction:column;gap:.75rem}
-  .view-size-block{margin-bottom:0;padding:1.05rem 1.1rem}
-  .view-ingr-row{font-size:13.5px;padding:6px 0}
+  .view-size-block{margin-bottom:0;padding:.9rem .75rem .75rem}
+  .view-ingr-row{font-size:13.5px;padding:5px .8rem}
   .view-edit-btn{margin-top:1rem;padding:.7rem}
 }
 @media(min-width:900px){
@@ -2101,7 +2101,7 @@ input,select,textarea{font-size:16px}
     <div class="ios-ver-footer">
       <div class="ios-ver-name">BizICE Cost Manager</div>
       <div class="ios-ver-meta">
-        <span class="ios-ver-pill" id="app-version-badge">v3.9.07</span>
+        <span class="ios-ver-pill" id="app-version-badge">v3.9.08</span>
         <span>·</span>
         <span id="app-date-badge">อัพเดท 21 มิ.ย. 2569</span>
       </div>
@@ -2529,7 +2529,7 @@ function updateLibPlaceholder(){
 }
 
 // ─── APP VERSION ───
-const APP_VERSION = 'v3.9.07';
+const APP_VERSION = 'v3.9.08';
 const APP_DATE    = '29 มิ.ย. 2569';
 
 // ─── DATE FORMAT — DD.MM.YYYY (Gregorian) ───
