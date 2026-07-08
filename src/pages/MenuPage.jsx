@@ -48,8 +48,8 @@ export default function MenuPage() {
         )}
       </div>
 
-      {/* metrics */}
-      <div className="metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '.6rem', marginBottom: '1.1rem' }}>
+      {/* metrics — responsive columns มาจากคลาส .metrics (มือถือ 2 / แท็บเล็ต·PC 4) */}
+      <div className="metrics">
         <div className="metric hi">
           <div className="metric-lbl">เมนูทั้งหมด</div>
           <div className="metric-val">{metrics.total}</div>
