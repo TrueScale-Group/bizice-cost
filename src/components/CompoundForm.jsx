@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, CP_CATS, CP_CAT_EMOJI } from '../constants/categories'
 import { num, genId, fmtDateNow } from '../utils/format'
+import Modal from './Modal'
 
 function fmtPrice(p) {
   if (!p) return '0'
@@ -87,17 +88,21 @@ export default function CompoundForm({ compound, library, updatedBy, onSave, onD
   const INP = { background: '#fff', border: '1px solid var(--border2)', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Sarabun',sans-serif", outline: 'none' }
 
   return (
-    <div className="modal-overlay" style={{ display: 'block' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ maxWidth: 520 }}>
-        <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
-          <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>{editing ? 'แก้ไขสูตรผสม' : 'เพิ่มสูตรผสม'}</div>
-            <div className="modal-sub">รวมวัตถุดิบ → ต้นทุนต่อหน่วยผลผลิต</div>
-          </div>
-          <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>
-        </div>
-
-        <div className="mf-body">
+    <Modal
+      title={editing ? 'แก้ไขสูตรผสม' : 'เพิ่มสูตรผสม'}
+      subtitle="รวมวัตถุดิบ → ต้นทุนต่อหน่วยผลผลิต"
+      onClose={onClose}
+      maxWidth={520}
+      footer={(
+        <>
+          {editing && onDelete && (
+            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(compound)}>🗑️ ลบสูตร</button>
+          )}
+          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-red" onClick={save}>✓ บันทึกสูตร</button>
+        </>
+      )}
+    >
           {/* ข้อมูล */}
           <div className="mf-sec-lbl">ข้อมูลสูตร</div>
           <div className="mf-card">
@@ -191,16 +196,6 @@ export default function CompoundForm({ compound, library, updatedBy, onSave, onD
               </div>
             </div>
           )}
-        </div>
-
-        <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
-          {editing && onDelete && (
-            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(compound)}>🗑️ ลบสูตร</button>
-          )}
-          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-red" onClick={save}>✓ บันทึกสูตร</button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

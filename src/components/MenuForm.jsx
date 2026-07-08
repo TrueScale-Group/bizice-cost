@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, MENU_CATS, menuEmoji } from '../constants/categories'
 import { num, genId, fmtDateNow } from '../utils/format'
 import { calcCost, gpColor } from '../utils/cost'
+import Modal from './Modal'
 
 const SIZES = [
   { k: 'U', priceKey: 'priceS', label: 'แก้ว U' },
@@ -144,17 +145,21 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
   const INP = { background: '#fff', border: '1px solid var(--border2)', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Sarabun',sans-serif", outline: 'none' }
 
   return (
-    <div className="modal-overlay" style={{ display: 'block' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" id="add-menu-box" style={{ maxWidth: 520 }}>
-        <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
-          <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>{editing ? 'แก้ไขเมนู' : 'เพิ่มเมนูใหม่'}</div>
-            <div className="modal-sub">กรอกสูตรและราคาขาย</div>
-          </div>
-          <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>
-        </div>
-
-        <div className="mf-body">
+    <Modal
+      title={editing ? 'แก้ไขเมนู' : 'เพิ่มเมนูใหม่'}
+      subtitle="กรอกสูตรและราคาขาย"
+      onClose={onClose}
+      maxWidth={520}
+      footer={(
+        <>
+          {editing && onDelete && (
+            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(menu)}>🗑️ ลบเมนู</button>
+          )}
+          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-red" onClick={save}>✓ บันทึกเมนู</button>
+        </>
+      )}
+    >
           {/* ข้อมูลเมนู */}
           <div className="mf-sec-lbl">ข้อมูลเมนู</div>
           <div className="mf-card">
@@ -282,16 +287,6 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
               </div>
             </>
           )}
-        </div>
-
-        <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
-          {editing && onDelete && (
-            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(menu)}>🗑️ ลบเมนู</button>
-          )}
-          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-red" onClick={save}>✓ บันทึกเมนู</button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

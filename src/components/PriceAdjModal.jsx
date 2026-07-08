@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { num, fmtDateNow, baht } from '../utils/format'
+import Modal from './Modal'
 
 export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
   const [price, setPrice] = useState('')
@@ -49,17 +50,18 @@ export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
   const INP = { width: '100%', background: '#fff', border: '1px solid var(--border2)', borderRadius: 8, padding: '8px 10px', fontSize: 14, fontFamily: "'Sarabun',sans-serif", outline: 'none' }
 
   return (
-    <div className="modal-overlay" style={{ display: 'block' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ maxWidth: 440 }}>
-        <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
-          <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>↕️ ปรับราคา</div>
-            <div className="modal-sub">{item.name} — ปัจจุบัน ฿{baht(item.total || item.basePrice)}</div>
-          </div>
-          <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>
-        </div>
-
-        <div className="mf-body">
+    <Modal
+      title="↕️ ปรับราคา"
+      subtitle={`${item.name} — ปัจจุบัน ฿${baht(item.total || item.basePrice)}`}
+      onClose={onClose}
+      maxWidth={440}
+      footer={(
+        <>
+          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-red" onClick={save}>✓ บันทึกราคา</button>
+        </>
+      )}
+    >
           <div className="mf-card" style={{ padding: '.9rem 1rem' }}>
             <label className="mf-lbl">ราคาใหม่ (฿ ต่อ {item.levels?.[0]?.name || 'ลัง'})</label>
             <input type="number" style={INP} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" min="0" step="any" autoFocus />
@@ -96,13 +98,6 @@ export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
               </div>
             </>
           )}
-        </div>
-
-        <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
-          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-red" onClick={save}>✓ บันทึกราคา</button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

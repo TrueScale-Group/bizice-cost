@@ -767,6 +767,17 @@ input,select,textarea{font-size:16px}
   transition:background .14s;-webkit-tap-highlight-color:transparent;
 }
 .mh-close:active{background:var(--surf3)}
+/* guard: กด background ตอนกรอกข้อมูล → ปุ่ม ✕ สั่นสีแดงเตือน (กดออกที่นี่เท่านั้น) */
+@keyframes mhShake{
+  0%,100%{transform:translateX(0) rotate(0)}
+  12%{transform:translateX(-5px) rotate(-10deg)}
+  28%{transform:translateX(5px) rotate(10deg)}
+  44%{transform:translateX(-4px) rotate(-7deg)}
+  60%{transform:translateX(4px) rotate(7deg)}
+  76%{transform:translateX(-2px) rotate(-3deg)}
+  88%{transform:translateX(2px) rotate(2deg)}
+}
+.mh-close.mh-shake{animation:mhShake .55s cubic-bezier(.36,.07,.19,.97);background:var(--red)!important;color:#fff!important;box-shadow:0 0 0 4px rgba(227,30,36,.18)}
 /* Dropdown select (iOS-clean) */
 .mf-select{
   flex:1;background:transparent;border:none;outline:none;

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { num } from '../utils/format'
+import Modal from './Modal'
 
 // เครื่องคิดเลข ราคา/หน่วย — พอร์ตจาก vanilla breakdown calculator
 export default function BreakdownModal({ onClose }) {
@@ -29,17 +30,13 @@ export default function BreakdownModal({ onClose }) {
   const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 90px 30px', gap: 6, alignItems: 'center', marginBottom: 5 }
 
   return (
-    <div className="modal-overlay" style={{ display: 'block' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ maxWidth: 460 }}>
-        <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
-          <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>🧮 คำนวณราคา/หน่วย</div>
-            <div className="modal-sub">แตกราคาซื้อยกลัง → ต่อหน่วยเล็กสุด</div>
-          </div>
-          <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>
-        </div>
-
-        <div className="mf-body">
+    <Modal
+      title="🧮 คำนวณราคา/หน่วย"
+      subtitle="แตกราคาซื้อยกลัง → ต่อหน่วยเล็กสุด"
+      onClose={onClose}
+      maxWidth={460}
+      footer={<button className="btn btn-red" onClick={onClose}>เสร็จ</button>}
+    >
           <div className="mf-card" style={{ padding: '.8rem 1rem' }}>
             <label className="mf-lbl">ราคาที่ซื้อ (฿)</label>
             <input type="number" style={{ ...INP, width: '100%' }} value={base} onChange={(e) => setBase(e.target.value)} placeholder="เช่น 1200" min="0" step="any" autoFocus />
@@ -78,12 +75,6 @@ export default function BreakdownModal({ onClose }) {
               <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 4, wordBreak: 'break-word' }}>{calc.formula}</div>
             </div>
           )}
-        </div>
-
-        <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
-          <button className="btn btn-red" onClick={onClose}>เสร็จ</button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

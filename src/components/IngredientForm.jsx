@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, LIB_SUGGESTIONS } from '../constants/categories'
 import { num, fmtDateNow, genId } from '../utils/format'
+import Modal from './Modal'
 
 // ราคาต่อหน่วย (ตาม vanilla): (base+freight)×(1+waste/100) / divisor
 function fmtPrice(p) {
@@ -79,17 +80,21 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onDel
   const INP = { width: '100%', background: '#fff', border: '1px solid var(--border2)', borderRadius: 8, padding: '7px 9px', fontSize: 14, fontFamily: "'Sarabun',sans-serif", outline: 'none' }
 
   return (
-    <div className="modal-overlay" style={{ display: 'block' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ maxWidth: 500 }}>
-        <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
-          <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>{editing ? 'แก้ไขวัตถุดิบ' : 'เพิ่มวัตถุดิบ'}</div>
-            <div className="modal-sub">ราคาซื้อ → คำนวณต้นทุนต่อหน่วยอัตโนมัติ</div>
-          </div>
-          <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>
-        </div>
-
-        <div className="mf-body">
+    <Modal
+      title={editing ? 'แก้ไขวัตถุดิบ' : 'เพิ่มวัตถุดิบ'}
+      subtitle="ราคาซื้อ → คำนวณต้นทุนต่อหน่วยอัตโนมัติ"
+      onClose={onClose}
+      maxWidth={500}
+      footer={(
+        <>
+          {editing && onDelete && (
+            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(item)}>🗑️ ลบวัตถุดิบ</button>
+          )}
+          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-red" onClick={save}>✓ บันทึก</button>
+        </>
+      )}
+    >
           {/* ข้อมูล */}
           <div className="mf-sec-lbl">ข้อมูล</div>
           <div className="mf-card">
@@ -207,16 +212,6 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onDel
               <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 3 }}>ใช้หน่วยนี้ในสูตรเมนู/สูตรผสม</div>
             </div>
           )}
-        </div>
-
-        <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
-          {editing && onDelete && (
-            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(item)}>🗑️ ลบวัตถุดิบ</button>
-          )}
-          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-red" onClick={save}>✓ บันทึก</button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
