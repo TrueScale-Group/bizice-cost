@@ -28,6 +28,7 @@ export default function MenuPage() {
     if (!confirm(`ลบเมนู "${m.name}"?`)) return
     commit({ menus: menus.filter((x) => x.id !== m.id) })
     setView(null)
+    setForm(null)
     toast('ลบเมนูแล้ว', '🗑️')
   }
 
@@ -126,9 +127,8 @@ export default function MenuPage() {
                   </span>
                 </div>
                 {session.isEditor() && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 7 }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 7 }}>
                     <button className="btn-icon" style={{ fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setForm({ menu: m }) }}>✏️ แก้ไข</button>
-                    <button className="btn-icon" style={{ fontSize: 13 }} onClick={(e) => { e.stopPropagation(); deleteMenu(m) }}>🗑️</button>
                   </div>
                 )}
               </div>
@@ -146,6 +146,7 @@ export default function MenuPage() {
           settings={settings}
           updatedBy={session.updatedBy}
           onSave={saveMenu}
+          onDelete={deleteMenu}
           onClose={() => setForm(null)}
         />
       )}

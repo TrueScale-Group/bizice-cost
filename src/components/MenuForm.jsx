@@ -9,7 +9,7 @@ const SIZES = [
   { k: 'L', priceKey: 'priceL', label: 'แก้ว L' },
 ]
 
-export default function MenuForm({ menu, library, compounds, settings, updatedBy, onSave, onClose }) {
+export default function MenuForm({ menu, library, compounds, settings, updatedBy, onSave, onDelete, onClose }) {
   const editing = !!menu
   const [name, setName] = useState(menu?.name || '')
   const [cat, setCat] = useState(menu?.cat || 'ไอศกรีม')
@@ -285,6 +285,9 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
         </div>
 
         <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
+          {editing && onDelete && (
+            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(menu)}>🗑️ ลบเมนู</button>
+          )}
           <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
           <button className="btn btn-red" onClick={save}>✓ บันทึกเมนู</button>
         </div>
