@@ -24,59 +24,81 @@ export default function SettingsPage() {
     toast('ล้างข้อมูลทั้งหมดแล้ว', '🗑️')
   }
 
+  const secLbl = { fontSize: 11, fontWeight: 700, color: 'var(--txt3)', textTransform: 'uppercase', letterSpacing: '.06em', padding: '0 4px 6px', marginTop: 4 }
+  const groupCard = { background: 'var(--surf)', borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,.05)', overflow: 'hidden' }
+  const row = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.7rem .9rem', gap: 12 }
+  const rowBorder = { borderTop: '1px solid var(--border)' }
+
   return (
-    <div className="main">
-      <div className="ph" style={{ marginBottom: '1rem' }}>
-        <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>⚙️ ตั้งค่า</h1>
-        <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>
+    <div className="main" style={{ maxWidth: 560, margin: '0 auto' }}>
+      <div style={{ padding: '.2rem 4px 1rem' }}>
+        <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 21, fontWeight: 600 }}>⚙️ ตั้งค่า</h1>
+        <div style={{ fontSize: 12, color: 'var(--txt3)', marginTop: 2 }}>
           {session.name} · {session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}
         </div>
       </div>
 
       {/* เกณฑ์ cost ratio */}
-      <div className="card" style={{ marginBottom: '1rem' }}>
-        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🚦 เกณฑ์ Cost Ratio</div>
-        <div style={{ fontSize: 12, color: 'var(--txt3)', marginBottom: 12 }}>ต่ำกว่าเขียว = ดีมาก · ระหว่างเขียว–เหลือง = พอได้ · เกินเหลือง = สูงเกิน</div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <label style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#15803D', marginBottom: 4 }}>เขียว (≤%)</div>
-            <input type="number" className="inp" value={green} disabled={!session.isEditor()} onChange={(e) => setGreen(e.target.value)} style={{ width: '100%' }} />
-          </label>
-          <label style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#C2410C', marginBottom: 4 }}>เหลือง (≤%)</div>
-            <input type="number" className="inp" value={yellow} disabled={!session.isEditor()} onChange={(e) => setYellow(e.target.value)} style={{ width: '100%' }} />
-          </label>
+      <div style={secLbl}>🚦 เกณฑ์ Cost Ratio</div>
+      <div style={{ ...groupCard, marginBottom: '1.1rem' }}>
+        <div style={row}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>เขียว — ดีมาก</div>
+            <div style={{ fontSize: 11, color: 'var(--txt3)' }}>ต้นทุนไม่เกิน %</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <input type="number" value={green} disabled={!session.isEditor()} onChange={(e) => setGreen(e.target.value)}
+              style={{ width: 56, textAlign: 'right', border: '1px solid var(--border2)', borderRadius: 8, padding: '5px 8px', fontSize: 15, fontWeight: 700, fontFamily: 'Prompt,sans-serif', color: '#15803D' }} />
+            <span style={{ color: 'var(--txt3)', fontSize: 13 }}>%</span>
+          </div>
+        </div>
+        <div style={{ ...row, ...rowBorder }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>เหลือง — พอได้</div>
+            <div style={{ fontSize: 11, color: 'var(--txt3)' }}>เกินค่านี้ = สูงเกิน</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <input type="number" value={yellow} disabled={!session.isEditor()} onChange={(e) => setYellow(e.target.value)}
+              style={{ width: 56, textAlign: 'right', border: '1px solid var(--border2)', borderRadius: 8, padding: '5px 8px', fontSize: 15, fontWeight: 700, fontFamily: 'Prompt,sans-serif', color: '#C2410C' }} />
+            <span style={{ color: 'var(--txt3)', fontSize: 13 }}>%</span>
+          </div>
         </div>
         {session.isEditor() && (
-          <button className="btn btn-red" style={{ marginTop: 12 }} onClick={saveThresholds}>บันทึกเกณฑ์</button>
+          <div style={{ ...row, ...rowBorder, justifyContent: 'flex-end' }}>
+            <button className="btn btn-red" style={{ padding: '7px 18px', fontSize: 13 }} onClick={saveThresholds}>บันทึกเกณฑ์</button>
+          </div>
         )}
       </div>
 
       {/* สรุปข้อมูล */}
-      <div className="card" style={{ marginBottom: '1rem' }}>
-        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>📊 ข้อมูลในระบบ</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, textAlign: 'center' }}>
-          {[['เมนู', menus.length], ['วัตถุดิบ', library.length], ['สูตรผสม', compounds.length]].map(([lbl, n]) => (
-            <div key={lbl} style={{ background: 'var(--surf2)', borderRadius: 12, padding: '12px 8px' }}>
-              <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 22 }}>{n}</div>
-              <div style={{ fontSize: 11.5, color: 'var(--txt3)' }}>{lbl}</div>
-            </div>
-          ))}
-        </div>
+      <div style={secLbl}>📊 ข้อมูลในระบบ</div>
+      <div style={{ ...groupCard, marginBottom: '1.1rem' }}>
+        {[['🍦 เมนู', menus.length], ['📦 วัตถุดิบ', library.length], ['🧪 สูตรผสม', compounds.length]].map(([lbl, n], i) => (
+          <div key={lbl} style={{ ...row, ...(i ? rowBorder : {}) }}>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>{lbl}</span>
+            <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 16 }}>{n}</span>
+          </div>
+        ))}
       </div>
 
       {/* danger zone — owner เท่านั้น */}
       {session.isOwner() && (
-        <div className="card" style={{ marginBottom: '1rem', border: '1.5px solid #FECACA', background: '#FFF5F5' }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#E31E24', marginBottom: 4 }}>⚠️ โซนอันตราย</div>
-          <div style={{ fontSize: 12, color: 'var(--txt2)', marginBottom: 12 }}>ล้างข้อมูลทั้งหมด — กู้คืนไม่ได้ (ต้องกรอก PIN)</div>
-          <button className="btn" style={{ background: '#E31E24', color: '#fff' }} onClick={clearAll}>🗑️ ล้างข้อมูลทั้งหมด</button>
-        </div>
+        <>
+          <div style={{ ...secLbl, color: '#E31E24' }}>⚠️ โซนอันตราย</div>
+          <div style={{ ...groupCard, marginBottom: '1.1rem', border: '1px solid #FECACA' }}>
+            <div style={row}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#E31E24' }}>ล้างข้อมูลทั้งหมด</div>
+                <div style={{ fontSize: 11, color: 'var(--txt3)' }}>กู้คืนไม่ได้ · ต้องกรอก PIN</div>
+              </div>
+              <button className="btn" style={{ background: '#E31E24', color: '#fff', padding: '7px 14px', fontSize: 13, flexShrink: 0 }} onClick={clearAll}>🗑️ ล้าง</button>
+            </div>
+          </div>
+        </>
       )}
 
-      <div style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--txt3)', padding: '1rem 0 2rem' }}>
-        Cost Manager {APP_VERSION} · อัพเดท {BUILD_DATE}
-        <div style={{ marginTop: 2, fontSize: 10.5 }}>React + Vite · BizICE</div>
+      <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--txt3)', padding: '.5rem 0 1rem' }}>
+        Cost Manager {APP_VERSION} · React + Vite · อัพเดท {BUILD_DATE}
       </div>
     </div>
   )

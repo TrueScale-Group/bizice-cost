@@ -111,7 +111,7 @@ function Shell() {
       {/* ── MAIN SCROLL AREA ── */}
       <div className="scroll-area">
         {/* mobile top bar */}
-        <div className="mobile-top-bar" id="mobile-top-bar" style={{ display: 'flex' }}>
+        <div className="mobile-top-bar" id="mobile-top-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="./icon-cost-192.png" alt="" style={{ width: 30, height: 30, borderRadius: 8 }} />
             <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 600, fontSize: 15 }}>{active?.label}</div>
