@@ -57,36 +57,32 @@ export function useCostData() {
     timer.current = setTimeout(flush, 700)
   }, [flush])
 
-  // โหลดครั้งเดียวตอน mount
-  useEffect(() => {
-    let alive = true
-    ;(async () => {
-      try {
-        const snap = await getDoc(doc(db, COL.MIXUE_DATA, MIXUE_DATA_DOC))
-        if (!alive) return
-        if (snap.exists()) {
-          const d = snap.data()
-          const m = d.menus || [], l = d.library || [], c = d.compounds || []
-          setMenus(m); setLibrary(l); setCompounds(c)
-          latest.current = { menus: m, library: l, compounds: c }
-        } else {
-          // fallback: localStorage
-          const m = readLS(SK.MENUS, []), l = readLS(SK.LIBRARY, []), c = readLS(SK.COMPOUNDS, [])
-          setMenus(m); setLibrary(l); setCompounds(c)
-          latest.current = { menus: m, library: l, compounds: c }
-        }
-      } catch (e) {
-        if (!alive) return
-        console.warn('Firestore load error → fallback localStorage', e)
-        const m = readLS(SK.MENUS, []), l = readLS(SK.LIBRARY, []), c = readLS(SK.COMPOUNDS, [])
-        setMenus(m); setLibrary(l); setCompounds(c)
-        latest.current = { menus: m, library: l, compounds: c }
-      } finally {
-        if (alive) setLoading(false)
+  // reload — อ่าน doc ใหม่จาก Firestore (ใช้ตอน mount + pull-to-refresh + auto 5 นาที)
+  const reload = useCallback(async () => {
+    const apply = (m, l, c) => {
+      setMenus(m); setLibrary(l); setCompounds(c)
+      latest.current = { menus: m, library: l, compounds: c }
+    }
+    try {
+      // push งานที่ค้างขึ้น server ก่อน แล้วค่อยอ่านใหม่ (กัน overwrite งานที่เพิ่งกด)
+      flush()
+      const snap = await getDoc(doc(db, COL.MIXUE_DATA, MIXUE_DATA_DOC))
+      if (snap.exists()) {
+        const d = snap.data()
+        apply(d.menus || [], d.library || [], d.compounds || [])
+      } else {
+        apply(readLS(SK.MENUS, []), readLS(SK.LIBRARY, []), readLS(SK.COMPOUNDS, []))
       }
-    })()
-    return () => { alive = false }
-  }, [])
+    } catch (e) {
+      console.warn('Firestore reload error → fallback localStorage', e)
+      apply(readLS(SK.MENUS, []), readLS(SK.LIBRARY, []), readLS(SK.COMPOUNDS, []))
+    } finally {
+      setLoading(false)
+    }
+  }, [flush])
+
+  // โหลดครั้งเดียวตอน mount
+  useEffect(() => { reload() }, [reload])
 
   // flush ตอนออกจากหน้า
   useEffect(() => {
@@ -123,6 +119,6 @@ export function useCostData() {
 
   return {
     menus, library, compounds, settings, loading,
-    commit, saveSettings, flush,
+    commit, saveSettings, flush, reload,
   }
 }

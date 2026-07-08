@@ -3,6 +3,7 @@ import { CostProvider, useCost } from './context/CostContext'
 import { ToastProvider } from './components/Toast'
 import { TAB_STATUS_COLORS } from './constants/categories'
 import { useServiceWorker } from './hooks/useServiceWorker'
+import { usePullToRefresh } from './hooks/usePullToRefresh'
 import NotificationBell from './components/NotificationBell'
 import MenuPage from './pages/MenuPage'
 import LibraryPage from './pages/LibraryPage'
@@ -48,10 +49,17 @@ function Splash() {
 }
 
 function Shell() {
-  const { loading, session } = useCost()
-  const { updateReady, reload } = useServiceWorker()
+  const { loading, session, reload } = useCost()
+  const { updateReady, reload: swReload } = useServiceWorker()
   const [tab, setTab] = useState('menu')
   const [splashDone, setSplashDone] = useState(false)
+
+  // pull-to-refresh (มือถือ) + auto refresh ทุก 5 นาทีตอน focus
+  usePullToRefresh(reload)
+  useEffect(() => {
+    const iv = setInterval(() => { if (!document.hidden) reload() }, 5 * 60 * 1000)
+    return () => clearInterval(iv)
+  }, [reload])
 
   // splash: โชว์อย่างน้อย ~700ms แล้วรอโหลดเสร็จ
   useEffect(() => {
@@ -81,7 +89,7 @@ function Shell() {
         <div className="show" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9000, background: 'linear-gradient(90deg,#0F766E,#0D9488)', color: '#fff', padding: '.6rem 1rem', display: 'flex', alignItems: 'center', gap: '.75rem', fontSize: 13, fontWeight: 600 }}>
           <span style={{ fontSize: 18 }}>🔄</span>
           <span style={{ flex: 1 }}>มีอัปเดตใหม่พร้อมแล้วค่ะ</span>
-          <button onClick={reload} style={{ background: 'rgba(255,255,255,.2)', border: '1.5px solid rgba(255,255,255,.4)', color: '#fff', borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>โหลดใหม่</button>
+          <button onClick={swReload} style={{ background: 'rgba(255,255,255,.2)', border: '1.5px solid rgba(255,255,255,.4)', color: '#fff', borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>โหลดใหม่</button>
         </div>
       )}
 
@@ -125,6 +133,24 @@ function Shell() {
 
       {/* ── MAIN SCROLL AREA ── */}
       <div className="scroll-area">
+        {/* pull-to-refresh indicator (มือถือ) */}
+        <div id="ptr-indicator">
+          <div id="ptr-ring">
+            <svg width="44" height="44" viewBox="0 0 44 44">
+              <defs>
+                <linearGradient id="ptr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#E31E24" />
+                  <stop offset="100%" stopColor="#B01519" />
+                </linearGradient>
+              </defs>
+              <circle className="ptr-track" cx="22" cy="22" r="20" />
+              <circle className="ptr-arc" cx="22" cy="22" r="20" />
+            </svg>
+            <div id="ptr-icon">🧊</div>
+          </div>
+          <div id="ptr-label">ดึงลงเพื่อรีเฟรช</div>
+        </div>
+
         {/* mobile top bar */}
         <div className="mobile-top-bar" id="mobile-top-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
