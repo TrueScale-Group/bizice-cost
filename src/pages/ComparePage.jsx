@@ -1,8 +1,118 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useCost } from '../context/CostContext'
 import { menuEmoji } from '../constants/categories'
 import { calcCost, getBestPct, gpColor } from '../utils/cost'
-import { num } from '../utils/format'
+import { num, esc } from '../utils/format'
+
+function bestSize(m) {
+  for (const [sz, p] of [['S', m.priceS], ['M', m.priceM], ['L', m.priceL]]) {
+    if (num(p) > 0) return { sz, price: num(p) }
+  }
+  return { sz: 'S', price: 0 }
+}
+function ingrMap(m, sz) {
+  const map = {}
+  ;(m.ingredients || []).forEach((ing) => {
+    const st = ing.sizeTarget || 'all'
+    if (st !== 'all' && st !== sz) return
+    const qty = num(ing.qty)
+    if (qty <= 0) return
+    const key = ing.sourceId || ing.name || '?'
+    const cost = qty * num(ing.pricePerUnit)
+    if (map[key]) { map[key].cost += cost; map[key].qty += qty }
+    else map[key] = { name: ing.name || '?', qty, unit: ing.unit || '', cost }
+  })
+  return map
+}
+
+function Duel({ menus }) {
+  const [aId, setAId] = useState('')
+  const [bId, setBId] = useState('')
+  const mA = menus.find((m) => m.id === aId)
+  const mB = menus.find((m) => m.id === bId)
+  const ready = mA && mB && aId !== bId
+
+  const SEL = { flex: 1, minWidth: 0, background: '#fff', border: '1px solid var(--border2)', borderRadius: 10, padding: '9px 10px', fontSize: 13, fontFamily: "'Sarabun',sans-serif" }
+
+  let result = null
+  if (ready) {
+    const ba = bestSize(mA), bb = bestSize(mB)
+    const costA = calcCost(mA.ingredients, ba.sz), costB = calcCost(mB.ingredients, bb.sz)
+    const pctA = ba.price > 0 ? costA / ba.price * 100 : 0
+    const pctB = bb.price > 0 ? costB / bb.price * 100 : 0
+    const gpA = ba.price - costA, gpB = bb.price - costB
+    const aBestPct = pctA <= pctB, aBestGP = gpA >= gpB
+    const mapA = ingrMap(mA, ba.sz), mapB = ingrMap(mB, bb.sz)
+    const keys = [...new Set([...Object.keys(mapA), ...Object.keys(mapB)])]
+    result = { ba, bb, costA, costB, pctA, pctB, gpA, gpB, aBestPct, aBestGP, mapA, mapB, keys }
+  }
+
+  const card = (m, b, cost, pct, gp, bestPct, bestGP) => (
+    <div className={'duel-card' + (bestPct || bestGP ? ' winner' : '')}>
+      {bestGP && <div className="duel-winner-badge" style={{ background: 'linear-gradient(90deg,#F5C518,#FBBF24)' }}>🏆 กำไร/แก้วสูงสุด</div>}
+      {bestPct && !bestGP && <div className="duel-winner-badge" style={{ background: 'linear-gradient(90deg,#15803D,#16a34a)' }}>🟢 ต้นทุนต่ำสุด</div>}
+      <div style={{ padding: '.85rem' }}>
+        <div className="duel-name">{esc(m.name)}</div>
+        <div className="duel-cat">{m.cat} · แก้ว {b.sz}</div>
+        <div className="duel-stat-row"><span className="duel-stat-label">ราคาขาย</span><span className="duel-stat-val">{b.price.toFixed(2)} ฿</span></div>
+        <div className="duel-stat-row"><span className="duel-stat-label">ต้นทุน</span><span className="duel-stat-val">{cost.toFixed(2)} ฿</span></div>
+        <div className="duel-stat-row"><span className="duel-stat-label">Food Cost</span><span className={'duel-stat-val ' + (bestPct ? 'better' : 'worse')}>{pct.toFixed(1)}%</span></div>
+        <div className="duel-stat-row"><span className="duel-stat-label">กำไร/แก้ว</span><span className={'duel-stat-val ' + (bestGP ? 'better' : 'worse')}>{gp.toFixed(2)} ฿</span></div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="card" style={{ marginBottom: '1.2rem' }}>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>⚔️ ประชันเมนู (Duel)</div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <select style={SEL} value={aId} onChange={(e) => setAId(e.target.value)}>
+          <option value="">— เลือกเมนู A —</option>
+          {menus.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+        <span style={{ alignSelf: 'center', fontWeight: 800, color: 'var(--red)' }}>VS</span>
+        <select style={SEL} value={bId} onChange={(e) => setBId(e.target.value)}>
+          <option value="">— เลือกเมนู B —</option>
+          {menus.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+      </div>
+
+      {!ready ? (
+        <div style={{ fontSize: 12.5, color: 'var(--txt3)', textAlign: 'center', padding: '.5rem' }}>เลือกเมนู 2 อันเพื่อเปรียบเทียบ</div>
+      ) : (
+        <>
+          <div className="duel-cards">
+            {card(mA, result.ba, result.costA, result.pctA, result.gpA, result.aBestPct, result.aBestGP)}
+            {card(mB, result.bb, result.costB, result.pctB, result.gpB, !result.aBestPct, !result.aBestGP)}
+          </div>
+          {result.keys.length > 0 && (
+            <div className="duel-breakdown" style={{ marginTop: 12 }}>
+              <div className="duel-breakdown-header">
+                <span style={{ flex: 1 }}>วัตถุดิบ</span>
+                <span style={{ width: 80, textAlign: 'right' }}>{esc(mA.name)}</span>
+                <span style={{ width: 80, textAlign: 'right' }}>{esc(mB.name)}</span>
+              </div>
+              {result.keys.map((k) => {
+                const a = result.mapA[k], b = result.mapB[k]
+                const nameStr = (a || b).name
+                const av = a ? a.cost : null, bv = b ? b.cost : null
+                const aBetter = av !== null && bv !== null && av < bv
+                const bBetter = av !== null && bv !== null && bv < av
+                return (
+                  <div key={k} className="duel-breakdown-row">
+                    <span style={{ flex: 1, fontWeight: 500, fontSize: 12.5 }}>{nameStr}</span>
+                    <span style={{ width: 80, textAlign: 'right', fontSize: 12, color: aBetter ? 'var(--green)' : av === null ? 'var(--txt3)' : 'var(--txt)', fontWeight: aBetter ? 700 : 400 }}>{av !== null ? av.toFixed(2) + ' ฿' : 'ไม่มี'}</span>
+                    <span style={{ width: 80, textAlign: 'right', fontSize: 12, color: bBetter ? 'var(--green)' : bv === null ? 'var(--txt3)' : 'var(--txt)', fontWeight: bBetter ? 700 : 400 }}>{bv !== null ? bv.toFixed(2) + ' ฿' : 'ไม่มี'}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function ComparePage() {
   const { menus, settings } = useCost()
@@ -31,8 +141,10 @@ export default function ComparePage() {
     <div className="main">
       <div className="ph" style={{ marginBottom: '1rem' }}>
         <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>📊 เปรียบเทียบ</h1>
-        <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>จัดอันดับ cost ratio ต่ำสุด → สูงสุด</div>
+        <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>ประชันเมนู + จัดอันดับ cost ratio</div>
       </div>
+
+      {menus.length >= 2 && <Duel menus={menus} />}
 
       {ranked.length === 0 ? (
         <div className="empty"><span className="empty-icon">📊</span>ยังไม่มีเมนูที่มีราคา</div>

@@ -5,12 +5,16 @@ import { CATS, CAT_EMOJI, CAT_COLOR } from '../constants/categories'
 import { num, baht, fmtDate } from '../utils/format'
 import { recalcAll, libUsage } from '../utils/cost'
 import IngredientForm from '../components/IngredientForm'
+import PriceAdjModal from '../components/PriceAdjModal'
+import BreakdownModal from '../components/BreakdownModal'
 
 export default function LibraryPage() {
   const { library, menus, compounds, commit, session } = useCost()
   const toast = useToast()
   const [cat, setCat] = useState('all')
   const [form, setForm] = useState(null) // {item} | {item:null} for new | null closed
+  const [priceAdj, setPriceAdj] = useState(null) // item | null
+  const [showBd, setShowBd] = useState(false)
 
   const groups = useMemo(() => {
     const list = cat === 'all' ? library : library.filter((i) => (i.cat || 'อื่นๆ') === cat)
@@ -27,6 +31,15 @@ export default function LibraryPage() {
     commit({ library: nextLib, compounds: nc, menus: nm })
     setForm(null)
     toast('บันทึกวัตถุดิบแล้ว', '✅')
+  }
+
+  // ปรับราคา (จาก PriceAdjModal — item ที่อัปเดต priceHistory+ราคาแล้ว)
+  const savePriceAdj = (item) => {
+    const nextLib = library.map((x) => (x.id === item.id ? item : x))
+    const { compounds: nc, menus: nm } = recalcAll(nextLib, compounds, menus)
+    commit({ library: nextLib, compounds: nc, menus: nm })
+    setPriceAdj(null)
+    toast(`อัปเดตราคา ${item.name} แล้ว`, '🔄')
   }
 
   const deleteIngredient = (item) => {
@@ -54,9 +67,12 @@ export default function LibraryPage() {
           <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>📦 คลังวัตถุดิบ</h1>
           <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>{library.length} รายการ</div>
         </div>
-        {canEdit && (
-          <button className="btn btn-red" onClick={() => setForm({ item: null })}>＋ เพิ่มวัตถุดิบ</button>
-        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={() => setShowBd(true)}>🧮 คำนวณ</button>
+          {canEdit && (
+            <button className="btn btn-red" onClick={() => setForm({ item: null })}>＋ เพิ่มวัตถุดิบ</button>
+          )}
+        </div>
       </div>
 
       <div className="ios-chip-bar" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 8, marginBottom: 8 }}>
@@ -96,6 +112,7 @@ export default function LibraryPage() {
                   </span>
                   {canEdit && (
                     <span style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn-icon" onClick={() => setPriceAdj(i)} style={{ fontSize: 13 }} title="ปรับราคา">🔄</button>
                       <button className="btn-icon" onClick={() => setForm({ item: i })} style={{ fontSize: 13 }}>✏️</button>
                       <button className="btn-icon" onClick={() => deleteIngredient(i)} style={{ fontSize: 13 }}>🗑️</button>
                     </span>
@@ -116,6 +133,15 @@ export default function LibraryPage() {
           onClose={() => setForm(null)}
         />
       )}
+      {priceAdj && (
+        <PriceAdjModal
+          item={priceAdj}
+          updatedBy={session.updatedBy}
+          onSave={savePriceAdj}
+          onClose={() => setPriceAdj(null)}
+        />
+      )}
+      {showBd && <BreakdownModal onClose={() => setShowBd(false)} />}
     </div>
   )
 }
