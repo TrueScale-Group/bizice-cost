@@ -4,7 +4,6 @@ import { ToastProvider } from './components/Toast'
 import { TAB_STATUS_COLORS } from './constants/categories'
 import { useServiceWorker } from './hooks/useServiceWorker'
 import { usePullToRefresh } from './hooks/usePullToRefresh'
-import NotificationBell from './components/NotificationBell'
 import HardRefreshButton from './components/HardRefreshButton'
 import MenuPage from './pages/MenuPage'
 import LibraryPage from './pages/LibraryPage'
@@ -126,7 +125,6 @@ function Shell() {
         <div className="sb-footer">
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 .25rem .4rem' }}>
             <HardRefreshButton variant="circle" />
-            <NotificationBell />
           </div>
           <div className="sb-user">
             <div className="sb-avatar">
@@ -174,7 +172,6 @@ function Shell() {
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: online ? '#F0FDF4' : '#FEF2F2', color: online ? '#15803D' : '#991B1B' }}>● {online ? 'Online' : 'Offline'}</span>
             <HardRefreshButton variant="circle" />
-            <NotificationBell />
           </div>
         </div>
 
