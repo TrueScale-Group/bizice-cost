@@ -64,6 +64,7 @@ export default function LibraryPage() {
     const nextLib = library.filter((x) => x.id !== item.id)
     const { compounds: nc, menus: nm } = recalcAll(nextLib, compounds, menus)
     commit({ library: nextLib, compounds: nc, menus: nm })
+    setForm(null)
     toast('ลบแล้ว', '🗑️')
   }
 
@@ -103,7 +104,7 @@ export default function LibraryPage() {
               const baseUnit = i.levels?.[0]?.name || 'ลัง'
               return (
                 <div key={i.id} className="lib-card" style={{ padding: '.9rem 1rem' }}>
-                  {/* header: pin + emoji + name + category chip */}
+                  {/* header: pin + emoji + name + edit (แทน chip หมวดที่ซ้ำกับหัวกลุ่ม) */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     {canEdit && (
                       <button onClick={() => togglePin(i)} title={i.pinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
@@ -113,30 +114,32 @@ export default function LibraryPage() {
                     )}
                     <span style={{ fontSize: 19, flexShrink: 0 }}>{itemEmoji(i.name, masterByName)}</span>
                     <div style={{ fontWeight: 700, fontSize: 14, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{i.name}</div>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, color: CAT_COLOR[i.cat] || '#6B7280', background: 'var(--surf2)', borderRadius: 20, padding: '2px 9px', flexShrink: 0 }}>{CAT_EMOJI[i.cat] || '🔖'} {i.cat}</span>
+                    {canEdit && (
+                      <button className="btn-icon" style={{ fontSize: 15, flexShrink: 0 }} onClick={() => setForm({ item: i })} title="แก้ไข">✏️</button>
+                    )}
                   </div>
 
-                  {/* two boxes: ราคาต่อหน่วย | ราคาซื้อ */}
+                  {/* 3 ช่องเท่าๆกัน: ราคาต่อหน่วย | ราคาซื้อ | ตัก (ถ้ามี) */}
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <div style={{ flex: 1, background: 'var(--red-p)', borderRadius: 12, padding: '.7rem .5rem', textAlign: 'center' }}>
-                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', fontWeight: 600 }}>ราคาต่อหน่วย</div>
-                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 22, color: 'var(--red)', lineHeight: 1.15 }}>{baht(i.unitPrice)}</div>
-                      <div style={{ fontSize: 11, color: 'var(--txt2)', fontWeight: 600 }}>฿ / {i.unit || 'หน่วย'}</div>
+                    <div style={{ flex: 1, background: 'var(--red-p)', borderRadius: 12, padding: '.7rem .35rem', textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: 'var(--txt3)', fontWeight: 600 }}>ราคาต่อหน่วย</div>
+                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--red)', lineHeight: 1.15 }}>{baht(i.unitPrice)}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--txt2)', fontWeight: 600 }}>฿ / {i.unit || 'หน่วย'}</div>
                     </div>
-                    <div style={{ flex: 1.35, background: 'var(--surf2)', borderRadius: 12, padding: '.7rem .8rem' }}>
-                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', fontWeight: 600 }}>📦 ราคาซื้อ</div>
-                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 17, color: 'var(--txt)' }}>{baht(i.basePrice || i.price || i.total)} ฿</div>
-                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', marginTop: 1 }}>ต่อ 1 {baseUnit}</div>
-                      {num(i.qty) > 0 && <div style={{ fontSize: 10.5, color: 'var(--txt3)' }}>= {baht(i.qty).replace('.00', '')} {i.unit}</div>}
+                    <div style={{ flex: 1, background: 'var(--surf2)', borderRadius: 12, padding: '.7rem .35rem', textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: 'var(--txt3)', fontWeight: 600 }}>📦 ราคาซื้อ</div>
+                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--txt)', lineHeight: 1.25 }}>{baht(i.basePrice || i.price || i.total)} ฿</div>
+                      <div style={{ fontSize: 10, color: 'var(--txt3)', marginTop: 1 }}>ต่อ 1 {baseUnit}</div>
+                      {num(i.qty) > 0 && <div style={{ fontSize: 10, color: 'var(--txt3)' }}>= {baht(i.qty).replace('.00', '')} {i.unit}</div>}
                     </div>
+                    {i.servingUnit && num(i.servingUnit.qty) > 0 && (
+                      <div style={{ flex: 1, background: 'var(--purple-bg)', border: '1px solid var(--purple-b)', borderRadius: 12, padding: '.7rem .35rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: 10, color: 'var(--txt3)', fontWeight: 600 }}>🥄 ต่อ 1 {i.servingUnit.name}</div>
+                        <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--purple)', lineHeight: 1.15 }}>{baht(i.servingUnit.costPerServe ?? num(i.unitPrice) * num(i.servingUnit.qty))}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--txt2)', fontWeight: 600 }}>฿ / {i.servingUnit.name}</div>
+                      </div>
+                    )}
                   </div>
-
-                  {/* serving unit pill */}
-                  {i.servingUnit && num(i.servingUnit.qty) > 0 && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--purple)', background: 'var(--purple-bg)', border: '1px solid var(--purple-b)', borderRadius: 20, padding: '3px 10px' }}>
-                      🥄 1{i.servingUnit.name} = {baht(i.servingUnit.costPerServe ?? num(i.unitPrice) * num(i.servingUnit.qty))} ฿
-                    </div>
-                  )}
 
                   {/* buttons */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
@@ -144,9 +147,6 @@ export default function LibraryPage() {
                     {canEdit && (
                       <button className="btn" style={{ background: '#FEF9C3', color: '#854D0E', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => setPriceAdj(i)}>↕️ ปรับราคา</button>
                     )}
-                    <div style={{ flex: 1 }} />
-                    {canEdit && <button className="btn-icon" style={{ fontSize: 14 }} onClick={() => setForm({ item: i })}>✏️</button>}
-                    {canEdit && <button className="btn-icon" style={{ fontSize: 14 }} onClick={() => deleteIngredient(i)}>🗑️</button>}
                   </div>
                 </div>
               )
@@ -161,6 +161,7 @@ export default function LibraryPage() {
           library={library}
           updatedBy={session.updatedBy}
           onSave={saveIngredient}
+          onDelete={deleteIngredient}
           onClose={() => setForm(null)}
         />
       )}

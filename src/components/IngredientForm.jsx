@@ -9,7 +9,7 @@ function fmtPrice(p) {
   return parseFloat(n) >= 1000 ? parseFloat(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : n
 }
 
-export default function IngredientForm({ item, library, updatedBy, onSave, onClose }) {
+export default function IngredientForm({ item, library, updatedBy, onSave, onDelete, onClose }) {
   const editing = !!item
   const [name, setName] = useState(item?.name || '')
   const [cat, setCat] = useState(item?.cat || 'แยม')
@@ -114,31 +114,40 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onClo
                 <input type="number" style={INP} value={base} onChange={(e) => setBase(e.target.value)} placeholder="0" min="0" step="any" />
               </div>
               <div style={{ flex: 1 }}>
-                <label className="mf-lbl">หน่วยที่ซื้อ</label>
+                <label className="mf-lbl">หน่วยที่ซื้อ (ชั้นแรก)</label>
                 <input style={INP} value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} placeholder="เช่น ลัง, กล่อง" />
               </div>
             </div>
           </div>
 
           {/* หน่วยย่อย */}
-          <div className="mf-sec-lbl">แตกหน่วยย่อย (ไม่บังคับ)</div>
+          <div className="mf-sec-lbl">หน่วยย่อย (สูงสุด 5 ขั้น)</div>
           <div className="mf-card" style={{ padding: '.6rem .7rem' }}>
-            {levels.length === 0 && <div style={{ fontSize: 12, color: 'var(--txt3)', padding: '2px 4px 8px' }}>ถ้าซื้อเป็นลังแล้วใช้เป็นกรัม/มล. กด "＋ แตกหน่วย"</div>}
+            {levels.length === 0 && <div style={{ fontSize: 12, color: 'var(--txt3)', padding: '2px 4px 8px' }}>ถ้าซื้อเป็นลังแล้วใช้เป็นกรัม/มล. กด "＋ เพิ่มหน่วยย่อย"</div>}
             {levels.map((lv, idx) => {
               const prevUnit = idx === 0 ? (baseUnit || '?') : (levels[idx - 1].name || '?')
+              const lvPrice = calc.levelPrices[idx] || 0
               return (
-                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr auto 30px', gap: 6, alignItems: 'center', background: 'var(--surf2)', borderRadius: 10, padding: '7px 8px', marginBottom: 5 }}>
-                  <input placeholder="ชื่อหน่วย เช่น g, ml" value={lv.name} onChange={(e) => setLevel(idx, { name: e.target.value })} style={{ ...INP, fontSize: 13 }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontSize: 11.5, color: 'var(--txt3)', whiteSpace: 'nowrap' }}>1 {prevUnit} =</span>
-                    <input type="number" placeholder="จำนวน" value={lv.qty} onChange={(e) => setLevel(idx, { qty: e.target.value })} min="0.0001" step="any" style={{ ...INP, width: 72, fontSize: 13 }} />
+                <div key={idx} style={{ background: 'var(--surf2)', borderRadius: 10, padding: '8px 9px', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input placeholder="ชื่อหน่วย เช่น กระป๋อง, กรัม" value={lv.name} onChange={(e) => setLevel(idx, { name: e.target.value })} style={{ ...INP, flex: 1 }} />
+                    <button className="btn-del" onClick={() => removeLevel(idx)}>✕</button>
                   </div>
-                  <button className="btn-del" onClick={() => removeLevel(idx)}>✕</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                    <span style={{ fontSize: 12, color: 'var(--txt3)', whiteSpace: 'nowrap' }}>1 {prevUnit} =</span>
+                    <input type="number" placeholder="จำนวน" value={lv.qty} onChange={(e) => setLevel(idx, { qty: e.target.value })} min="0.0001" step="any" style={{ ...INP, width: 84, fontSize: 13 }} />
+                    <div style={{ flex: 1 }} />
+                    {lvPrice > 0 && (
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', background: 'var(--green-bg)', border: '1px solid var(--green-b)', borderRadius: 8, padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                        {fmtPrice(lvPrice)} ฿/{lv.name || '?'}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )
             })}
             {levels.length < 5 && (
-              <button className="btn-dashed" style={{ width: '100%', marginTop: 2 }} onClick={addLevel}>＋ แตกหน่วยย่อย</button>
+              <button className="btn-dashed" style={{ width: '100%', marginTop: 2 }} onClick={addLevel}>＋ เพิ่มหน่วยย่อย</button>
             )}
           </div>
 
@@ -151,34 +160,47 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onClo
             <div className="mf-card">
               <div className="mf-row" style={{ display: 'flex', gap: 10 }}>
                 <div style={{ flex: 1 }}>
-                  <label className="mf-lbl">ค่าขนส่ง (฿/ลัง)</label>
-                  <input type="number" style={INP} value={freight} onChange={(e) => setFreight(e.target.value)} placeholder="0" min="0" step="any" />
+                  <label className="mf-lbl">💰 ค่าขนส่ง (฿/Case)</label>
+                  <input type="number" style={INP} value={freight} onChange={(e) => setFreight(e.target.value)} placeholder="เช่น 50" min="0" step="any" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label className="mf-lbl">Waste (%)</label>
-                  <input type="number" style={INP} value={waste} onChange={(e) => setWaste(e.target.value)} placeholder="0" min="0" step="any" />
+                  <label className="mf-lbl">💧 Waste Buffer (%)</label>
+                  <input type="number" style={INP} value={waste} onChange={(e) => setWaste(e.target.value)} placeholder="เช่น 5" min="0" step="any" />
                 </div>
               </div>
               <div className="mf-row">
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   <input type="checkbox" checked={serveEnabled} onChange={(e) => setServeEnabled(e.target.checked)} />
-                  หน่วยตัก/เสิร์ฟ (แปลงต้นทุนต่อครั้ง)
+                  🥄 เปิดใช้งานหน่วยตัก/ปั๊ม (สำหรับหน้าร้าน)
                 </label>
                 {serveEnabled && (
-                  <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                    <input style={{ ...INP, flex: 1 }} value={serveName} onChange={(e) => setServeName(e.target.value)} placeholder="ชื่อ เช่น ตัก, ช้อน" />
-                    <input type="number" style={{ ...INP, flex: 1 }} value={serveQty} onChange={(e) => setServeQty(e.target.value)} placeholder={`กี่ ${calc.finalUnit || 'หน่วย'}`} min="0" step="any" />
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <label className="mf-lbl">ชื่อหน่วย เช่น ตัก, ปั๊ม, ช้อน</label>
+                        <input style={{ ...INP, width: '100%' }} value={serveName} onChange={(e) => setServeName(e.target.value)} placeholder="ตัก" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label className="mf-lbl">1 {serveName.trim() || 'หน่วยตัก'} = {calc.finalUnit || 'หน่วย'}</label>
+                        <input type="number" style={{ ...INP, width: '100%' }} value={serveQty} onChange={(e) => setServeQty(e.target.value)} placeholder="25" min="0" step="any" />
+                      </div>
+                    </div>
+                    {num(serveQty) > 0 && num(base) > 0 && (
+                      <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 600, color: 'var(--purple)', background: 'var(--purple-bg)', border: '1px solid var(--purple-b)', borderRadius: 8, padding: '6px 10px' }}>
+                        🥄 1 {serveName.trim() || 'ตัก'} ({num(serveQty)} {calc.finalUnit}) = {fmtPrice(calc.unitPrice * num(serveQty))} ฿
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           )}
 
-          {/* Preview */}
+          {/* Preview — ราคาสุดท้าย */}
           {num(base) > 0 && (
             <div className="mf-card" style={{ padding: '.7rem .9rem', background: 'var(--green-bg)', border: '1px solid var(--green-b)' }}>
               <div style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
-                💡 ต้นทุน <strong style={{ fontFamily: 'Prompt,sans-serif' }}>{fmtPrice(calc.unitPrice)} ฿/{calc.finalUnit || '?'}</strong>
+                💡 ราคาสุดท้าย: <strong style={{ fontFamily: 'Prompt,sans-serif' }}>{fmtPrice(calc.unitPrice)} ฿/{calc.finalUnit || '?'}</strong>
                 {num(freight) > 0 && ` · +ขนส่ง ${num(freight)}฿`}
                 {num(waste) > 0 && ` · +waste ${num(waste)}%`}
               </div>
@@ -188,6 +210,9 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onClo
         </div>
 
         <div className="modal-footer" style={{ padding: '.85rem 1.1rem' }}>
+          {editing && onDelete && (
+            <button className="btn" style={{ background: 'var(--red-p)', color: 'var(--red)', marginRight: 'auto' }} onClick={() => onDelete(item)}>🗑️ ลบวัตถุดิบ</button>
+          )}
           <button className="btn" style={{ background: 'var(--surf2)' }} onClick={onClose}>ยกเลิก</button>
           <button className="btn btn-red" onClick={save}>✓ บันทึก</button>
         </div>
