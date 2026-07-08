@@ -2,15 +2,34 @@ import { useState, useMemo } from 'react'
 import { useCost } from '../context/CostContext'
 import { useToast } from '../components/Toast'
 import { menuEmoji, MENU_CATS } from '../constants/categories'
-import { getBestPct, gpColor, gpCls, calcCost } from '../utils/cost'
+import { getBestPct, gpColor, gpCls, calcCost, recalcAll } from '../utils/cost'
 import { num, baht } from '../utils/format'
 import MenuViewModal from '../components/MenuViewModal'
+import MenuForm from '../components/MenuForm'
 
 export default function MenuPage() {
-  const { menus, settings, session } = useCost()
+  const { menus, library, compounds, settings, commit, session } = useCost()
   const toast = useToast()
   const [cat, setCat] = useState('all')
   const [view, setView] = useState(null)
+  const [form, setForm] = useState(null) // {menu} | {menu:null} for new | null
+
+  const saveMenu = (m) => {
+    const exists = menus.some((x) => x.id === m.id)
+    const nextMenus = exists ? menus.map((x) => (x.id === m.id ? m : x)) : [...menus, m]
+    // refresh pricePerUnit จาก library/compounds ล่าสุด (live-link)
+    const { menus: nm } = recalcAll(library, compounds, nextMenus)
+    commit({ menus: nm })
+    setForm(null)
+    toast('บันทึกเมนูแล้ว', '✅')
+  }
+
+  const deleteMenu = (m) => {
+    if (!confirm(`ลบเมนู "${m.name}"?`)) return
+    commit({ menus: menus.filter((x) => x.id !== m.id) })
+    setView(null)
+    toast('ลบเมนูแล้ว', '🗑️')
+  }
 
   const filtered = useMemo(() => {
     const list = cat === 'all' ? menus : menus.filter((m) => (m.cat || '').includes(cat))
@@ -44,7 +63,7 @@ export default function MenuPage() {
           <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>{menus.length} เมนู · เรียงตาม cost ratio ต่ำสุด</div>
         </div>
         {session.isEditor() && (
-          <button className="btn btn-red" onClick={() => toast('ฟอร์มเพิ่มเมนูกำลังพอร์ตมา React 🔧', 'ℹ️')}>＋ เพิ่มเมนู</button>
+          <button className="btn btn-red" onClick={() => setForm({ menu: null })}>＋ เพิ่มเมนู</button>
         )}
       </div>
 
@@ -106,6 +125,12 @@ export default function MenuPage() {
                     {prices.length ? `฿${prices.map((p) => num(p)).join(' / ')}` : '—'}
                   </span>
                 </div>
+                {session.isEditor() && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 7 }}>
+                    <button className="btn-icon" style={{ fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setForm({ menu: m }) }}>✏️ แก้ไข</button>
+                    <button className="btn-icon" style={{ fontSize: 13 }} onClick={(e) => { e.stopPropagation(); deleteMenu(m) }}>🗑️</button>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -113,6 +138,17 @@ export default function MenuPage() {
       )}
 
       {view && <MenuViewModal menu={view} onClose={() => setView(null)} />}
+      {form && (
+        <MenuForm
+          menu={form.menu}
+          library={library}
+          compounds={compounds}
+          settings={settings}
+          updatedBy={session.updatedBy}
+          onSave={saveMenu}
+          onClose={() => setForm(null)}
+        />
+      )}
     </div>
   )
 }
