@@ -4,6 +4,8 @@ import { useToast } from '../components/Toast'
 import { CATS, CAT_EMOJI, CAT_COLOR } from '../constants/categories'
 import { num, baht, fmtDate } from '../utils/format'
 import { recalcAll, libUsage } from '../utils/cost'
+import { useInventoryMaster } from '../hooks/useInventoryMaster'
+import { itemEmoji, sortLibraryByMaster, catGroupOrder } from '../utils/sortItems'
 import IngredientForm from '../components/IngredientForm'
 import PriceAdjModal from '../components/PriceAdjModal'
 import BreakdownModal from '../components/BreakdownModal'
@@ -11,17 +13,23 @@ import BreakdownModal from '../components/BreakdownModal'
 export default function LibraryPage() {
   const { library, menus, compounds, commit, session } = useCost()
   const toast = useToast()
+  const { byName: masterByName, catOrder } = useInventoryMaster()
   const [cat, setCat] = useState('all')
   const [form, setForm] = useState(null) // {item} | {item:null} for new | null closed
   const [priceAdj, setPriceAdj] = useState(null) // item | null
   const [showBd, setShowBd] = useState(false)
 
+  // เรียง + จัดกลุ่มตาม Master Data ของ Inventory (emoji ต่อชิ้น + ลำดับตรงกับ Inventory)
   const groups = useMemo(() => {
     const list = cat === 'all' ? library : library.filter((i) => (i.cat || 'อื่นๆ') === cat)
+    const sorted = sortLibraryByMaster(list, masterByName, catOrder)
     const by = {}
-    list.forEach((i) => { (by[i.cat || 'อื่นๆ'] ||= []).push(i) })
-    return CATS.filter((c) => by[c]).map((c) => ({ cat: c, items: by[c] }))
-  }, [library, cat])
+    sorted.forEach((i) => { (by[i.cat || 'อื่นๆ'] ||= []).push(i) })
+    const order = catGroupOrder(catOrder)
+    const known = order.filter((c) => by[c]).map((c) => ({ cat: c, items: by[c] }))
+    const extra = Object.keys(by).filter((c) => !order.includes(c)).map((c) => ({ cat: c, items: by[c] }))
+    return [...known, ...extra]
+  }, [library, cat, masterByName, catOrder])
 
   // เพิ่ม/แก้ไข → รวมเข้า library แล้ว cascade cost เข้า compounds+menus
   const saveIngredient = (item) => {
@@ -95,10 +103,13 @@ export default function LibraryPage() {
             {g.items.map((i) => (
               <div key={i.id} className="lib-card" style={{ padding: '.85rem .95rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{i.pinned ? '📌 ' : ''}{i.name}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--txt3)', marginTop: 2 }}>
-                      {baht(i.unitPrice)} ฿ / {i.unit || 'หน่วย'}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 0 }}>
+                    <span style={{ fontSize: 20, lineHeight: 1.1, flexShrink: 0 }}>{itemEmoji(i.name, masterByName)}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{i.pinned ? '📌 ' : ''}{i.name}</div>
+                      <div style={{ fontSize: 11.5, color: 'var(--txt3)', marginTop: 2 }}>
+                        {baht(i.unitPrice)} ฿ / {i.unit || 'หน่วย'}
+                      </div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>

@@ -7,6 +7,9 @@
 export const COL = {
   MIXUE_DATA: 'mixue_data',          // Cost Manager owns
   INCOME_NOTIFICATIONS: 'income_notifications',  // กระดิ่งแจ้งเตือน (อ่านอย่างเดียว)
+  // cross-app read-only (Inventory owns) — เอา emoji ต่อชิ้น (img) + ลำดับ Master Data
+  INV_ITEMS: 'Inv_items',
+  INV_SETTINGS: 'Inv_settings',
 }
 
 export const MIXUE_DATA_DOC = 'mixue-cost-manager'
