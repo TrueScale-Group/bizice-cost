@@ -53,7 +53,7 @@ export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
       <div className="modal-box" style={{ maxWidth: 440 }}>
         <div className="modal-header" style={{ padding: '.9rem 1.1rem .9rem 1.25rem' }}>
           <div>
-            <div className="modal-title" style={{ fontSize: 16 }}>🔄 ปรับราคา</div>
+            <div className="modal-title" style={{ fontSize: 16 }}>↕️ ปรับราคา</div>
             <div className="modal-sub">{item.name} — ปัจจุบัน ฿{baht(item.total || item.basePrice)}</div>
           </div>
           <button className="mh-close" onClick={onClose} aria-label="ปิด">✕</button>

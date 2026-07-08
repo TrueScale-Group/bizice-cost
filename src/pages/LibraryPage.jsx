@@ -142,7 +142,7 @@ export default function LibraryPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
                     <button className="btn" style={{ background: 'var(--blue-bg)', color: 'var(--blue)', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => showUsage(i)}>🔗 ใช้ในเมนู</button>
                     {canEdit && (
-                      <button className="btn" style={{ background: '#FEF9C3', color: '#854D0E', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => setPriceAdj(i)}>🔄 ปรับราคา</button>
+                      <button className="btn" style={{ background: '#FEF9C3', color: '#854D0E', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => setPriceAdj(i)}>↕️ ปรับราคา</button>
                     )}
                     <div style={{ flex: 1 }} />
                     {canEdit && <button className="btn-icon" style={{ fontSize: 14 }} onClick={() => setForm({ item: i })}>✏️</button>}

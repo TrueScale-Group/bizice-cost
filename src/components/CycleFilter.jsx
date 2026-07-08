@@ -7,7 +7,7 @@ export default function CycleFilter({ cats, value, onChange, emojiOf, allLabel =
   const states = ['all', ...cats]
   const idx = Math.max(0, states.indexOf(value))
   const cycle = () => onChange(states[(idx + 1) % states.length])
-  const label = value === 'all' ? `🗂 ${allLabel}` : `${emojiOf ? emojiOf(value) : ''} ${value}`
+  const label = value === 'all' ? `🧊 ${allLabel}` : `${emojiOf ? emojiOf(value) : ''} ${value}`
 
   return (
     <button
