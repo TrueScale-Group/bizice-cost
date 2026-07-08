@@ -5,6 +5,7 @@ import { TAB_STATUS_COLORS } from './constants/categories'
 import { useServiceWorker } from './hooks/useServiceWorker'
 import { usePullToRefresh } from './hooks/usePullToRefresh'
 import NotificationBell from './components/NotificationBell'
+import HardRefreshButton from './components/HardRefreshButton'
 import MenuPage from './pages/MenuPage'
 import LibraryPage from './pages/LibraryPage'
 import CompoundPage from './pages/CompoundPage'
@@ -114,7 +115,8 @@ function Shell() {
           </nav>
         </div>
         <div className="sb-footer">
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 .25rem .4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 .25rem .4rem' }}>
+            <HardRefreshButton variant="circle" />
             <NotificationBell />
           </div>
           <div className="sb-user">
@@ -159,6 +161,7 @@ function Shell() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <NotificationBell />
+            <HardRefreshButton variant="circle" />
             <span className="ios-ver-pill">{APP_VERSION}</span>
             <button className="back-btn" style={{ padding: '6px 10px', fontSize: 12 }} onClick={goHome}>🏠</button>
           </div>
