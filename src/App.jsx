@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { CostProvider, useCost } from './context/CostContext'
 import { ToastProvider } from './components/Toast'
 import { TAB_STATUS_COLORS } from './constants/categories'
+import { useServiceWorker } from './hooks/useServiceWorker'
+import NotificationBell from './components/NotificationBell'
 import MenuPage from './pages/MenuPage'
 import LibraryPage from './pages/LibraryPage'
 import CompoundPage from './pages/CompoundPage'
@@ -47,6 +49,7 @@ function Splash() {
 
 function Shell() {
   const { loading, session } = useCost()
+  const { updateReady, reload } = useServiceWorker()
   const [tab, setTab] = useState('menu')
   const [splashDone, setSplashDone] = useState(false)
 
@@ -73,6 +76,15 @@ function Shell() {
     <>
       {showSplash && <Splash />}
 
+      {/* ── SW UPDATE BANNER ── */}
+      {updateReady && (
+        <div className="show" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9000, background: 'linear-gradient(90deg,#0F766E,#0D9488)', color: '#fff', padding: '.6rem 1rem', display: 'flex', alignItems: 'center', gap: '.75rem', fontSize: 13, fontWeight: 600 }}>
+          <span style={{ fontSize: 18 }}>🔄</span>
+          <span style={{ flex: 1 }}>มีอัปเดตใหม่พร้อมแล้วค่ะ</span>
+          <button onClick={reload} style={{ background: 'rgba(255,255,255,.2)', border: '1.5px solid rgba(255,255,255,.4)', color: '#fff', borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>โหลดใหม่</button>
+        </div>
+      )}
+
       {/* ── DESKTOP SIDEBAR ── */}
       <aside className="sidebar">
         <div className="sb-brand">
@@ -94,6 +106,9 @@ function Shell() {
           </nav>
         </div>
         <div className="sb-footer">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 .25rem .4rem' }}>
+            <NotificationBell />
+          </div>
           <div className="sb-user">
             <div className="sb-avatar">
               {session.photo ? <img src={session.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : session.initials}
@@ -117,6 +132,7 @@ function Shell() {
             <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 600, fontSize: 15 }}>{active?.label}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <NotificationBell />
             <span className="ios-ver-pill">{APP_VERSION}</span>
             <button className="back-btn" style={{ padding: '6px 10px', fontSize: 12 }} onClick={goHome}>🏠</button>
           </div>

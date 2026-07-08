@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCost } from '../context/CostContext'
 import { useToast } from '../components/Toast'
+import { exportMenusCSV } from '../utils/export'
 
 const APP_VERSION = __APP_VERSION__
 const BUILD_DATE = __BUILD_DATE__
@@ -79,6 +80,11 @@ export default function SettingsPage() {
             <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 16 }}>{n}</span>
           </div>
         ))}
+        <div style={{ ...row, ...rowBorder }}>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>📄 Export เมนู (CSV)</span>
+          <button className="btn" style={{ background: 'var(--surf2)', padding: '5px 14px', fontSize: 12.5, fontWeight: 600 }}
+            onClick={() => { exportMenusCSV(menus) ? toast('Export CSV สำเร็จ', '📄') : toast('ยังไม่มีเมนู', '⚠️') }}>ดาวน์โหลด</button>
+        </div>
       </div>
 
       {/* danger zone — owner เท่านั้น */}
