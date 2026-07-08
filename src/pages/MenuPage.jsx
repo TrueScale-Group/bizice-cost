@@ -7,6 +7,13 @@ import { num, baht } from '../utils/format'
 import MenuViewModal from '../components/MenuViewModal'
 import MenuForm from '../components/MenuForm'
 
+// หมวดเมนู: ตัด emoji เก่าที่อาจติดมาในข้อมูล (m.cat = "🍓 ชาผลไม้") แล้วใส่อีโมจิเดียว
+function catLabel(cat) {
+  if (!cat) return '—'
+  const clean = String(cat).replace(/^[^฀-๿a-zA-Z]+/, '').trim()
+  return `${menuEmoji(cat)} ${clean || cat}`
+}
+
 export default function MenuPage() {
   const { menus, library, compounds, settings, commit, session } = useCost()
   const toast = useToast()
@@ -111,12 +118,9 @@ export default function MenuPage() {
             const prices = [m.priceS, m.priceM, m.priceL].filter((p) => num(p) > 0)
             return (
               <div key={m.id} className="menu-card menu-card-click" onClick={() => setView(m)} style={{ padding: '.9rem 1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span style={{ fontSize: 22 }}>{menuEmoji(m.cat)}</span>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--txt3)' }}>{m.cat || '—'}</div>
-                  </div>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--txt3)' }}>{catLabel(m.cat)}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <span className={'badge ' + (pct === null ? '' : gpCls(pct, settings))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>
