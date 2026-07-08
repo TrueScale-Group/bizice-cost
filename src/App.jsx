@@ -62,6 +62,15 @@ function Shell() {
     return () => clearInterval(iv)
   }, [reload])
 
+  // สถานะออนไลน์ (สำหรับ top bar แบบ Daily Income)
+  const [online, setOnline] = useState(navigator.onLine)
+  useEffect(() => {
+    const on = () => setOnline(true), off = () => setOnline(false)
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
+  }, [])
+
   // splash: โชว์อย่างน้อย ~700ms แล้วรอโหลดเสร็จ
   useEffect(() => {
     const t = setTimeout(() => setSplashDone(true), 700)
@@ -153,17 +162,19 @@ function Shell() {
           <div id="ptr-label">ดึงลงเพื่อรีเฟรช</div>
         </div>
 
-        {/* mobile top bar */}
-        <div className="mobile-top-bar" id="mobile-top-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="./icon-cost-192.png" alt="" style={{ width: 30, height: 30, borderRadius: 8 }} />
-            <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 600, fontSize: 15 }}>{active?.label}</div>
+        {/* mobile/tablet top bar — สไตล์ Daily Income */}
+        <div className="mobile-top-bar" id="mobile-top-bar" style={{ gap: 10 }}>
+          <button onClick={goHome} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 13px 6px 10px', borderRadius: 20, background: '#E31E24', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600, flexShrink: 0 }}>🏠 Home</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(227,30,36,0.15)', boxShadow: '0 2px 10px rgba(0,0,0,0.15)' }}>
+              <img src="./icon-cost-192.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div style={{ fontFamily: 'Prompt,sans-serif', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Mixue Cost Manager</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <NotificationBell />
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: online ? '#F0FDF4' : '#FEF2F2', color: online ? '#15803D' : '#991B1B' }}>● {online ? 'Online' : 'Offline'}</span>
             <HardRefreshButton variant="circle" />
-            <span className="ios-ver-pill">{APP_VERSION}</span>
-            <button className="back-btn" style={{ padding: '6px 10px', fontSize: 12 }} onClick={goHome}>🏠</button>
+            <NotificationBell />
           </div>
         </div>
 

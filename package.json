@@ -1,7 +1,7 @@
 {
   "name": "bizice-cost",
   "private": true,
-  "version": "4.8.1",
+  "version": "4.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,13 +11,13 @@
   },
   "dependencies": {
     "firebase": "^10.12.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
     "gh-pages": "^6.1.1",
