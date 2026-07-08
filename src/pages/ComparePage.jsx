@@ -138,11 +138,8 @@ export default function ComparePage() {
   const avg = ranked.length ? ranked.reduce((a, b) => a + b.pct, 0) / ranked.length : 0
 
   return (
-    <div className="main">
-      <div className="ph" style={{ marginBottom: '1rem' }}>
-        <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>📊 เปรียบเทียบ</h1>
-        <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>ประชันเมนู + จัดอันดับ cost ratio</div>
-      </div>
+    <div className="main" style={{ paddingTop: '.6rem' }}>
+      <div style={{ fontSize: 12.5, color: 'var(--txt3)', margin: '0 2px .7rem' }}>📊 ประชันเมนู + จัดอันดับ cost ratio</div>
 
       {menus.length >= 2 && <Duel menus={menus} />}
 

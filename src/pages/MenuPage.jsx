@@ -6,6 +6,7 @@ import { getBestPct, gpColor, gpCls, calcCost, recalcAll } from '../utils/cost'
 import { num, baht } from '../utils/format'
 import MenuViewModal from '../components/MenuViewModal'
 import MenuForm from '../components/MenuForm'
+import CycleFilter from '../components/CycleFilter'
 
 // หมวดเมนู: ตัด emoji เก่าที่อาจติดมาในข้อมูล (m.cat = "🍓 ชาผลไม้") แล้วใส่อีโมจิเดียว
 function catLabel(cat) {
@@ -64,17 +65,7 @@ export default function MenuPage() {
   }, [menus, settings])
 
   return (
-    <div className="main">
-      <div className="ph" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: 10 }}>
-        <div>
-          <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>🍦 เมนู</h1>
-          <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>{menus.length} เมนู · เรียงตาม cost ratio ต่ำสุด</div>
-        </div>
-        {session.isEditor() && (
-          <button className="btn btn-red" onClick={() => setForm({ menu: null })}>＋ เพิ่มเมนู</button>
-        )}
-      </div>
-
+    <div className="main" style={{ paddingTop: '.6rem' }}>
       {/* metrics — responsive columns มาจากคลาส .metrics (มือถือ 2 / แท็บเล็ต·PC 4) */}
       <div className="metrics">
         <div className="metric hi">
@@ -95,14 +86,12 @@ export default function MenuPage() {
         </div>
       </div>
 
-      {/* category chips */}
-      <div className="ios-chip-bar" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 8, marginBottom: 4 }}>
-        <button className={'ios-chip' + (cat === 'all' ? ' active' : '')} onClick={() => setCat('all')}>ทั้งหมด</button>
-        {MENU_CATS.map((c) => (
-          <button key={c} className={'ios-chip' + (cat === c ? ' active' : '')} onClick={() => setCat(c)} style={{ whiteSpace: 'nowrap' }}>
-            {menuEmoji(c)} {c}
-          </button>
-        ))}
+      {/* control row: cycle-click filter + add (2 columns) */}
+      <div style={{ display: 'flex', gap: 8, margin: '.9rem 0 .85rem' }}>
+        <CycleFilter cats={MENU_CATS} value={cat} onChange={setCat} emojiOf={menuEmoji} count={filtered.length} />
+        {session.isEditor() && (
+          <button className="btn btn-red" style={{ flexShrink: 0 }} onClick={() => setForm({ menu: null })}>＋ เพิ่มเมนู</button>
+        )}
       </div>
 
       {filtered.length === 0 ? (

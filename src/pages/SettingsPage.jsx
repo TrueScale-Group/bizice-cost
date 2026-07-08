@@ -31,12 +31,9 @@ export default function SettingsPage() {
   const rowBorder = { borderTop: '1px solid var(--border)' }
 
   return (
-    <div className="main" style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div style={{ padding: '.2rem 4px 1rem' }}>
-        <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 21, fontWeight: 600 }}>⚙️ ตั้งค่า</h1>
-        <div style={{ fontSize: 12, color: 'var(--txt3)', marginTop: 2 }}>
-          {session.name} · {session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}
-        </div>
+    <div className="main" style={{ maxWidth: 560, margin: '0 auto', paddingTop: '.6rem' }}>
+      <div style={{ fontSize: 12, color: 'var(--txt3)', margin: '0 4px .8rem' }}>
+        ⚙️ ตั้งค่า · {session.name} · {session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}
       </div>
 
       {/* เกณฑ์ cost ratio */}

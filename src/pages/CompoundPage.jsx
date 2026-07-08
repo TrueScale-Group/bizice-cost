@@ -5,6 +5,7 @@ import { CP_CATS, CP_CAT_EMOJI, CP_CAT_COLOR } from '../constants/categories'
 import { baht } from '../utils/format'
 import { recalcAll, compoundUsage } from '../utils/cost'
 import CompoundForm from '../components/CompoundForm'
+import CycleFilter from '../components/CycleFilter'
 
 export default function CompoundPage() {
   const { compounds, library, menus, commit, session } = useCost()
@@ -42,24 +43,15 @@ export default function CompoundPage() {
   const canEdit = session.isEditor()
 
   return (
-    <div className="main">
-      <div className="ph" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: 10 }}>
-        <div>
-          <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>🧪 สูตรผสม</h1>
-          <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>{compounds.length} สูตร</div>
-        </div>
-        {canEdit && (
-          <button className="btn btn-red" onClick={() => setForm({ compound: null })}>＋ เพิ่มสูตรผสม</button>
-        )}
-      </div>
+    <div className="main" style={{ paddingTop: '.6rem' }}>
+      <div style={{ fontSize: 12.5, color: 'var(--txt3)', margin: '0 2px .2rem' }}>{compounds.length} สูตรผสม</div>
 
-      <div className="ios-chip-bar" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 8, marginBottom: 8 }}>
-        <button className={'ios-chip' + (cat === 'all' ? ' active' : '')} onClick={() => setCat('all')}>ทั้งหมด</button>
-        {CP_CATS.map((c) => (
-          <button key={c} className={'ios-chip' + (cat === c ? ' active' : '')} onClick={() => setCat(c)} style={{ whiteSpace: 'nowrap' }}>
-            {CP_CAT_EMOJI[c]} {c}
-          </button>
-        ))}
+      {/* control row: cycle-click filter + add (2 columns) */}
+      <div style={{ display: 'flex', gap: 8, margin: '.7rem 0 .85rem' }}>
+        <CycleFilter cats={CP_CATS} value={cat} onChange={setCat} emojiOf={(c) => CP_CAT_EMOJI[c] || '🧪'} count={list.length} />
+        {canEdit && (
+          <button className="btn btn-red" style={{ flexShrink: 0 }} onClick={() => setForm({ compound: null })}>＋ เพิ่มสูตร</button>
+        )}
       </div>
 
       {list.length === 0 ? (

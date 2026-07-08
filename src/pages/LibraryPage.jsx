@@ -9,6 +9,7 @@ import { itemEmoji, sortLibraryByMaster, catGroupOrder } from '../utils/sortItem
 import IngredientForm from '../components/IngredientForm'
 import PriceAdjModal from '../components/PriceAdjModal'
 import BreakdownModal from '../components/BreakdownModal'
+import CycleFilter from '../components/CycleFilter'
 
 export default function LibraryPage() {
   const { library, menus, compounds, commit, session } = useCost()
@@ -68,28 +69,26 @@ export default function LibraryPage() {
 
   const canEdit = session.isEditor()
 
-  return (
-    <div className="main">
-      <div className="ph" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: 10 }}>
-        <div>
-          <h1 style={{ fontFamily: 'Prompt,sans-serif', fontSize: 22, fontWeight: 600 }}>📦 คลังวัตถุดิบ</h1>
-          <div style={{ fontSize: 12.5, color: 'var(--txt3)', marginTop: 2 }}>{library.length} รายการ</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" style={{ background: 'var(--surf2)' }} onClick={() => setShowBd(true)}>🧮 คำนวณ</button>
-          {canEdit && (
-            <button className="btn btn-red" onClick={() => setForm({ item: null })}>＋ เพิ่มวัตถุดิบ</button>
-          )}
-        </div>
-      </div>
+  const togglePin = (item) => {
+    const nextLib = library.map((x) => (x.id === item.id ? { ...x, pinned: !x.pinned } : x))
+    commit({ library: nextLib })
+  }
+  const showUsage = (item) => {
+    const u = libUsage(item.id, menus, compounds)
+    toast(u.total ? `ใช้ใน ${u.m} เมนู · ${u.c} สูตรผสม` : 'ยังไม่ถูกใช้ที่ไหน', '🔗')
+  }
 
-      <div className="ios-chip-bar" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 8, marginBottom: 8 }}>
-        <button className={'ios-chip' + (cat === 'all' ? ' active' : '')} onClick={() => setCat('all')}>ทั้งหมด</button>
-        {CATS.map((c) => (
-          <button key={c} className={'ios-chip' + (cat === c ? ' active' : '')} onClick={() => setCat(c)} style={{ whiteSpace: 'nowrap' }}>
-            {CAT_EMOJI[c]} {c}
-          </button>
-        ))}
+  return (
+    <div className="main" style={{ paddingTop: '.6rem' }}>
+      <div style={{ fontSize: 12.5, color: 'var(--txt3)', margin: '0 2px .2rem' }}>{library.length} รายการ</div>
+
+      {/* control row: cycle-click filter + คำนวณ + เพิ่ม (2 คอลัมน์) */}
+      <div style={{ display: 'flex', gap: 8, margin: '.7rem 0 .9rem' }}>
+        <CycleFilter cats={CATS} value={cat} onChange={setCat} emojiOf={(c) => CAT_EMOJI[c] || '🔖'} count={groups.reduce((s, g) => s + g.items.length, 0)} />
+        <button className="btn" style={{ background: 'var(--surf2)', flexShrink: 0 }} onClick={() => setShowBd(true)}>🧮</button>
+        {canEdit && (
+          <button className="btn btn-red" style={{ flexShrink: 0 }} onClick={() => setForm({ item: null })}>＋ เพิ่ม</button>
+        )}
       </div>
 
       {groups.length === 0 ? (
@@ -100,37 +99,58 @@ export default function LibraryPage() {
             {CAT_EMOJI[g.cat] || '🔖'} {g.cat} <span style={{ color: 'var(--txt3)', fontWeight: 500 }}>({g.items.length})</span>
           </div>
           <div className="lib-grid">
-            {g.items.map((i) => (
-              <div key={i.id} className="lib-card" style={{ padding: '.85rem .95rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 0 }}>
-                    <span style={{ fontSize: 20, lineHeight: 1.1, flexShrink: 0 }}>{itemEmoji(i.name, masterByName)}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{i.pinned ? '📌 ' : ''}{i.name}</div>
-                      <div style={{ fontSize: 11.5, color: 'var(--txt3)', marginTop: 2 }}>
-                        {baht(i.unitPrice)} ฿ / {i.unit || 'หน่วย'}
-                      </div>
+            {g.items.map((i) => {
+              const baseUnit = i.levels?.[0]?.name || 'ลัง'
+              return (
+                <div key={i.id} className="lib-card" style={{ padding: '.9rem 1rem' }}>
+                  {/* header: pin + emoji + name + category chip */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    {canEdit && (
+                      <button onClick={() => togglePin(i)} title={i.pinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: i.pinned ? '#F5C518' : 'var(--txt3)', flexShrink: 0, padding: 0 }}>
+                        {i.pinned ? '★' : '☆'}
+                      </button>
+                    )}
+                    <span style={{ fontSize: 19, flexShrink: 0 }}>{itemEmoji(i.name, masterByName)}</span>
+                    <div style={{ fontWeight: 700, fontSize: 14, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{i.name}</div>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: CAT_COLOR[i.cat] || '#6B7280', background: 'var(--surf2)', borderRadius: 20, padding: '2px 9px', flexShrink: 0 }}>{CAT_EMOJI[i.cat] || '🔖'} {i.cat}</span>
+                  </div>
+
+                  {/* two boxes: ราคาต่อหน่วย | ราคาซื้อ */}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ flex: 1, background: 'var(--red-p)', borderRadius: 12, padding: '.7rem .5rem', textAlign: 'center' }}>
+                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', fontWeight: 600 }}>ราคาต่อหน่วย</div>
+                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 22, color: 'var(--red)', lineHeight: 1.15 }}>{baht(i.unitPrice)}</div>
+                      <div style={{ fontSize: 11, color: 'var(--txt2)', fontWeight: 600 }}>฿ / {i.unit || 'หน่วย'}</div>
+                    </div>
+                    <div style={{ flex: 1.35, background: 'var(--surf2)', borderRadius: 12, padding: '.7rem .8rem' }}>
+                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', fontWeight: 600 }}>📦 ราคาซื้อ</div>
+                      <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 17, color: 'var(--txt)' }}>{baht(i.basePrice || i.price || i.total)} ฿</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--txt3)', marginTop: 1 }}>ต่อ 1 {baseUnit}</div>
+                      {num(i.qty) > 0 && <div style={{ fontSize: 10.5, color: 'var(--txt3)' }}>= {baht(i.qty).replace('.00', '')} {i.unit}</div>}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 15 }}>{baht(i.basePrice || i.price || i.total)} ฿</div>
-                    <div style={{ fontSize: 10, color: 'var(--txt3)' }}>ต่อ {i.levels?.[0]?.name || 'ลัง'}</div>
+
+                  {/* serving unit pill */}
+                  {i.servingUnit && num(i.servingUnit.qty) > 0 && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--purple)', background: 'var(--purple-bg)', border: '1px solid var(--purple-b)', borderRadius: 20, padding: '3px 10px' }}>
+                      🥄 1{i.servingUnit.name} = {baht(i.servingUnit.costPerServe ?? num(i.unitPrice) * num(i.servingUnit.qty))} ฿
+                    </div>
+                  )}
+
+                  {/* buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                    <button className="btn" style={{ background: 'var(--blue-bg)', color: 'var(--blue)', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => showUsage(i)}>🔗 ใช้ในเมนู</button>
+                    {canEdit && (
+                      <button className="btn" style={{ background: '#FEF9C3', color: '#854D0E', padding: '5px 11px', fontSize: 12, fontWeight: 600 }} onClick={() => setPriceAdj(i)}>🔄 ปรับราคา</button>
+                    )}
+                    <div style={{ flex: 1 }} />
+                    {canEdit && <button className="btn-icon" style={{ fontSize: 14 }} onClick={() => setForm({ item: i })}>✏️</button>}
+                    {canEdit && <button className="btn-icon" style={{ fontSize: 14 }} onClick={() => deleteIngredient(i)}>🗑️</button>}
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 6 }}>
-                  <span style={{ fontSize: 10.5, color: 'var(--txt3)' }}>
-                    {i.updatedAt ? `อัปเดต ${fmtDate(i.updatedAt)}` : ''}
-                  </span>
-                  {canEdit && (
-                    <span style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn-icon" onClick={() => setPriceAdj(i)} style={{ fontSize: 13 }} title="ปรับราคา">🔄</button>
-                      <button className="btn-icon" onClick={() => setForm({ item: i })} style={{ fontSize: 13 }}>✏️</button>
-                      <button className="btn-icon" onClick={() => deleteIngredient(i)} style={{ fontSize: 13 }}>🗑️</button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}
