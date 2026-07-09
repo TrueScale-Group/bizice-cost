@@ -29,7 +29,18 @@ function injectSwVersion(version) {
 export default defineConfig({
   plugins: [react(), injectSwVersion(pkg.version)],
   base: '/bizice-cost/',
-  build: { outDir: 'dist' },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        // แยก vendor ก้อนใหญ่ (firebase ~ครึ่งบันเดิล) ออกจากโค้ดแอพ → cache แยก + โหลดขนาน
+        manualChunks: {
+          firebase: ['firebase/app', 'firebase/firestore'],
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_DATE__: JSON.stringify(buildDate),
