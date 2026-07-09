@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCost } from '../context/CostContext'
 import { useToast } from '../components/Toast'
 import { menuEmoji, MENU_CATS } from '../constants/categories'
@@ -16,11 +16,20 @@ function catLabel(cat) {
 }
 
 export default function MenuPage() {
-  const { menus, library, compounds, settings, commit, session } = useCost()
+  const { menus, library, compounds, settings, commit, session, masterByName, pendingMenuView, setPendingMenuView } = useCost()
   const toast = useToast()
   const [cat, setCat] = useState('all')
   const [view, setView] = useState(null)
   const [form, setForm] = useState(null) // {menu} | {menu:null} for new | null
+
+  // มาจาก popup "🔗 ใช้ในเมนู" ในหน้าคลัง — เปิด view เมนูที่ระบุทันทีที่มาถึงหน้านี้
+  useEffect(() => {
+    if (!pendingMenuView) return
+    const m = menus.find((x) => x.id === pendingMenuView)
+    if (m) setView(m)
+    setPendingMenuView(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingMenuView])
 
   const saveMenu = (m) => {
     const exists = menus.some((x) => x.id === m.id)
@@ -66,8 +75,8 @@ export default function MenuPage() {
 
   return (
     <div className="main" style={{ paddingTop: '.6rem' }}>
-      {/* metrics — responsive columns มาจากคลาส .metrics (มือถือ 2 / แท็บเล็ต·PC 4) */}
-      <div className="metrics">
+      {/* metrics — เมนูทั้งหมด + เฉลี่ย cost (คลาส .metrics เดิม) */}
+      <div className="metrics" style={{ gridTemplateColumns: 'repeat(2,1fr)' }}>
         <div className="metric hi">
           <div className="metric-lbl">เมนูทั้งหมด</div>
           <div className="metric-val">{metrics.total}</div>
@@ -76,13 +85,24 @@ export default function MenuPage() {
           <div className="metric-lbl">เฉลี่ย cost</div>
           <div className="metric-val" style={{ color: gpColor(metrics.avg, settings) }}>{metrics.avg.toFixed(1)}%</div>
         </div>
-        <div className="metric">
-          <div className="metric-lbl">ดีมาก</div>
-          <div className="metric-val" style={{ color: '#15803D' }}>{metrics.good}</div>
+      </div>
+
+      {/* การกระจาย cost ratio — ดีมาก/สูงเกินเดิม ยุบรวมเป็นการ์ดเดียว 3 คอลัมน์ (ตาม 3 โซนเกณฑ์ในหน้าตั้งค่า) */}
+      <div className="cmp-summary">
+        <div className="cmp-stat" style={{ background: 'var(--green-bg)' }}>
+          <div className="cmp-stat-lbl" style={{ color: '#15803D' }}>ดี</div>
+          <div className="cmp-stat-val" style={{ color: '#15803D' }}>{metrics.good}</div>
+          <div className="cmp-stat-sub">เมนู</div>
         </div>
-        <div className="metric">
-          <div className="metric-lbl">สูงเกิน</div>
-          <div className="metric-val" style={{ color: '#E31E24' }}>{metrics.bad}</div>
+        <div className="cmp-stat" style={{ background: '#FFFBEB' }}>
+          <div className="cmp-stat-lbl" style={{ color: '#C2410C' }}>มาตรฐาน</div>
+          <div className="cmp-stat-val" style={{ color: '#C2410C' }}>{metrics.warn}</div>
+          <div className="cmp-stat-sub">เมนู</div>
+        </div>
+        <div className="cmp-stat" style={{ background: 'var(--red-p2)' }}>
+          <div className="cmp-stat-lbl" style={{ color: '#E31E24' }}>สูง</div>
+          <div className="cmp-stat-val" style={{ color: '#E31E24' }}>{metrics.bad}</div>
+          <div className="cmp-stat-sub">เมนู</div>
         </div>
       </div>
 
@@ -116,7 +136,7 @@ export default function MenuPage() {
                     {pct === null ? 'ยังไม่มีราคา' : `cost ${pct.toFixed(1)}%`}
                   </span>
                   <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 15, color }}>
-                    {prices.length ? `฿${prices.map((p) => num(p)).join(' / ')}` : '—'}
+                    {prices.length ? `฿${prices.map((p) => num(p).toLocaleString('th-TH')).join(' / ')}` : '—'}
                   </span>
                 </div>
                 {session.isEditor() && (
@@ -137,6 +157,7 @@ export default function MenuPage() {
           library={library}
           compounds={compounds}
           settings={settings}
+          masterByName={masterByName}
           updatedBy={session.updatedBy}
           onSave={saveMenu}
           onDelete={deleteMenu}

@@ -11,8 +11,6 @@ import CompoundPage from './pages/CompoundPage'
 import ComparePage from './pages/ComparePage'
 import SettingsPage from './pages/SettingsPage'
 
-const APP_VERSION = __APP_VERSION__
-const BUILD_DATE = __BUILD_DATE__
 const HUB = 'https://truescale-group.github.io/mixue-ice-sakon/'
 
 const NAV = [
@@ -108,7 +106,7 @@ function Shell() {
           <img src="./icon-cost-192.png" alt="" style={{ width: 34, height: 34, borderRadius: 9 }} />
           <div>
             <div style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.1 }}>Cost Manager</div>
-            <div style={{ fontSize: 10.5, color: 'var(--txt3)', marginTop: 1 }}>ต้นทุน & เมนู Mixue</div>
+            <div style={{ fontSize: 10.5, color: 'var(--txt3)', marginTop: 1 }}>BizICE - ระบบบริหารต้นทุน</div>
           </div>
         </div>
         <div className="sb-scroll">
@@ -123,9 +121,6 @@ function Shell() {
           </nav>
         </div>
         <div className="sb-footer">
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 .25rem .4rem' }}>
-            <HardRefreshButton variant="circle" />
-          </div>
           <div className="sb-user">
             <div className="sb-avatar">
               {session.photo ? <img src={session.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : session.initials}
@@ -134,9 +129,8 @@ function Shell() {
               <div className="sb-uname">{session.name || 'ผู้ใช้'}</div>
               <div className="sb-urole">{session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}</div>
             </div>
+            <HardRefreshButton variant="circle" />
           </div>
-          <span className="ios-ver-pill">{APP_VERSION}</span>
-          <span style={{ fontSize: 10, color: 'var(--txt3)', marginLeft: 8 }}>อัพเดท {BUILD_DATE}</span>
         </div>
       </aside>
 

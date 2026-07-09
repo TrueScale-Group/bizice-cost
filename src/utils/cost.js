@@ -103,6 +103,16 @@ export function libUsage(id, menus, compounds) {
   const c = compounds.filter((x) => x.ingredients?.some(usesLib)).length
   return { m, c, total: m + c }
 }
+// ตัวจริง (ไม่ใช่แค่นับ) ของเมนู/สูตรผสมที่ใช้วัตถุดิบนี้ — สำหรับ popup "🔗 ใช้ในเมนู" ให้กดลิงก์ไปดูได้
+export function libUsageDetail(id, menus, compounds) {
+  const usesLib = (ing) =>
+    (ing.sourceType == null || ing.sourceType === 'library') &&
+    (ing.sourceId === id || ing.libId === id)
+  return {
+    menus: menus.filter((x) => x.ingredients?.some(usesLib)),
+    compounds: compounds.filter((x) => x.ingredients?.some(usesLib)),
+  }
+}
 export function compoundUsage(id, menus) {
   const m = menus.filter((x) =>
     x.ingredients?.some((ing) => ing.sourceType === 'compound' && ing.sourceId === id),

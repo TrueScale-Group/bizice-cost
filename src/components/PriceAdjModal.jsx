@@ -80,21 +80,40 @@ export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
             <>
               <div className="mf-sec-lbl">ประวัติราคา ({hist.length})</div>
               <div className="mf-card" style={{ padding: '.6rem .8rem', maxHeight: 220, overflowY: 'auto' }}>
-                {[...hist].reverse().map((h, i) => {
-                  const isUp = h.trend === '⬆️'
-                  const d = new Date(h.updatedAt)
-                  const dateStr = isNaN(d) ? h.updatedAt : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })
-                  return (
-                    <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: i < hist.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <span style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, background: isUp ? '#FEE2E2' : '#F0FDF4' }}>{h.trend || '•'}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 13, fontFamily: 'Prompt,sans-serif' }}>฿{baht(h.price)}</div>
-                        <div style={{ fontSize: 11, color: 'var(--txt3)' }}>{h.updatedBy || '—'} · {h.supplier || '—'} · {dateStr}</div>
-                        {h.reason && h.reason !== '—' && <div style={{ fontSize: 11.5, color: 'var(--txt2)', fontStyle: 'italic' }}>"{h.reason}"</div>}
+                {hist.map((h, i) => ({ ...h, fromPrice: i > 0 ? num(hist[i - 1].price) : null }))
+                  .reverse()
+                  .map((h, i, arr) => {
+                    const from = h.fromPrice
+                    const to = num(h.price)
+                    const hasFrom = from != null && from > 0
+                    const diff = hasFrom ? to - from : 0
+                    const pct = hasFrom ? (diff / from) * 100 : 0
+                    const isUp = diff > 0, isDown = diff < 0
+                    // ราคาวัตถุดิบขึ้น = ต้นทุนสูงขึ้น (แดง) · ราคาลง = ต้นทุนลดลง (เขียว) — ธีมเดียวกับ cost ratio ทั่วแอพ
+                    const dirColor = !hasFrom ? 'var(--txt3)' : isUp ? '#DC2626' : isDown ? '#16A34A' : 'var(--txt3)'
+                    const dirIcon = !hasFrom ? '•' : isUp ? '⬆️' : isDown ? '⬇️' : '➖'
+                    const d = new Date(h.updatedAt)
+                    const dateStr = isNaN(d) ? h.updatedAt : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })
+                    return (
+                      <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <span style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, background: !hasFrom ? 'var(--surf2)' : isUp ? '#FEE2E2' : '#F0FDF4' }}>{dirIcon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {hasFrom ? (
+                            <div style={{ fontSize: 13, fontFamily: 'Prompt,sans-serif', display: 'flex', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' }}>
+                              <span style={{ color: 'var(--txt3)', fontWeight: 500, textDecoration: 'line-through' }}>฿{baht(from)}</span>
+                              <span style={{ color: 'var(--txt3)' }}>→</span>
+                              <span style={{ fontWeight: 700, color: dirColor }}>฿{baht(to)}</span>
+                              <span style={{ fontWeight: 700, color: dirColor, fontSize: 12 }}>({isUp ? '+' : ''}{pct.toFixed(1)}%)</span>
+                            </div>
+                          ) : (
+                            <div style={{ fontWeight: 700, fontSize: 13, fontFamily: 'Prompt,sans-serif', color: 'var(--txt2)' }}>เริ่มต้นที่ ฿{baht(to)}</div>
+                          )}
+                          <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 2 }}>{h.updatedBy || '—'} · {h.supplier || '—'} · {dateStr}</div>
+                          {h.reason && h.reason !== '—' && <div style={{ fontSize: 11.5, color: 'var(--txt2)', fontStyle: 'italic', marginTop: 1 }}>"{h.reason}"</div>}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
               </div>
             </>
           )}

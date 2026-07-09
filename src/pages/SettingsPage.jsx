@@ -25,83 +25,109 @@ export default function SettingsPage() {
     toast('ล้างข้อมูลทั้งหมดแล้ว', '🗑️')
   }
 
-  const secLbl = { fontSize: 11, fontWeight: 700, color: 'var(--txt3)', textTransform: 'uppercase', letterSpacing: '.06em', padding: '0 4px 6px', marginTop: 4 }
-  const groupCard = { background: 'var(--surf)', borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,.05)', overflow: 'hidden' }
-  const row = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.7rem .9rem', gap: 12 }
-  const rowBorder = { borderTop: '1px solid var(--border)' }
+  const verPill = (() => { const [ma, mi, pa] = APP_VERSION.split('.'); return `v${ma}.${mi}.${(pa || '0').padStart(2, '0')}` })()
 
   return (
     <div className="main" style={{ maxWidth: 560, margin: '0 auto', paddingTop: '.6rem' }}>
-      <div style={{ fontSize: 12, color: 'var(--txt3)', margin: '0 4px .8rem' }}>
+      <div style={{ fontSize: 12, color: 'var(--txt3)', margin: '0 .25rem .9rem' }}>
         ⚙️ ตั้งค่า · {session.name} · {session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}
       </div>
 
-      {/* เกณฑ์ cost ratio */}
-      <div style={secLbl}>🚦 เกณฑ์ Cost Ratio</div>
-      <div style={{ ...groupCard, marginBottom: '1.1rem' }}>
-        <div style={row}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600 }}>เขียว — ดีมาก</div>
-            <div style={{ fontSize: 11, color: 'var(--txt3)' }}>ต้นทุนไม่เกิน %</div>
+      {/* เกณฑ์ cost ratio — 3 ช่วง: ก่อน X เขียว / X–Y เหลือง / เกิน Y แดง */}
+      <div className="ios-group">
+        <div className="ios-sec-label">🚦 เกณฑ์ Cost Ratio</div>
+        <div className="ios-card pad">
+          {/* แถบสเปกตรัม 3 โซน — แสดงสัดส่วนคร่าวๆ ตามค่าที่กรอก */}
+          <div style={{ display: 'flex', height: 8, borderRadius: 5, overflow: 'hidden', marginBottom: 14 }}>
+            <div style={{ flex: Math.max(1, Number(green) || 1), background: '#15803D' }} />
+            <div style={{ flex: Math.max(1, (Number(yellow) || 0) - (Number(green) || 0)), background: '#F59E0B' }} />
+            <div style={{ flex: Math.max(1, Number(green) || 1), background: '#E31E24' }} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <input type="number" value={green} disabled={!session.isEditor()} onChange={(e) => setGreen(e.target.value)}
-              style={{ width: 56, textAlign: 'right', border: '1px solid var(--border2)', borderRadius: 8, padding: '5px 8px', fontSize: 15, fontWeight: 700, fontFamily: 'Prompt,sans-serif', color: '#15803D' }} />
-            <span style={{ color: 'var(--txt3)', fontSize: 13 }}>%</span>
+
+          <div className="ios-fc-row" style={{ borderTop: 'none', paddingTop: 0 }}>
+            <div className="ios-fc-label">🟢 เขียว — ดีมาก</div>
+            <div className="ios-fc-field">
+              <span style={{ fontSize: 12, color: 'var(--txt3)' }}>ไม่เกิน</span>
+              <input type="number" value={green} disabled={!session.isEditor()}
+                onChange={(e) => setGreen(e.target.value)} style={{ color: '#15803D' }} />
+              <span className="pct">%</span>
+            </div>
           </div>
+          <div className="ios-fc-row">
+            <div className="ios-fc-label">🟡 เหลือง — พอได้</div>
+            <div className="ios-fc-field">
+              <span style={{ fontSize: 12, color: 'var(--txt3)' }}>{green}–</span>
+              <input type="number" value={yellow} disabled={!session.isEditor()}
+                onChange={(e) => setYellow(e.target.value)} style={{ color: '#C2410C' }} />
+              <span className="pct">%</span>
+            </div>
+          </div>
+          <div className="ios-fc-row">
+            <div className="ios-fc-label">🔴 แดง — สูงเกิน</div>
+            <div className="ios-fc-field">
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>มากกว่า {yellow}%</span>
+            </div>
+          </div>
+          {session.isEditor() && (
+            <div className="ios-fc-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn-red" style={{ padding: '7px 18px', fontSize: 13 }} onClick={saveThresholds}>บันทึกเกณฑ์</button>
+            </div>
+          )}
         </div>
-        <div style={{ ...row, ...rowBorder }}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600 }}>เหลือง — พอได้</div>
-            <div style={{ fontSize: 11, color: 'var(--txt3)' }}>เกินค่านี้ = สูงเกิน</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <input type="number" value={yellow} disabled={!session.isEditor()} onChange={(e) => setYellow(e.target.value)}
-              style={{ width: 56, textAlign: 'right', border: '1px solid var(--border2)', borderRadius: 8, padding: '5px 8px', fontSize: 15, fontWeight: 700, fontFamily: 'Prompt,sans-serif', color: '#C2410C' }} />
-            <span style={{ color: 'var(--txt3)', fontSize: 13 }}>%</span>
-          </div>
-        </div>
-        {session.isEditor() && (
-          <div style={{ ...row, ...rowBorder, justifyContent: 'flex-end' }}>
-            <button className="btn btn-red" style={{ padding: '7px 18px', fontSize: 13 }} onClick={saveThresholds}>บันทึกเกณฑ์</button>
-          </div>
-        )}
       </div>
 
       {/* สรุปข้อมูล */}
-      <div style={secLbl}>📊 ข้อมูลในระบบ</div>
-      <div style={{ ...groupCard, marginBottom: '1.1rem' }}>
-        {[['🍦 เมนู', menus.length], ['📦 วัตถุดิบ', library.length], ['🧪 สูตรผสม', compounds.length]].map(([lbl, n], i) => (
-          <div key={lbl} style={{ ...row, ...(i ? rowBorder : {}) }}>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>{lbl}</span>
-            <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 16 }}>{n}</span>
+      <div className="ios-group">
+        <div className="ios-sec-label">📊 ข้อมูลในระบบ</div>
+        <div className="ios-card">
+          {[['🍦', 'เมนู', menus.length], ['📦', 'วัตถุดิบ', library.length], ['🧪', 'สูตรผสม', compounds.length]].map(([emo, lbl, n]) => (
+            <div key={lbl} className="ios-row" style={{ cursor: 'default' }}>
+              <div className="ios-row-left">
+                <span className="ios-row-icon">{emo}</span>
+                <span className="ios-row-title">{lbl}</span>
+              </div>
+              <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--txt)' }}>{n}</span>
+            </div>
+          ))}
+          <div className="ios-row"
+            onClick={() => { exportMenusCSV(menus) ? toast('Export CSV สำเร็จ', '📄') : toast('ยังไม่มีเมนู', '⚠️') }}>
+            <div className="ios-row-left">
+              <span className="ios-row-icon">📄</span>
+              <span className="ios-row-title">Export เมนู (CSV)</span>
+            </div>
+            <span className="ios-arrow">›</span>
           </div>
-        ))}
-        <div style={{ ...row, ...rowBorder }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>📄 Export เมนู (CSV)</span>
-          <button className="btn" style={{ background: 'var(--surf2)', padding: '5px 14px', fontSize: 12.5, fontWeight: 600 }}
-            onClick={() => { exportMenusCSV(menus) ? toast('Export CSV สำเร็จ', '📄') : toast('ยังไม่มีเมนู', '⚠️') }}>ดาวน์โหลด</button>
         </div>
       </div>
 
       {/* danger zone — owner เท่านั้น */}
       {session.isOwner() && (
-        <>
-          <div style={{ ...secLbl, color: '#E31E24' }}>⚠️ โซนอันตราย</div>
-          <div style={{ ...groupCard, marginBottom: '1.1rem', border: '1px solid #FECACA' }}>
-            <div style={row}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#E31E24' }}>ล้างข้อมูลทั้งหมด</div>
-                <div style={{ fontSize: 11, color: 'var(--txt3)' }}>กู้คืนไม่ได้ · ต้องกรอก PIN</div>
+        <div className="ios-group">
+          <div className="ios-sec-label" style={{ color: '#DC2626' }}>โซนอันตราย</div>
+          <div className="ios-card">
+            <div className="ios-row" onClick={clearAll} style={{ color: '#DC2626' }}>
+              <div className="ios-row-left">
+                <span className="ios-row-icon">🗑️</span>
+                <span className="ios-row-title" style={{ color: '#DC2626' }}>ล้างข้อมูลทั้งหมด</span>
+                <span className="ios-info" tabIndex={0}
+                  onClick={(e) => { e.stopPropagation(); e.currentTarget.classList.toggle('tip-open') }}>ⓘ
+                  <span className="ios-tip">ลบเมนู / วัตถุดิบ / สูตรผสมทั้งหมด · กู้คืนไม่ได้ · ต้องกรอก PIN ยืนยัน</span>
+                </span>
               </div>
-              <button className="btn" style={{ background: '#E31E24', color: '#fff', padding: '7px 14px', fontSize: 13, flexShrink: 0 }} onClick={clearAll}>🗑️ ล้าง</button>
+              <span className="ios-arrow">›</span>
             </div>
           </div>
-        </>
+        </div>
       )}
 
-      <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--txt3)', padding: '.5rem 0 1rem' }}>
-        Cost Manager {APP_VERSION} · React + Vite · อัพเดท {BUILD_DATE}
+      {/* version footer — Inventory style */}
+      <div className="ios-ver-footer">
+        <div className="ios-ver-name">Mixue Cost Manager · BizICE</div>
+        <div className="ios-ver-meta">
+          <span className="ios-ver-pill">{verPill}</span>
+          <span>·</span>
+          <span>อัพเดท {BUILD_DATE}</span>
+        </div>
       </div>
     </div>
   )

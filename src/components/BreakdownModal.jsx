@@ -19,10 +19,10 @@ export default function BreakdownModal({ onClose }) {
     if (!b || !divisor) return null
     const unitPrice = total / divisor
     const lastName = levels.length && levels[levels.length - 1].name ? levels[levels.length - 1].name : 'หน่วย'
-    const levelStr = levels.map((l) => (num(l.qty) || 1) + (l.name ? ' ' + l.name : '')).join(' × ')
-    let parts = [b + '฿']
-    extras.filter((e) => num(e.cost) > 0).forEach((e) => parts.push('+ ' + num(e.cost) + '฿' + (e.name ? ' (' + e.name + ')' : '')))
-    const formula = parts.join(' ') + ' = ' + total.toFixed(2) + '฿ ÷ ' + divisor.toLocaleString() + ' (' + levelStr + ')'
+    const levelStr = levels.map((l) => (num(l.qty) || 1).toLocaleString('th-TH') + (l.name ? ' ' + l.name : '')).join(' × ')
+    let parts = [b.toLocaleString('th-TH') + '฿']
+    extras.filter((e) => num(e.cost) > 0).forEach((e) => parts.push('+ ' + num(e.cost).toLocaleString('th-TH') + '฿' + (e.name ? ' (' + e.name + ')' : '')))
+    const formula = parts.join(' ') + ' = ' + total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '฿ ÷ ' + divisor.toLocaleString('th-TH') + ' (' + levelStr + ')'
     return { unitPrice, lastName, formula, total, divisor }
   }, [base, levels, extras])
 

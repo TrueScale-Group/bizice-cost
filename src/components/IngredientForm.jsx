@@ -206,7 +206,7 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onDel
             <div className="mf-card" style={{ padding: '.7rem .9rem', background: 'var(--green-bg)', border: '1px solid var(--green-b)' }}>
               <div style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
                 💡 ราคาสุดท้าย: <strong style={{ fontFamily: 'Prompt,sans-serif' }}>{fmtPrice(calc.unitPrice)} ฿/{calc.finalUnit || '?'}</strong>
-                {num(freight) > 0 && ` · +ขนส่ง ${num(freight)}฿`}
+                {num(freight) > 0 && ` · +ขนส่ง ${num(freight).toLocaleString('th-TH')}฿`}
                 {num(waste) > 0 && ` · +waste ${num(waste)}%`}
               </div>
               <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 3 }}>ใช้หน่วยนี้ในสูตรเมนู/สูตรผสม</div>

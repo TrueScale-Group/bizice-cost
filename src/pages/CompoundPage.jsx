@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCost } from '../context/CostContext'
 import { useToast } from '../components/Toast'
 import { CP_CATS, CP_CAT_EMOJI, CP_CAT_COLOR } from '../constants/categories'
@@ -8,10 +8,19 @@ import CompoundForm from '../components/CompoundForm'
 import CycleFilter from '../components/CycleFilter'
 
 export default function CompoundPage() {
-  const { compounds, library, menus, commit, session } = useCost()
+  const { compounds, library, menus, commit, session, masterByName, pendingCompoundEdit, setPendingCompoundEdit } = useCost()
   const toast = useToast()
   const [cat, setCat] = useState('all')
   const [form, setForm] = useState(null) // {compound} | {compound:null} | null
+
+  // มาจาก popup "🔗 ใช้ในเมนู" ในหน้าคลัง — เปิดแก้ไขสูตรผสมที่ระบุทันทีที่มาถึงหน้านี้
+  useEffect(() => {
+    if (!pendingCompoundEdit) return
+    const c = compounds.find((x) => x.id === pendingCompoundEdit)
+    if (c) setForm({ compound: c })
+    setPendingCompoundEdit(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCompoundEdit])
 
   const list = useMemo(() => {
     const l = cat === 'all' ? compounds : compounds.filter((c) => c.cat === cat)
@@ -68,7 +77,7 @@ export default function CompoundPage() {
                   </div>
                   <div style={{ fontSize: 11.5, color: CP_CAT_COLOR[c.cat] || 'var(--txt3)', marginTop: 3, fontWeight: 600 }}>{c.cat}</div>
                   <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 2 }}>
-                    ผลผลิต {c.outputQty} {c.outputUnit}{c.yield && c.yield !== 100 ? ` · yield ${c.yield}%` : ''}
+                    ผลผลิต {Number(c.outputQty || 0).toLocaleString('th-TH')} {c.outputUnit}{c.yield && c.yield !== 100 ? ` · yield ${c.yield}%` : ''}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -89,6 +98,7 @@ export default function CompoundPage() {
         <CompoundForm
           compound={form.compound}
           library={library}
+          masterByName={masterByName}
           updatedBy={session.updatedBy}
           onSave={saveCompound}
           onDelete={deleteCompound}

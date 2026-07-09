@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, MENU_CATS, menuEmoji } from '../constants/categories'
-import { num, genId, fmtDateNow } from '../utils/format'
+import { num, genId, fmtDateNow, baht } from '../utils/format'
 import { calcCost, gpColor } from '../utils/cost'
+import { itemEmoji } from '../utils/sortItems'
 import Modal from './Modal'
 
 const SIZES = [
@@ -10,7 +11,7 @@ const SIZES = [
   { k: 'L', priceKey: 'priceL', label: 'แก้ว L' },
 ]
 
-export default function MenuForm({ menu, library, compounds, settings, updatedBy, onSave, onDelete, onClose }) {
+export default function MenuForm({ menu, library, compounds, settings, masterByName, updatedBy, onSave, onDelete, onClose }) {
   const editing = !!menu
   const [name, setName] = useState(menu?.name || '')
   const [cat, setCat] = useState(menu?.cat || 'ไอศกรีม')
@@ -68,12 +69,22 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
   }
 
   const setRow = (sz, id, patch) => setIngr((s) => ({ ...s, [sz]: s[sz].map((r) => (r.id === id ? { ...r, ...patch } : r)) }))
+  // แถวที่กำลังแก้อยู่ (accordion — เห็น dropdown/ปุ่มเต็มทีละรายการ) ที่เหลือย่อเป็นบรรทัดเดียวดูอย่างเดียว
+  const [editRowId, setEditRowId] = useState(null)
   const addRow = (sz) => {
     const defCat = isKhanom ? 'ขนม' : 'วัตถุดิบ'
     const firstItem = library.find((x) => x.cat === defCat)
-    setIngr((s) => ({ ...s, [sz]: [...s[sz], { id: genId(), sourceType: 'library', sourceId: firstItem?.id || '', cat: defCat, qty: '' }] }))
+    const newId = genId()
+    setIngr((s) => ({ ...s, [sz]: [...s[sz], { id: newId, sourceType: 'library', sourceId: firstItem?.id || '', cat: defCat, qty: '' }] }))
+    setEditRowId(newId)
   }
   const removeRow = (sz, id) => setIngr((s) => ({ ...s, [sz]: s[sz].filter((r) => r.id !== id) }))
+  // คัดลอกวัตถุดิบทั้งหมดจากขนาดอื่นมาไว้ในแท็บปัจจุบัน (ตั้ง id ใหม่กันชนกัน) — ใช้ตอนเพิ่มขนาดใหม่ แล้วค่อยปรับลดปริมาณทีหลัง
+  const copyFromSize = (fromSz) => {
+    const src = ingr[fromSz] || []
+    if (!src.length) return
+    setIngr((s) => ({ ...s, [tab]: src.map((r) => ({ ...r, id: genId() })) }))
+  }
 
   const addSize = (sz) => {
     setActiveSizes((a) => [...a, sz].sort((x, y) => 'UML'.indexOf(x) - 'UML'.indexOf(y)))
@@ -229,42 +240,84 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
                 {!isKhanom && activeSizes.length > 1 && (
                   <div style={{ display: 'flex', gap: 4, background: 'var(--surf2)', borderRadius: 10, padding: 3, marginBottom: 8 }}>
                     {activeSizes.map((sz) => (
-                      <button key={sz} onClick={() => setTab(sz)} style={{ flex: 1, padding: '6px', border: 'none', borderRadius: 8, background: tab === sz ? '#fff' : 'transparent', fontWeight: tab === sz ? 700 : 500, fontSize: 13, cursor: 'pointer', boxShadow: tab === sz ? 'var(--sh)' : 'none' }}>
+                      <button key={sz} onClick={() => { setTab(sz); setEditRowId(null) }} style={{ flex: 1, padding: '6px', border: 'none', borderRadius: 8, background: tab === sz ? '#fff' : 'transparent', fontWeight: tab === sz ? 700 : 500, fontSize: 13, cursor: 'pointer', boxShadow: tab === sz ? 'var(--sh)' : 'none' }}>
                         แก้ว {sz}
                       </button>
                     ))}
                   </div>
                 )}
+                {(ingr[tab] || []).length === 0 && (() => {
+                  const sourceSizes = activeSizes.filter((sz) => sz !== tab && (ingr[sz] || []).length > 0)
+                  if (!sourceSizes.length) return null
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', background: 'var(--surf)', border: '1px dashed var(--border2)', borderRadius: 10, padding: '7px 9px', marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, color: 'var(--txt3)', fontWeight: 600 }}>📋 คัดลอกวัตถุดิบจาก:</span>
+                      {sourceSizes.map((sz) => (
+                        <button key={sz} type="button" className="btn-view" onClick={() => copyFromSize(sz)}>แก้ว {sz}</button>
+                      ))}
+                    </div>
+                  )
+                })()}
                 {(ingr[tab] || []).map((row) => {
                   const info = resolve(row)
                   const libItems = library.filter((x) => x.cat === row.cat)
+
+                  // ── ย่อ: บรรทัดเดียวดูอย่างเดียว — คลิก ✏️ เพื่อแก้รายการนั้น ──
+                  if (editRowId !== row.id) {
+                    return (
+                      <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surf2)', borderRadius: 10, padding: '8px 10px', marginBottom: 6 }}>
+                        <span style={{ fontSize: 15, flexShrink: 0 }}>{row.sourceType === 'library' ? itemEmoji(info?.name, masterByName) : '🧪'}</span>
+                        <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, color: info ? 'var(--txt)' : 'var(--txt3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {info ? info.name : '— ยังไม่เลือกรายการ —'}
+                        </div>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--txt2)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          {num(row.qty).toLocaleString('th-TH')}{info ? ` ${info.unit}` : ''}
+                        </div>
+                        <button type="button" className="btn-view" style={{ flexShrink: 0 }} onClick={() => setEditRowId(row.id)}>✏️</button>
+                      </div>
+                    )
+                  }
+
+                  // ── ขยาย: แก้รายการนี้ (dropdown ครบ) ──
+                  const srcBtn = (active) => ({
+                    padding: '6px 12px', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
+                    border: active ? '1.5px solid var(--red)' : '1px solid var(--border2)',
+                    background: active ? 'var(--red-p)' : '#fff', color: active ? 'var(--red)' : 'var(--txt2)',
+                    fontSize: 12.5, fontWeight: 700, fontFamily: "'Sarabun',sans-serif",
+                  })
                   return (
-                    <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '56px 1fr 64px 26px', gridTemplateRows: 'auto auto', gap: 5, alignItems: 'center', background: 'var(--surf2)', borderRadius: 10, padding: '7px 8px', marginBottom: 5 }}>
-                      <select value={row.sourceType} onChange={(e) => setRow(tab, row.id, { sourceType: e.target.value, sourceId: '' })} style={{ ...INP, gridColumn: 1, gridRow: 1, fontSize: 11 }}>
-                        <option value="library">📦 คลัง</option>
-                        <option value="compound">🧪 สูตร</option>
-                      </select>
-                      <div style={{ gridColumn: '2/5', gridRow: 1, display: 'flex', gap: 5, minWidth: 0 }}>
-                        {row.sourceType === 'library' ? (
-                          <>
-                            <select value={row.cat} onChange={(e) => { const c = e.target.value; const first = library.find((x) => x.cat === c); setRow(tab, row.id, { cat: c, sourceId: first?.id || '' }) }} style={{ ...INP, width: 78, flex: '0 0 78px', fontSize: 11 }}>
-                              {CATS.map((c) => <option key={c} value={c}>{CAT_EMOJI[c]} {c}</option>)}
-                            </select>
-                            <select value={row.sourceId} onChange={(e) => setRow(tab, row.id, { sourceId: e.target.value })} style={{ ...INP, flex: 1, minWidth: 0 }}>
-                              {libItems.length ? libItems.map((x) => <option key={x.id} value={x.id}>{x.name}</option>) : <option value="">— ยังไม่มี —</option>}
-                            </select>
-                          </>
-                        ) : (
-                          <select value={row.sourceId} onChange={(e) => setRow(tab, row.id, { sourceId: e.target.value })} style={{ ...INP, flex: 1, minWidth: 0 }}>
-                            {compounds.length ? compounds.map((c) => <option key={c.id} value={c.id}>{c.name}</option>) : <option value="">— ยังไม่มีสูตร —</option>}
+                    <div key={row.id} style={{ display: 'flex', flexDirection: 'column', gap: 7, background: 'var(--surf2)', borderRadius: 10, padding: '9px 10px', marginBottom: 6, border: '1.5px solid var(--red)' }}>
+                      {/* แถว 1: ประเภทแหล่งวัตถุดิบ + เสร็จ + ลบ */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flex: 1, minWidth: 0 }}>
+                          <button type="button" style={{ ...srcBtn(row.sourceType === 'library'), flexShrink: 0 }} onClick={() => setRow(tab, row.id, { sourceType: 'library', sourceId: '' })}>📦 คลัง</button>
+                          <button type="button" style={{ ...srcBtn(row.sourceType === 'compound'), flexShrink: 0 }} onClick={() => setRow(tab, row.id, { sourceType: 'compound', sourceId: '' })}>🧪 สูตรผสม</button>
+                        </div>
+                        <button type="button" className="btn-view" style={{ flexShrink: 0, color: 'var(--red)', borderColor: 'var(--red)' }} onClick={() => setEditRowId(null)}>✓ เสร็จ</button>
+                        <button className="btn-del" style={{ flexShrink: 0 }} onClick={() => removeRow(tab, row.id)}>✕</button>
+                      </div>
+                      {/* แถว 2: หมวด + เลือกวัตถุดิบ/สูตร — minWidth ต่อช่อง ป้องกันบีบจนอ่านไม่ออก (สกรอลแนวนอนแทนถ้าจอแคบมาก) */}
+                      {row.sourceType === 'library' ? (
+                        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                          <select value={row.cat} onChange={(e) => { const c = e.target.value; const first = library.find((x) => x.cat === c); setRow(tab, row.id, { cat: c, sourceId: first?.id || '' }) }} style={{ ...INP, flex: '0 0 110px', width: 110, minWidth: 110, fontSize: 12.5 }}>
+                            {CATS.map((c) => <option key={c} value={c}>{CAT_EMOJI[c]} {c}</option>)}
                           </select>
-                        )}
+                          <select value={row.sourceId} onChange={(e) => setRow(tab, row.id, { sourceId: e.target.value })} style={{ ...INP, flex: '1 0 150px', minWidth: 150, fontSize: 12.5 }}>
+                            {libItems.length ? libItems.map((x) => <option key={x.id} value={x.id}>{x.name}</option>) : <option value="">— ยังไม่มี —</option>}
+                          </select>
+                        </div>
+                      ) : (
+                        <select value={row.sourceId} onChange={(e) => setRow(tab, row.id, { sourceId: e.target.value })} style={{ ...INP, width: '100%', minWidth: 200, fontSize: 12.5 }}>
+                          {compounds.length ? compounds.map((c) => <option key={c.id} value={c.id}>{c.name}</option>) : <option value="">— ยังไม่มีสูตร —</option>}
+                        </select>
+                      )}
+                      {/* แถว 3: ปริมาณ + หน่วย */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input type="number" value={row.qty} onChange={(e) => setRow(tab, row.id, { qty: e.target.value })} placeholder="ปริมาณ" min="0" step="any" style={{ ...INP, flex: 1, minWidth: 70 }} />
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--txt2)', minWidth: 44, textAlign: 'center', flexShrink: 0 }}>
+                          {info ? info.unit : '—'}
+                        </div>
                       </div>
-                      <input type="number" value={row.qty} onChange={(e) => setRow(tab, row.id, { qty: e.target.value })} placeholder="ปริมาณ" min="0" step="any" style={{ ...INP, gridColumn: '1/3', gridRow: 2 }} />
-                      <div style={{ gridColumn: 3, gridRow: 2, fontSize: 11, color: 'var(--txt2)', textAlign: 'center', overflow: 'hidden' }}>
-                        {info ? `${info.unit}` : '—'}
-                      </div>
-                      <button className="btn-del" style={{ gridColumn: 4, gridRow: 2 }} onClick={() => removeRow(tab, row.id)}>✕</button>
                     </div>
                   )
                 })}
@@ -280,7 +333,7 @@ export default function MenuForm({ menu, library, compounds, settings, updatedBy
               <div className="mf-card" style={{ padding: '.6rem .8rem' }}>
                 {preview.filter((p) => p.price > 0).map((p) => (
                   <div key={p.sz} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '3px 0' }}>
-                    <span>แก้ว {p.sz} · ต้นทุน {p.cost.toFixed(2)}฿ / ขาย {p.price}฿</span>
+                    <span>แก้ว {p.sz} · ต้นทุน {baht(p.cost)}฿ / ขาย {p.price.toLocaleString('th-TH')}฿</span>
                     <strong style={{ color: gpColor(p.pct, settings) }}>{p.pct.toFixed(1)}%</strong>
                   </div>
                 ))}

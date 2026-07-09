@@ -6,7 +6,7 @@ import { useState } from 'react'
  *  - body scroll เองเมื่อเนื้อหายาว (box สูงสุด 92dvh: header/footer ติด, body เลื่อน)
  *  - guard: กด background ไม่ปิด → ปุ่ม ✕ สั่นสีแดงเตือน (กดออกที่ ✕ เท่านั้น)
  */
-export default function Modal({ title, subtitle, titleExtra, onClose, footer, maxWidth = 500, guard = true, children }) {
+export default function Modal({ title, subtitle, titleExtra, onClose, footer, maxWidth = 500, minWidth = 320, guard = true, children }) {
   const [shake, setShake] = useState(false)
   const onBackdrop = (e) => {
     if (e.target !== e.currentTarget) return
@@ -20,9 +20,9 @@ export default function Modal({ title, subtitle, titleExtra, onClose, footer, ma
   }
 
   return (
-    <div onClick={onBackdrop}
-      style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 300 }}>
-      <div style={{ background: 'var(--surf)', borderRadius: 20, width: '100%', maxWidth, maxHeight: '92dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.22)', animation: 'modalIn .25s ease both' }}>
+    <div className="modal-overlay" onClick={onBackdrop}
+      style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 1800 }}>
+      <div className="modal-box" style={{ background: 'var(--surf)', borderRadius: 20, width: '100%', maxWidth, minWidth: `min(${minWidth}px, 100%)`, maxHeight: '92dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.22)', animation: 'modalIn .25s ease both' }}>
         {/* header (ติด) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '.9rem 1.1rem .9rem 1.25rem', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>

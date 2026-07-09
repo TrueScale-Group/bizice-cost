@@ -1,7 +1,7 @@
 import { useCost } from '../context/CostContext'
 import { CAT_EMOJI, CAT_COLOR, menuEmoji } from '../constants/categories'
 import { calcCost, gpColor } from '../utils/cost'
-import { num, esc } from '../utils/format'
+import { num, esc, baht } from '../utils/format'
 
 const VIEW_CAT_ORDER = ['แยม', 'ผลไม้', 'ไซรัป', 'ท็อปปิ้ง', 'วัตถุดิบ', 'ขนม', 'บรรจุภัณฑ์', 'อื่นๆ', 'สูตรผสม']
 const SIZES = [{ k: 'S', label: 'U', priceKey: 'priceS' }, { k: 'M', label: 'M', priceKey: 'priceM' }, { k: 'L', label: 'L', priceKey: 'priceL' }]
@@ -67,7 +67,19 @@ export default function MenuViewModal({ menu, onClose }) {
                 <div key={s.k} className="view-size-block">
                   <div className="view-size-header">
                     <span className="view-size-tag">แก้ว {s.label}</span>
-                    <span className="view-size-price">ขาย {price} ฿</span>
+                    <span className="view-size-price">ขาย {price.toLocaleString('th-TH')} ฿</span>
+                  </div>
+
+                  <div className="view-total-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--txt2)' }}>ต้นทุนรวม</span>
+                    <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 15.5, color: col }}>{baht(cost)} ฿</span>
+                  </div>
+                  <div className="view-gp-bar" style={{ height: 7, background: 'var(--surf3)', borderRadius: 4, overflow: 'hidden', margin: '6px 0' }}>
+                    <div className="view-gp-fill" style={{ width: barW + '%', background: col, height: '100%' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
+                    <span style={{ color: col }}>Cost ratio {pct.toFixed(1)}%</span>
+                    <span style={{ color: '#15803D' }}>GP {gp.toFixed(1)}%</span>
                   </div>
 
                   {cats.map((c) => (
@@ -78,23 +90,11 @@ export default function MenuViewModal({ menu, onClose }) {
                       {byCat[c].map(({ i, q }, idx) => (
                         <div key={idx} className="view-ingr-row">
                           <span className="view-ingr-name">{esc(i.name)}</span>
-                          <span style={{ color: 'var(--txt3)', fontSize: 12.5, whiteSpace: 'nowrap' }}>{+q.toFixed(2)} {esc(i.unit || '')}</span>
+                          <span style={{ color: 'var(--txt3)', fontSize: 12.5, whiteSpace: 'nowrap' }}>{q.toLocaleString('th-TH', { maximumFractionDigits: 2 })} {esc(i.unit || '')}</span>
                         </div>
                       ))}
                     </div>
                   ))}
-
-                  <div className="view-total-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--txt2)' }}>ต้นทุนรวม</span>
-                    <span style={{ fontFamily: 'Prompt,sans-serif', fontWeight: 800, fontSize: 15.5, color: col }}>{cost.toFixed(2)} ฿</span>
-                  </div>
-                  <div className="view-gp-bar" style={{ height: 7, background: 'var(--surf3)', borderRadius: 4, overflow: 'hidden', margin: '6px 0' }}>
-                    <div className="view-gp-fill" style={{ width: barW + '%', background: col, height: '100%' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700 }}>
-                    <span style={{ color: col }}>Cost ratio {pct.toFixed(1)}%</span>
-                    <span style={{ color: '#15803D' }}>GP {gp.toFixed(1)}%</span>
-                  </div>
                 </div>
               )
             })}

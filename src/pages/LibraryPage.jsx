@@ -1,24 +1,22 @@
 import { useState, useMemo } from 'react'
 import { useCost } from '../context/CostContext'
 import { useToast } from '../components/Toast'
-import { CATS, CAT_EMOJI, CAT_COLOR } from '../constants/categories'
+import { CATS, CAT_EMOJI, CAT_COLOR, menuEmoji } from '../constants/categories'
 import { num, baht, fmtDate } from '../utils/format'
-import { recalcAll, libUsage } from '../utils/cost'
-import { useInventoryMaster } from '../hooks/useInventoryMaster'
+import { recalcAll, libUsage, libUsageDetail } from '../utils/cost'
 import { itemEmoji, sortLibraryByMaster, catGroupOrder } from '../utils/sortItems'
 import IngredientForm from '../components/IngredientForm'
 import PriceAdjModal from '../components/PriceAdjModal'
-import BreakdownModal from '../components/BreakdownModal'
 import CycleFilter from '../components/CycleFilter'
+import Modal from '../components/Modal'
 
-export default function LibraryPage() {
-  const { library, menus, compounds, commit, session } = useCost()
+export default function LibraryPage({ go }) {
+  const { library, menus, compounds, commit, session, masterByName, catOrder, setPendingMenuView, setPendingCompoundEdit } = useCost()
   const toast = useToast()
-  const { byName: masterByName, catOrder } = useInventoryMaster()
   const [cat, setCat] = useState('all')
   const [form, setForm] = useState(null) // {item} | {item:null} for new | null closed
   const [priceAdj, setPriceAdj] = useState(null) // item | null
-  const [showBd, setShowBd] = useState(false)
+  const [usageFor, setUsageFor] = useState(null) // item | null — popup "🔗 ใช้ในเมนู"
 
   // เรียง + จัดกลุ่มตาม Master Data ของ Inventory (emoji ต่อชิ้น + ลำดับตรงกับ Inventory)
   const groups = useMemo(() => {
@@ -70,23 +68,18 @@ export default function LibraryPage() {
 
   const canEdit = session.isEditor()
 
-  const togglePin = (item) => {
-    const nextLib = library.map((x) => (x.id === item.id ? { ...x, pinned: !x.pinned } : x))
-    commit({ library: nextLib })
-  }
-  const showUsage = (item) => {
-    const u = libUsage(item.id, menus, compounds)
-    toast(u.total ? `ใช้ใน ${u.m} เมนู · ${u.c} สูตรผสม` : 'ยังไม่ถูกใช้ที่ไหน', '🔗')
-  }
+  const showUsage = (item) => setUsageFor(item)
+  // กดเมนู/สูตรผสมใน popup → ข้ามไปหน้านั้นแล้วเปิดดู/แก้ไขให้เลย
+  const openMenuFromUsage = (menuId) => { setPendingMenuView(menuId); go?.('menu'); setUsageFor(null) }
+  const openCompoundFromUsage = (compoundId) => { setPendingCompoundEdit(compoundId); go?.('compound'); setUsageFor(null) }
 
   return (
     <div className="main" style={{ paddingTop: '.6rem' }}>
       <div style={{ fontSize: 12.5, color: 'var(--txt3)', margin: '0 2px .2rem' }}>{library.length} รายการ</div>
 
-      {/* control row: cycle-click filter + คำนวณ + เพิ่ม (2 คอลัมน์) */}
+      {/* control row: cycle-click filter + เพิ่ม (2 คอลัมน์) */}
       <div style={{ display: 'flex', gap: 8, margin: '.7rem 0 .9rem' }}>
         <CycleFilter cats={CATS} value={cat} onChange={setCat} emojiOf={(c) => CAT_EMOJI[c] || '🔖'} count={groups.reduce((s, g) => s + g.items.length, 0)} />
-        <button className="btn" style={{ background: 'var(--surf2)', flexShrink: 0 }} onClick={() => setShowBd(true)}>🧮</button>
         {canEdit && (
           <button className="btn btn-red" style={{ flexShrink: 0 }} onClick={() => setForm({ item: null })}>＋ เพิ่ม</button>
         )}
@@ -104,14 +97,8 @@ export default function LibraryPage() {
               const baseUnit = i.levels?.[0]?.name || 'ลัง'
               return (
                 <div key={i.id} className="lib-card" style={{ padding: '.9rem 1rem' }}>
-                  {/* header: pin + emoji + name + edit (แทน chip หมวดที่ซ้ำกับหัวกลุ่ม) */}
+                  {/* header: emoji + name + edit (แทน chip หมวดที่ซ้ำกับหัวกลุ่ม) */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    {canEdit && (
-                      <button onClick={() => togglePin(i)} title={i.pinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: i.pinned ? '#F5C518' : 'var(--txt3)', flexShrink: 0, padding: 0 }}>
-                        {i.pinned ? '★' : '☆'}
-                      </button>
-                    )}
                     <span style={{ fontSize: 19, flexShrink: 0 }}>{itemEmoji(i.name, masterByName)}</span>
                     <div style={{ fontWeight: 700, fontSize: 14, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{i.name}</div>
                     {canEdit && (
@@ -173,7 +160,52 @@ export default function LibraryPage() {
           onClose={() => setPriceAdj(null)}
         />
       )}
-      {showBd && <BreakdownModal onClose={() => setShowBd(false)} />}
+      {usageFor && (() => {
+        const { menus: usedMenus, compounds: usedCompounds } = libUsageDetail(usageFor.id, menus, compounds)
+        const empty = usedMenus.length === 0 && usedCompounds.length === 0
+        return (
+          <Modal title="🔗 ใช้ในเมนู" subtitle={usageFor.name} onClose={() => setUsageFor(null)} guard={false} maxWidth={420}>
+            {empty ? (
+              <div style={{ textAlign: 'center', padding: '1.6rem 1rem', color: 'var(--txt3)', fontSize: 13 }}>ยังไม่ถูกใช้ในเมนูหรือสูตรผสมใดๆ</div>
+            ) : (
+              <>
+                {usedMenus.length > 0 && (
+                  <div className="ios-group">
+                    <div className="ios-sec-label">🍦 เมนู ({usedMenus.length})</div>
+                    <div className="ios-card">
+                      {usedMenus.map((m) => (
+                        <div key={m.id} className="ios-row" onClick={() => openMenuFromUsage(m.id)}>
+                          <div className="ios-row-left">
+                            <span className="ios-row-icon">{menuEmoji(m.cat)}</span>
+                            <span className="ios-row-title">{m.name}</span>
+                          </div>
+                          <span className="ios-arrow">›</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {usedCompounds.length > 0 && (
+                  <div className="ios-group">
+                    <div className="ios-sec-label">🧪 สูตรผสม ({usedCompounds.length})</div>
+                    <div className="ios-card">
+                      {usedCompounds.map((c) => (
+                        <div key={c.id} className="ios-row" onClick={() => openCompoundFromUsage(c.id)}>
+                          <div className="ios-row-left">
+                            <span className="ios-row-icon">🧪</span>
+                            <span className="ios-row-title">{c.name}</span>
+                          </div>
+                          <span className="ios-arrow">›</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </Modal>
+        )
+      })()}
     </div>
   )
 }
