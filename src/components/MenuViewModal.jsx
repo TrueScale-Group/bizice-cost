@@ -66,7 +66,7 @@ export default function MenuViewModal({ menu, onClose }) {
               return (
                 <div key={s.k} className="view-size-block">
                   <div className="view-size-header">
-                    <span className="view-size-tag">แก้ว {s.label}</span>
+                    <span className="view-size-tag">{s.label === 'U' && menu.vesselU === 'โคน' ? '🍦 โคน' : `แก้ว ${s.label}`}</span>
                     <span className="view-size-price">ขาย {price.toLocaleString('th-TH')} ฿</span>
                   </div>
 

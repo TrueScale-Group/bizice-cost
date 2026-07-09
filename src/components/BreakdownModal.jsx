@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { num } from '../utils/format'
+import { num, fmtQtyInput, parseQtyInput } from '../utils/format'
 import Modal from './Modal'
 
 // เครื่องคิดเลข ราคา/หน่วย — พอร์ตจาก vanilla breakdown calculator
@@ -39,7 +39,9 @@ export default function BreakdownModal({ onClose }) {
     >
           <div className="mf-card" style={{ padding: '.8rem 1rem' }}>
             <label className="mf-lbl">ราคาที่ซื้อ (฿)</label>
-            <input type="number" style={{ ...INP, width: '100%' }} value={base} onChange={(e) => setBase(e.target.value)} placeholder="เช่น 1200" min="0" step="any" autoFocus />
+            <input type="text" inputMode="decimal" style={{ ...INP, width: '100%' }} value={fmtQtyInput(base)}
+              onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setBase(v) }}
+              placeholder="เช่น 1,200" autoFocus />
           </div>
 
           <div className="mf-sec-lbl">แตกหน่วย (1 หน่วยบน = กี่หน่วยล่าง)</div>

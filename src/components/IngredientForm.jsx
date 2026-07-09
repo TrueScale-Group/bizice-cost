@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, LIB_SUGGESTIONS } from '../constants/categories'
-import { num, fmtDateNow, genId } from '../utils/format'
+import { num, fmtDateNow, genId, fmtQtyInput, parseQtyInput } from '../utils/format'
 import Modal from './Modal'
 
 // ราคาต่อหน่วย (ตาม vanilla): (base+freight)×(1+waste/100) / divisor
@@ -116,7 +116,9 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onDel
             <div className="mf-row" style={{ display: 'flex', gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <label className="mf-lbl">ราคาที่ซื้อ (฿)</label>
-                <input type="number" style={INP} value={base} onChange={(e) => setBase(e.target.value)} placeholder="0" min="0" step="any" />
+                <input type="text" inputMode="decimal" style={INP} value={fmtQtyInput(base)}
+                  onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setBase(v) }}
+                  placeholder="0" />
               </div>
               <div style={{ flex: 1 }}>
                 <label className="mf-lbl">หน่วยที่ซื้อ (ชั้นแรก)</label>
@@ -166,7 +168,9 @@ export default function IngredientForm({ item, library, updatedBy, onSave, onDel
               <div className="mf-row" style={{ display: 'flex', gap: 10 }}>
                 <div style={{ flex: 1 }}>
                   <label className="mf-lbl">💰 ค่าขนส่ง (฿/Case)</label>
-                  <input type="number" style={INP} value={freight} onChange={(e) => setFreight(e.target.value)} placeholder="เช่น 50" min="0" step="any" />
+                  <input type="text" inputMode="decimal" style={INP} value={fmtQtyInput(freight)}
+                    onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setFreight(v) }}
+                    placeholder="เช่น 50" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="mf-lbl">💧 Waste Buffer (%)</label>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, MENU_CATS, menuEmoji } from '../constants/categories'
-import { num, genId, fmtDateNow, baht } from '../utils/format'
+import { num, genId, fmtDateNow, baht, fmtQtyInput, parseQtyInput } from '../utils/format'
 import { calcCost, gpColor } from '../utils/cost'
 import { itemEmoji } from '../utils/sortItems'
 import Modal from './Modal'
@@ -21,6 +21,10 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
   const [prices, setPrices] = useState({
     U: menu?.priceS || '', M: menu?.priceM || '', L: menu?.priceL || '',
   })
+  // ภาชนะขนาด U — สลับได้ระหว่าง แก้ว U / โคน (M กับ L เป็นแก้วเสมอ ไม่มีตัวเลือก)
+  const [vesselU, setVesselU] = useState(menu?.vesselU === 'โคน' ? 'โคน' : 'แก้ว')
+  const sizeLabel = (sz) => (sz === 'U' && vesselU === 'โคน') ? '🍦 โคน' : '🥤 ' + SIZES.find((s) => s.k === sz).label
+  const sizeLabelPlain = (sz) => (sz === 'U' && vesselU === 'โคน') ? 'โคน' : `แก้ว ${sz}`
 
   // ── สร้างสถานะเริ่มต้นของ ingredients แยกตามขนาด ──
   const initSizes = () => {
@@ -146,6 +150,7 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
       id: menu?.id || genId(),
       name: name.trim(), cat,
       priceS: num(prices.U), priceM: num(prices.M), priceL: num(prices.L),
+      vesselU,
       ingredients,
       updatedAt: fmtDateNow(), updatedBy,
     }
@@ -208,8 +213,15 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
               {activeSizes.length > 0 && (
                 <div className="mf-card">
                   {activeSizes.map((sz) => (
-                    <div key={sz} className="mf-price-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.65rem 1rem', borderTop: sz !== activeSizes[0] ? '1px solid var(--border)' : 'none' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600 }}>🥤 {SIZES.find((s) => s.k === sz).label}</span>
+                    <div key={sz} className="mf-price-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.65rem 1rem', borderTop: sz !== activeSizes[0] ? '1px solid var(--border)' : 'none', gap: 8, flexWrap: 'wrap' }}>
+                      {sz === 'U' ? (
+                        <div style={{ display: 'flex', gap: 3, background: 'var(--surf2)', borderRadius: 8, padding: 2, flexShrink: 0 }}>
+                          <button type="button" onClick={() => setVesselU('แก้ว')} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, fontFamily: "'Sarabun',sans-serif", background: vesselU === 'แก้ว' ? '#fff' : 'transparent', boxShadow: vesselU === 'แก้ว' ? 'var(--sh)' : 'none', color: vesselU === 'แก้ว' ? 'var(--txt)' : 'var(--txt3)' }}>🥤 แก้ว U</button>
+                          <button type="button" onClick={() => setVesselU('โคน')} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, fontFamily: "'Sarabun',sans-serif", background: vesselU === 'โคน' ? '#fff' : 'transparent', boxShadow: vesselU === 'โคน' ? 'var(--sh)' : 'none', color: vesselU === 'โคน' ? 'var(--txt)' : 'var(--txt3)' }}>🍦 โคน</button>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>🥤 {SIZES.find((s) => s.k === sz).label}</span>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <input type="number" value={prices[sz]} onChange={(e) => setPrices((p) => ({ ...p, [sz]: e.target.value }))} placeholder="0" min="0" step="0.01"
                           style={{ ...INP, width: 70, textAlign: 'right', fontSize: 15, fontWeight: 700, fontFamily: "'Prompt',sans-serif" }} />
@@ -241,7 +253,7 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
                   <div style={{ display: 'flex', gap: 4, background: 'var(--surf2)', borderRadius: 10, padding: 3, marginBottom: 8 }}>
                     {activeSizes.map((sz) => (
                       <button key={sz} onClick={() => { setTab(sz); setEditRowId(null) }} style={{ flex: 1, padding: '6px', border: 'none', borderRadius: 8, background: tab === sz ? '#fff' : 'transparent', fontWeight: tab === sz ? 700 : 500, fontSize: 13, cursor: 'pointer', boxShadow: tab === sz ? 'var(--sh)' : 'none' }}>
-                        แก้ว {sz}
+                        {sizeLabelPlain(sz)}
                       </button>
                     ))}
                   </div>
@@ -253,7 +265,7 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', background: 'var(--surf)', border: '1px dashed var(--border2)', borderRadius: 10, padding: '7px 9px', marginBottom: 8 }}>
                       <span style={{ fontSize: 12, color: 'var(--txt3)', fontWeight: 600 }}>📋 คัดลอกวัตถุดิบจาก:</span>
                       {sourceSizes.map((sz) => (
-                        <button key={sz} type="button" className="btn-view" onClick={() => copyFromSize(sz)}>แก้ว {sz}</button>
+                        <button key={sz} type="button" className="btn-view" onClick={() => copyFromSize(sz)}>{sizeLabelPlain(sz)}</button>
                       ))}
                     </div>
                   )
@@ -313,7 +325,9 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
                       )}
                       {/* แถว 3: ปริมาณ + หน่วย */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input type="number" value={row.qty} onChange={(e) => setRow(tab, row.id, { qty: e.target.value })} placeholder="ปริมาณ" min="0" step="any" style={{ ...INP, flex: 1, minWidth: 70 }} />
+                        <input type="text" inputMode="decimal" value={fmtQtyInput(row.qty)}
+                          onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setRow(tab, row.id, { qty: v }) }}
+                          placeholder="ปริมาณ" style={{ ...INP, flex: 1, minWidth: 70 }} />
                         <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--txt2)', minWidth: 44, textAlign: 'center', flexShrink: 0 }}>
                           {info ? info.unit : '—'}
                         </div>
@@ -333,7 +347,7 @@ export default function MenuForm({ menu, library, compounds, settings, masterByN
               <div className="mf-card" style={{ padding: '.6rem .8rem' }}>
                 {preview.filter((p) => p.price > 0).map((p) => (
                   <div key={p.sz} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '3px 0' }}>
-                    <span>แก้ว {p.sz} · ต้นทุน {baht(p.cost)}฿ / ขาย {p.price.toLocaleString('th-TH')}฿</span>
+                    <span>{sizeLabelPlain(p.sz)} · ต้นทุน {baht(p.cost)}฿ / ขาย {p.price.toLocaleString('th-TH')}฿</span>
                     <strong style={{ color: gpColor(p.pct, settings) }}>{p.pct.toFixed(1)}%</strong>
                   </div>
                 ))}

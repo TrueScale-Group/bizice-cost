@@ -84,7 +84,7 @@ export default function ComparePage() {
                       <div className="cmp-body">
                         <div className="cmp-top">
                           <span className="cmp-name">{menuEmoji(r.m.cat)} {r.m.name}</span>
-                          <span className="cmp-size-badge">แก้ว {r.lbl}</span>
+                          <span className="cmp-size-badge">{r.lbl === 'U' && r.m.vesselU === 'โคน' ? '🍦 โคน' : `แก้ว ${r.lbl}`}</span>
                         </div>
                         <div className="cmp-bar-bg"><div className="cmp-bar-fill" style={{ width: Math.min(100, r.pct) + '%', background: col }} /></div>
                         <div className="cmp-sub">ต้นทุน {baht(r.cost)} ฿ · ขาย {baht(r.p)} ฿</div>

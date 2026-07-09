@@ -44,3 +44,16 @@ export function genId() {
 export function baht(n) {
   return (num(n)).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+// ── ช่องกรอกตัวเลขมี comma คั่นหลักพันระหว่างพิมพ์ (ราคา/ปริมาณ) ──
+//   เก็บ state เป็นสตริงดิบไว้คำนวณ (ไม่ใช่ค่าที่ format แล้ว) ใช้คู่กับ <input type="text" inputMode="decimal">
+export function fmtQtyInput(raw) {
+  if (raw === '' || raw == null) return ''
+  if (/\.$/.test(String(raw))) return raw // กำลังพิมพ์จุดทศนิยมค้างอยู่ ยังไม่แปลง กันค่าเพี้ยน
+  const n = Number(raw)
+  return isNaN(n) ? raw : n.toLocaleString('th-TH', { maximumFractionDigits: 6 })
+}
+export function parseQtyInput(str) {
+  const raw = String(str).replace(/,/g, '')
+  return /^\d*\.?\d*$/.test(raw) ? raw : null
+}

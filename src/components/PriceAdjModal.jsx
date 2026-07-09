@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { num, fmtDateNow, baht } from '../utils/format'
+import { num, fmtDateNow, baht, fmtQtyInput, parseQtyInput } from '../utils/format'
 import Modal from './Modal'
 
 export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
@@ -64,7 +64,9 @@ export default function PriceAdjModal({ item, updatedBy, onSave, onClose }) {
     >
           <div className="mf-card" style={{ padding: '.9rem 1rem' }}>
             <label className="mf-lbl">ราคาใหม่ (฿ ต่อ {item.levels?.[0]?.name || 'ลัง'})</label>
-            <input type="number" style={INP} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" min="0" step="any" autoFocus />
+            <input type="text" inputMode="decimal" style={INP} value={fmtQtyInput(price)}
+              onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setPrice(v) }}
+              placeholder="0" autoFocus />
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               {trendBtn('⬆️', '⬆️ ขึ้น', '#E31E24')}
               {trendBtn('⬇️', '⬇️ ลง', '#16A34A')}

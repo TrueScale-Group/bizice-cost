@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, CP_CATS, CP_CAT_EMOJI } from '../constants/categories'
-import { num, genId, fmtDateNow } from '../utils/format'
+import { num, genId, fmtDateNow, fmtQtyInput, parseQtyInput } from '../utils/format'
 import { itemEmoji } from '../utils/sortItems'
 import Modal from './Modal'
 
@@ -15,17 +15,6 @@ const OUTPUT_UNITS = ['กรัม', 'มล.']
 function normalizeOutputUnit(u) {
   const s = String(u || '').toLowerCase()
   return (s.includes('มล') || s.includes('ml') || s.includes('cc') || s.includes('ซีซี')) ? 'มล.' : 'กรัม'
-}
-// แสดงตัวเลขมี comma คั่นหลักพันระหว่างพิมพ์ — เก็บ state เป็นสตริงดิบไว้คำนวณ ไม่ใช่ค่าที่ format แล้ว
-function fmtQtyInput(raw) {
-  if (raw === '' || raw == null) return ''
-  if (/\.$/.test(String(raw))) return raw // กำลังพิมพ์จุดทศนิยมค้างอยู่ ยังไม่แปลง กันค่าเพี้ยน
-  const n = Number(raw)
-  return isNaN(n) ? raw : n.toLocaleString('th-TH', { maximumFractionDigits: 6 })
-}
-function parseQtyInput(str) {
-  const raw = String(str).replace(/,/g, '')
-  return /^\d*\.?\d*$/.test(raw) ? raw : null
 }
 
 export default function CompoundForm({ compound, library, masterByName, updatedBy, onSave, onDelete, onClose }) {
@@ -196,7 +185,9 @@ export default function CompoundForm({ compound, library, masterByName, updatedB
                   </div>
                   {/* แถว 2: ปริมาณ + หน่วย */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="number" value={row.qty} onChange={(e) => setRow(row.id, { qty: e.target.value })} placeholder="ปริมาณ" min="0" step="any" style={{ ...INP, flex: 1, minWidth: 70 }} />
+                    <input type="text" inputMode="decimal" value={fmtQtyInput(row.qty)}
+                      onChange={(e) => { const v = parseQtyInput(e.target.value); if (v !== null) setRow(row.id, { qty: v }) }}
+                      placeholder="ปริมาณ" style={{ ...INP, flex: 1, minWidth: 70 }} />
                     <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--txt2)', minWidth: 44, textAlign: 'center', flexShrink: 0 }}>{lib ? lib.unit : '—'}</div>
                   </div>
                 </div>
