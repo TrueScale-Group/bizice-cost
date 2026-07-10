@@ -66,6 +66,9 @@
     // ─── SESSION GUARD (พอร์ต 1:1 จาก vanilla v3.9.10) ───
     (function () {
       var HUB = 'https://truescale-group.github.io/mixue-ice-sakon/';
+      // เฉพาะ localhost (dev server) เท่านั้น — ข้าม redirect ไป Hub เพื่อทดสอบ UI ได้ตรง ๆ
+      // ไม่มีทางเข้าเงื่อนไขนี้บน production (github.io / web.app ไม่ใช่ hostname นี้)
+      var isLocalDev = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
       try {
         var params = new URLSearchParams(location.search);
         var s = JSON.parse(localStorage.getItem('bizice_session') || 'null');
@@ -79,11 +82,14 @@
           };
           try { localStorage.setItem('bizice_session', JSON.stringify(s)); } catch (e) {}
         }
+        if ((!s || !s.name) && isLocalDev) {
+          s = { name: 'Dev Tester', phone: '0000000000', role: 'owner', expiry: Date.now() + 86400000 };
+        }
         if (!s || !s.name) { window.location.replace(HUB); return; }
         window._bizSession = s;
         // mode มาจาก URL ก่อน (Hub) แล้วค่อย role ใน session (PWA ไม่มี URL param)
         window._bizMode = params.get('mode') || s.role || 'viewer';
-      } catch (e) { window.location.replace(HUB); }
+      } catch (e) { if (!isLocalDev) window.location.replace(HUB); }
     })();
   </script>
 </head>
