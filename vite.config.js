@@ -28,14 +28,15 @@ function injectSwVersion(version) {
 
 export default defineConfig({
   plugins: [react(), injectSwVersion(pkg.version)],
-  base: '/bizice-cost/',
+  // Firebase Hosting (bizice-cost.web.app) serve จาก root — ต่างจาก GitHub Pages เดิม (/bizice-cost/)
+  base: '/',
   build: {
     outDir: 'dist',
     rollupOptions: {
       output: {
         // แยก vendor ก้อนใหญ่ (firebase ~ครึ่งบันเดิล) ออกจากโค้ดแอพ → cache แยก + โหลดขนาน
         manualChunks: {
-          firebase: ['firebase/app', 'firebase/firestore'],
+          firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
           react: ['react', 'react-dom'],
         },
       },

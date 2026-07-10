@@ -4,6 +4,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore'
+import { getAuth } from 'firebase/auth'
 
 // โปรเจกต์เดียวกับ vanilla เดิม + Inventory/Insight (อ่าน mixue_data ร่วมกัน)
 const firebaseConfig = {
@@ -23,3 +24,6 @@ export const db = initializeFirestore(app, {
     tabManager: persistentMultipleTabManager(),
   }),
 })
+
+// SSO bootstrap (รับ custom token จาก Hub) — ใช้ project เดิม ไม่ต้องสร้าง app ใหม่
+export const auth = getAuth(app)

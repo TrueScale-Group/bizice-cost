@@ -11,7 +11,8 @@ import CompoundPage from './pages/CompoundPage'
 import ComparePage from './pages/ComparePage'
 import SettingsPage from './pages/SettingsPage'
 
-const HUB = 'https://truescale-group.github.io/mixue-ice-sakon/'
+// Hub เปิดแอพลูกแบบเต็มหน้าแล้ว (ไม่ใช่ iframe) — ปลายทางใหม่คือ SSO gateway (bizice.web.app)
+const HUB = 'https://bizice.web.app'
 
 const NAV = [
   { id: 'menu', emoji: '🍦', label: 'เมนู', short: 'เมนู' },
