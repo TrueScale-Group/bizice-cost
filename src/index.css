@@ -92,7 +92,7 @@ body{
 }
 
 @media(max-width:899px){
-  .scroll-area{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+  .scroll-area{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 }
 .mub-avatar{
   width:36px;height:36px;border-radius:50%;flex-shrink:0;

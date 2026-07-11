@@ -176,7 +176,7 @@ function Shell() {
           </div>
         )}
 
-        <main className="page active" style={{ paddingBottom: 'calc(84px + env(safe-area-inset-bottom))' }}>
+        <main className="page active" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom))' }}>
           {!showSplash && Page && <Page go={go} />}
         </main>
       </div>
