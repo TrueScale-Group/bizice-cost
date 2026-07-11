@@ -29,7 +29,7 @@ function injectSwVersion(version) {
 export default defineConfig({
   plugins: [react(), injectSwVersion(pkg.version)],
   // Firebase Hosting (bizice-cost.web.app) serve จาก root — ต่างจาก GitHub Pages เดิม (/bizice-cost/)
-  base: '/',
+  base: '/cost/',   // single-origin: bizice.web.app/cost/
   build: {
     outDir: 'dist',
     rollupOptions: {

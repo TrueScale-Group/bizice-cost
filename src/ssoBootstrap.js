@@ -4,7 +4,7 @@ import { auth } from './firebase'
 // SSO bootstrap — รับ custom token จาก Hub (#t=...) แล้ว signInWithCustomToken เพื่อให้มี
 // request.auth จริงสำหรับ Firestore role-based rules · ไม่รื้อ logic อ่าน session เดิม
 // (?mode/user/phone/branch) — ให้ทำงานคู่กันไปก่อนจนกว่าจะ cutover ทั้ง 6 แอพพร้อมกัน
-const HUB_URL = 'https://bizice.web.app'
+const HUB_URL = '/'   // origin-relative: Hub อยู่ root ของ origin เดียวกัน (single-origin) — ใช้ได้ทั้ง preview/live
 // เฉพาะ localhost (dev server) เท่านั้น — ข้าม redirect ไป Hub เพื่อทดสอบ UI ได้ตรง ๆ โดยไม่ต้อง
 // login จริง (ไม่มีทางเข้าเงื่อนไขนี้บน production — github.io / web.app ไม่ใช่ hostname นี้)
 const isLocalDev = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)

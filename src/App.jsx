@@ -12,7 +12,7 @@ import ComparePage from './pages/ComparePage'
 import SettingsPage from './pages/SettingsPage'
 
 // Hub เปิดแอพลูกแบบเต็มหน้าแล้ว (ไม่ใช่ iframe) — ปลายทางใหม่คือ SSO gateway (bizice.web.app)
-const HUB = 'https://bizice.web.app'
+const HUB = '/'   // single-origin: Hub = root ของ origin เดียวกัน
 
 const NAV = [
   { id: 'menu', emoji: '🍦', label: 'เมนู', short: 'เมนู' },
