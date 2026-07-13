@@ -78,7 +78,7 @@ body{
 .mobile-top-bar{
   display:none;
   position:fixed;top:0;left:0;right:0;z-index:190;
-  background:rgba(255,255,255,0.97);
+  background:#fff;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
   padding:.55rem .85rem;
@@ -88,7 +88,7 @@ body{
 }
 @media(max-width:899px){
   .mobile-top-bar{display:flex}
-  .scroll-area{padding-top:58px}
+  .scroll-area{padding-top:calc(58px + env(safe-area-inset-top))}
 }
 
 @media(max-width:899px){
@@ -1159,10 +1159,10 @@ input,select,textarea{font-size:16px}
 .bottom-nav{
   display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:300;
-  background:rgba(255,255,255,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:#fff;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-top:1px solid var(--border);
   align-items:center;
-  padding:.3rem 0;padding-bottom:calc(.3rem + env(safe-area-inset-bottom));
+  padding:.3rem 0;padding-bottom:env(safe-area-inset-bottom);
   box-shadow:0 -1px 0 rgba(0,0,0,.06),0 -4px 16px rgba(0,0,0,.05);
 }
 .nav-item{
@@ -1639,3 +1639,9 @@ input,select,textarea{font-size:16px}
 @media(min-width:900px){#root{flex-direction:row}}
 /* main scroll container (ทำงานทั้งมือถือ+เดสก์ท็อป) */
 .scroll-area{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;width:100%}
+
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#000;z-index:2147483000;pointer-events:none}
+
+html.ios .bottom-nav{padding-bottom:0}
+
+html.ios{background:#000}
