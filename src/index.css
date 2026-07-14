@@ -184,7 +184,7 @@ body{
 #tab-settings{max-width:840px;margin:0 auto}
 .ios-group{margin-bottom:.9rem}
 .ios-sec-label{font-size:10.5px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;padding:0 .25rem;margin-bottom:.35rem;display:flex;align-items:center;gap:6px}
-.ios-card{background:var(--surf);border-radius:var(--rl);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.ios-card{background:var(--surf);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh)}
 .ios-card.pad{padding:.75rem .85rem}
 /* row — Inventory .setting-row style: plain emoji icon, compact */
 .ios-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:.6rem .85rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;background:var(--surf)}
@@ -367,14 +367,12 @@ input,select,textarea{font-size:16px}
 .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
 .menu-card{
   background:#fff;border-radius:14px;
-  border:1px solid var(--border);
   box-shadow:var(--sh);
   overflow:hidden;
-  transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease;cursor:default;
+  transition:box-shadow .2s ease,transform .2s ease;cursor:default;
 }
 .menu-card:hover{
   box-shadow:0 6px 20px rgba(0,0,0,0.11);transform:translateY(-2px);
-  border-color:rgba(227,30,36,0.12);
 }
 .menu-card-click{cursor:pointer}
 .menu-card-click:active{transform:scale(.992);box-shadow:var(--sh)}
@@ -459,7 +457,6 @@ input,select,textarea{font-size:16px}
 .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem}
 .lib-card{
   background:#fff;border-radius:14px;
-  border:1px solid var(--border);
   box-shadow:var(--sh);
   padding:1rem 1.1rem;
   display:flex;flex-direction:column;
