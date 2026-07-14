@@ -222,10 +222,9 @@ body{
 /* ── CARDS ── */
 .card{
   background:#fff;border-radius:16px;
-  border:1px solid var(--border);
   box-shadow:var(--sh);
   padding:1.25rem;margin-bottom:.85rem;
-  transition:box-shadow .2s,border-color .2s;
+  transition:box-shadow .2s;
 }
 .card-sm{padding:1rem 1.25rem}
 .section-label{
