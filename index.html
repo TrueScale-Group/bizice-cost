@@ -66,9 +66,9 @@
   <script>
     // ─── SESSION GUARD (พอร์ต 1:1 จาก vanilla v3.9.10) ───
     (function () {
-      var HUB = 'https://truescale-group.github.io/mixue-ice-sakon/';
+      var HUB = 'https://bizice.web.app/';
       // เฉพาะ localhost (dev server) เท่านั้น — ข้าม redirect ไป Hub เพื่อทดสอบ UI ได้ตรง ๆ
-      // ไม่มีทางเข้าเงื่อนไขนี้บน production (github.io / web.app ไม่ใช่ hostname นี้)
+      // ไม่มีทางเข้าเงื่อนไขนี้บน production (bizice.web.app คือ hostname นี้เอง)
       var isLocalDev = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
       try {
         var params = new URLSearchParams(location.search);
