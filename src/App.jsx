@@ -47,11 +47,24 @@ function Splash() {
   )
 }
 
+// role → สี+อีโมจิ (เหมือน pattern ของ Inventory .dsb-avatar/.dsb-user-role)
+const ROLE_META = {
+  owner: { color: '#E31E24', label: '👑 เจ้าของ' },
+  editor: { color: '#0284C7', label: '✏️ แก้ไขได้' },
+  viewer: { color: '#6B7280', label: '👁️ ดูอย่างเดียว' },
+}
+function roleMeta(session) {
+  if (session.isOwner()) return ROLE_META.owner
+  if (session.isEditor()) return ROLE_META.editor
+  return ROLE_META.viewer
+}
+
 function Shell() {
   const { loading, session, reload } = useCost()
   const { updateReady, reload: swReload } = useServiceWorker()
   const [tab, setTab] = useState('menu')
   const [splashDone, setSplashDone] = useState(false)
+  const role = roleMeta(session)
 
   // pull-to-refresh (มือถือ) + auto refresh ทุก 5 นาทีตอน focus
   usePullToRefresh(reload)
@@ -123,12 +136,12 @@ function Shell() {
         </div>
         <div className="sb-footer">
           <div className="sb-user">
-            <div className="sb-avatar">
+            <div className="sb-avatar" style={{ background: session.photo ? 'none' : role.color }}>
               {session.photo ? <img src={session.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : session.initials}
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div className="sb-uname">{session.name || 'ผู้ใช้'}</div>
-              <div className="sb-urole">{session.isOwner() ? 'เจ้าของ' : session.isEditor() ? 'แก้ไขได้' : 'ดูอย่างเดียว'}</div>
+              <div className="sb-urole">{role.label}</div>
             </div>
             <HardRefreshButton variant="circle" />
           </div>
