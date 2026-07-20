@@ -1,14 +1,8 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, CP_CATS, CP_CAT_EMOJI } from '../constants/categories'
-import { num, genId, fmtDateNow, fmtQtyInput, parseQtyInput } from '../utils/format'
+import { num, genId, fmtDateNow, fmtQtyInput, parseQtyInput, fmtPrice } from '../utils/format'
 import { itemEmoji } from '../utils/sortItems'
 import Modal from './Modal'
-
-function fmtPrice(p) {
-  if (!p) return '0'
-  const n = p.toFixed(2)
-  return parseFloat(n) >= 1000 ? parseFloat(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : n
-}
 
 // หน่วยผลผลิตมาตรฐาน — เลือกได้แค่ กรัม/มล. (ของเก่าที่หลากหลาย เช่น "ml","g" ให้ normalize เข้าค่าใดค่าหนึ่ง)
 const OUTPUT_UNITS = ['กรัม', 'มล.']

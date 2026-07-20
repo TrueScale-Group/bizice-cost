@@ -45,6 +45,9 @@ export function baht(n) {
   return (num(n)).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+// ราคาแบบย่อ — เหมือน baht() ทุกอย่าง ต่างแค่ค่า 0/ว่าง คืน '0' (ไม่ใช่ '0.00') ใช้ในฟอร์มที่ยังไม่กรอกราคา
+export const fmtPrice = (p) => (p ? baht(p) : '0')
+
 // ── ช่องกรอกตัวเลขมี comma คั่นหลักพันระหว่างพิมพ์ (ราคา/ปริมาณ) ──
 //   เก็บ state เป็นสตริงดิบไว้คำนวณ (ไม่ใช่ค่าที่ format แล้ว) ใช้คู่กับ <input type="text" inputMode="decimal">
 export function fmtQtyInput(raw) {

@@ -1,15 +1,9 @@
 import { useState, useMemo } from 'react'
 import { CATS, CAT_EMOJI, LIB_SUGGESTIONS } from '../constants/categories'
-import { num, fmtDateNow, genId, fmtQtyInput, parseQtyInput } from '../utils/format'
+import { num, fmtDateNow, genId, fmtQtyInput, parseQtyInput, fmtPrice } from '../utils/format'
 import Modal from './Modal'
 
 // ราคาต่อหน่วย (ตาม vanilla): (base+freight)×(1+waste/100) / divisor
-function fmtPrice(p) {
-  if (!p) return '0'
-  const n = p.toFixed(2)
-  return parseFloat(n) >= 1000 ? parseFloat(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : n
-}
-
 export default function IngredientForm({ item, library, updatedBy, onSave, onDelete, onClose }) {
   const editing = !!item
   const [name, setName] = useState(item?.name || '')
